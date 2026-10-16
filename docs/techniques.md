@@ -53,6 +53,13 @@ A post effect only sees the final image. To let it treat some pixels differently
 
 Example: [emissive-glow](../examples/emissive-glow/) tags emissive texels and blooms only them.
 
+## Change something everywhere: replace a vanilla include
+
+A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanilla include for every program that includes it. For example, a modified `fog.glsl` changes the fog of terrain, entities, items, particles, sky and clouds at once. See [atmosphere](../examples/atmosphere/).
+
+- **Keep every block and function the vanilla file declares**, with the same signatures. Other programs call them.
+- **Run `tools/mcshaders check`:** a mistake in an include breaks every program that uses it.
+
 ## Animate
 
 - **Use `GameTime` from `Globals`**, available to every core program and every post pass. It is `((game ticks % 24000) + partial tick) / 24000`: it goes from 0 to 1 every 24000 ticks (20 minutes), then **wraps back to 0** *(code)*. For a seamless loop, use a whole number of periods: `sin(GameTime * 6.2831853 * N)` repeats N times per wrap, that is every 24000 / N ticks. See [terrain-wave](../examples/terrain-wave/).

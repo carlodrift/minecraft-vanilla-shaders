@@ -64,6 +64,16 @@ def set_options(path, pack_name, backend, data_version, extra=()):
         "graphicsPreset": '"fancy"',
         "improvedTransparency": "false",
     }
+    # Undo the --option values of the previous launch, then remember the values this launch replaces.
+    saved_path = os.path.join(os.path.dirname(path), "launch-options-backup.json")
+    current = dict(l.split(":", 1) for l in lines if ":" in l)
+    if os.path.exists(saved_path):
+        with open(saved_path) as f:
+            for key, value in json.load(f).items():
+                wanted.setdefault(key, value)
+    backup = {k: current[k] for k, _ in extra if k in current and k not in ("graphicsPreset", "improvedTransparency")}
+    with open(saved_path, "w") as f:
+        json.dump(backup, f)
     wanted.update(extra)
     seen = set()
     for i, line in enumerate(lines):

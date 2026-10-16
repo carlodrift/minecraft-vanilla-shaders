@@ -1,0 +1,50 @@
+{
+  "title": "Atmosphere: a replaced fog include (smoother, tinted fog everywhere) and a sky gradient",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/include/fog.glsl",
+      "vanilla": "assets/minecraft/shaders/include/fog.glsl",
+      "edits": [
+        {
+          "find": "    return vec4(mix(inColor.rgb, fogColor.rgb, fogValue * fogColor.a), inColor.a);",
+          "replace": "    // Smoother fog curve, and fog tinted towards violet.\n    fogValue = smoothstep(0.0, 1.0, fogValue);\n    vec3 tinted = fogColor.rgb * vec3(1.05, 0.8, 1.2);\n    return vec4(mix(inColor.rgb, tinted, fogValue * fogColor.a), inColor.a);"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/sky.vsh",
+      "vanilla": "assets/minecraft/shaders/core/sky.vsh",
+      "edits": [
+        {
+          "find": "layout(location = 1) out float cylindricalVertexDistance;\n",
+          "replace": "layout(location = 1) out float cylindricalVertexDistance;\n// Elevation of the sky vertex: 1 straight up, about 0 at the rim of the sky disc.\nlayout(location = 2) out float skyElevation;\n"
+        },
+        {
+          "find": "    cylindricalVertexDistance = fog_cylindrical_distance(Position);\n",
+          "replace": "    cylindricalVertexDistance = fog_cylindrical_distance(Position);\n    skyElevation = normalize(Position).y;\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/sky.fsh",
+      "vanilla": "assets/minecraft/shaders/core/sky.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 1) in float cylindricalVertexDistance;\n",
+          "replace": "layout(location = 1) in float cylindricalVertexDistance;\nlayout(location = 2) in float skyElevation;\n"
+        },
+        {
+          "find": "    fragColor = apply_fog(ColorModulator, ",
+          "replace": "    // Deeper, more violet sky towards the zenith.\n    vec3 zenith = ColorModulator.rgb * vec3(0.45, 0.4, 0.95);\n    vec4 sky = vec4(mix(ColorModulator.rgb, zenith, clamp(skyElevation * 1.4, 0.0, 1.0)), ColorModulator.a);\n    fragColor = apply_fog(sky, "
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "gamemode spectator",
+      "tp @s 3 8 0 0 -12"
+    ]
+  }
+}

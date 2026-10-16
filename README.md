@@ -9,13 +9,13 @@ Every statement here is either checked against the game's code, reproduced by an
 - [Writing shaders for 26.3](docs/writing-shaders.md): how the game loads shaders, and the rules a shader must follow to load.
 - [How a frame is drawn](docs/rendering.md): the drawing order, and what each core program draws, with screenshots.
 - [Porting to 26.3](docs/porting.md): method, checklist, and what changed version by version since 1.21.8.
-- [Techniques](docs/techniques.md): texture markers, telling GUI from world, tagging pixels for post effects, animating, depth, displacement.
+- [Techniques](docs/techniques.md): texture markers, telling GUI from world, translucency with Improved Transparency, tagging pixels for post effects, replacing includes, animating, depth, displacement.
 - [Post effects](docs/post-effects.md): `end_of_frame`, `/posteffect`, the JSON format, samplers, uniforms and depth.
 - Reference, generated from the game:
   - [Core shader programs](docs/reference/core-shaders.md): for each program, its pipelines, defines, available uniforms (with the `#ifdef` that guards each one) and vertex inputs.
   - [Uniforms](docs/reference/uniforms.md): every uniform block (with its std140 layout) and sampler.
   - [Render pipelines](docs/reference/pipelines.md): all 192 of them.
-- [Examples](examples/): complete packs with screenshots (terrain wave, depth outlines, emissive entities, emissive glow).
+- [Examples](examples/): complete packs with screenshots (terrain wave, depth outlines, emissive entities, emissive glow, atmosphere).
 - [Experiments](experiments/) and their [results](experiments/RESULTS.md), in game on OpenGL and Vulkan.
 - [Tools](tools/): `mcshaders check` validates a pack the way the game does, without launching it.
 
