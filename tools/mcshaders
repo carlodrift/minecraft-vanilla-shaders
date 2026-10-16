@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Runs the repository tools against an installed Minecraft version.
+#   tools/mcshaders check [resource-pack-dir]
+#   tools/mcshaders pipelines            (JSON lines, one per render pipeline)
+# Environment: MC_VERSION (default 26.3), JAVA (default: java on PATH, must be 25+)
+set -euo pipefail
+
+here="$(cd "$(dirname "$0")" && pwd)"
+version="${MC_VERSION:-26.3}"
+java="${JAVA:-java}"
+cp="$(python3 -I "$here/classpath.py" "$version")"
+flags=(--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow -cp "$cp")
+
+cmd="${1:-}"
+shift || true
+case "$cmd" in
+  check) exec "$java" "${flags[@]}" "$here/src/Check.java" "$@" ;;
+  pipelines) exec "$java" "${flags[@]}" "$here/src/DumpPipelines.java" "$@" ;;
+  *) sed -n '2,5p' "$0" >&2; exit 2 ;;
+esac
