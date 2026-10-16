@@ -22,3 +22,9 @@ Every statement here is either checked against the game's code, reproduced by an
 ## Status
 
 Work in progress. Tested on macOS (Apple M4 Pro): OpenGL 4.1 Metal and Vulkan through MoltenVK. Other GPUs and drivers are not covered yet.
+
+## License
+
+Tools under MIT, documentation under CC BY 4.0, example and experiment shader code under CC0. Details in [LICENSE.md](LICENSE.md).
+
+Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft. This repository contains no vanilla Minecraft files: the tools read them from your own installation.
