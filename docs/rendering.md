@@ -14,8 +14,8 @@ The order comes from the 26.3 client code. The screenshots come from [tools/gall
 2. **Sky**: sky color, sunrise and sunset glow, sun, moon and stars. In the End, the End sky. Skipped in lava, powder snow, and under effects that hide the sky. *(code)*
 3. **Opaque**: opaque and cutout terrain (`core/terrain`), then solid "features": entities, block entities, items, particles… *(code)*
 4. **Translucent.** It depends on the **Improved Transparency** option, off by default. *(code)*
-   - **Off:** translucent features, translucent terrain, clouds, weather, then the world border, drawn back to front into the main target.
-   - **On (OIT):** the same things go through three passes (depth bounds, transmittance, accumulate). That is what the `OIT_*` defines and the `oit_*` pipelines are. `core/oit_composite` then merges the result into the main target.
+   - **Off:** translucent features, translucent terrain, clouds, weather, then the world border, drawn directly into the main target.
+   - **On (OIT):** the same things go through three passes (depth bounds, transmittance, accumulate). That is what the `OIT_*` defines and the `oit_*` pipelines are. `core/oit_composite` then merges the result into the main target. The `oit_*` pipelines are compiled even when the option is off. For what this means for a pack, see [Techniques](techniques.md#change-the-color-of-translucent-things-improved-transparency).
 5. **Glowing outlines**: entities with Glowing are drawn into a separate `minecraft:entity_outline` target. The `minecraft:entity_outline` post effect blurs it. *(code)*
 6. **See-through** features, such as name tags behind walls, then **always-on-top** debug shapes. *(code)*
 7. **3D HUD**: the hand and held item, then screen overlays (fire, the block you are inside of), with their own depth. *(code)*

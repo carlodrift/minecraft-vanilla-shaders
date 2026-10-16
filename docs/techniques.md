@@ -9,7 +9,9 @@ A shader can't know which object it is drawing, but it can read the texture. Pac
 - **Marker alpha:** for example 254 instead of 255. It's invisible in an opaque texture, and easy to test: `abs(texel.a * 255.0 - 254.0) < 0.5`. See [emissive-entities](../examples/emissive-entities/).
 - **Exact colors:** compare the texel's color with a list of colors, with a small tolerance.
 
-Read the texel without filtering or mipmapping, with `textureLod(Sampler0, uv, 0.0)`, so neighbouring texels don't change the value. This is reliable for entities and items. **Terrain is a different case:** its `Sampler0` uses linear filtering since 1.21.11, so a texel can be blended with its neighbours at its edges *(code, and the [minecraft.wiki history](https://minecraft.wiki/w/Shader#History))*. Markers on terrain textures are therefore unreliable near texel edges.
+Read the texel without mipmapping, with `textureLod(Sampler0, uv, 0.0)`, so neighbouring texels don't change the value. This works for entities and items (examples above).
+
+**Terrain is different.** Its `Sampler0` uses linear filtering, and vanilla's `sampleNearest()` (`texture_sampling.glsl`) still blends neighbouring texels near texel edges, for anti-aliasing *(code)*. To read one exact texel, use `texelFetch(Sampler0, ivec2(uv * vec2(TextureSize)), 0)`, where `TextureSize` comes from the `TerrainUniform` block. This follows from the code; no experiment covers it yet.
 
 ## Tell the GUI from the world
 
@@ -39,7 +41,7 @@ With the **Improved Transparency** graphics option, translucent terrain, entitie
 - **Changed before**, the tint looks the same with the option on or off.
 - **Overwritten after**, the color skips the OIT weighting. The water and glass come out brighter and more opaque with the option on.
 
-If you change alpha, change it in the `OIT_ALPHA_ONLY` path too, so the transmittance passes see the same alpha as the color pass.
+If you change alpha, change it in the `OIT_ALPHA_ONLY` path too, so the transmittance passes see the same alpha as the color pass *(code)*.
 
 The option is off by default. To turn it on from `options.txt`, also set `graphicsPreset:"custom"`: a named preset ("fancy"…) re-applies its own values when the options load. `tools/launch.py --option` handles this.
 
@@ -62,7 +64,7 @@ A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanil
 
 ## Animate
 
-- **Use `GameTime` from `Globals`**, available to every core program and every post pass. It is `((game ticks % 24000) + partial tick) / 24000`: it goes from 0 to 1 every 24000 ticks (20 minutes), then **wraps back to 0** *(code)*. For a seamless loop, use a whole number of periods: `sin(GameTime * 6.2831853 * N)` repeats N times per wrap, that is every 24000 / N ticks. See [terrain-wave](../examples/terrain-wave/).
+- **Use `GameTime` from `Globals`**, available to almost every core program (see [core-shaders.md](reference/core-shaders.md)) and to every post pass. It is `((game ticks % 24000) + partial tick) / 24000`: it goes from 0 to 1 every 24000 ticks (20 minutes), then **wraps back to 0** *(code)*. For a seamless loop, use a whole number of periods: `sin(GameTime * 6.2831853 * N)` repeats N times per wrap, that is every 24000 / N ticks. See [terrain-wave](../examples/terrain-wave/).
 - **`CameraOffset` and `CameraBlockPos` give the camera position:** `CameraBlockPos` is the block the camera is in, and `CameraOffset` is `CameraBlockPos - camera position`, between -1 and 0 on each axis *(code)*.
 - **Post-effect uniforms from the JSON are constants**, so they can't drive an animation ([Post effects](post-effects.md)).
 

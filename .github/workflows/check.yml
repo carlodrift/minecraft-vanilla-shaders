@@ -36,3 +36,6 @@ jobs:
         run: |
           python3 tools/reference.py
           git diff --exit-code -- reference docs/reference
+
+      - name: Markdown links resolve
+        run: python3 tools/check_links.py

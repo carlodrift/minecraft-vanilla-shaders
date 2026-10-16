@@ -53,11 +53,11 @@ Generated with `tools/vanilla.py diff` between the installed versions 1.21.8, 1.
 
 - **26.2 — item lighting moves to the fragment shader**, as entities already did. `item.vsh` now outputs `lightMapColor` and `overlayColor`, and `item.fsh` multiplies them. To make a texel ignore lighting, skip `color *= lightMapColor` in the fragment shader. Replacing the color in the vertex shader no longer works. See [emissive-entities](../examples/emissive-entities/).
 - **26.2 — the depth buffer is reversed** ([minecraft.wiki history](https://minecraft.wiki/w/Shader#History)): 1 is near, 0 is far, as measured in 26.3 ([exp 57](../experiments/57-depth-input/)). Tests like `depth > 0.99` for "far away" are now inverted.
-- **26.3 — entity previews in the GUI use their own lightmap**, so they stay lit at night ([How a frame is drawn](rendering.md)). Workarounds for a black lightmap in inventory previews are no longer needed.
+- **In 26.3, entity previews in the GUI use their own lightmap**, so they stay lit at night ([How a frame is drawn](rendering.md)). Workarounds from older packs for a black lightmap in inventory previews can go.
 
 ## A worked port
 
-Porting three files of a real pack (an entity, item and particle "emissive" system) taught the following:
+Porting the shaders of a real pack (an "emissive" system for entities, items and particles: four programs and an include library) taught the following:
 
 - **Most of the old file was not the pack's own code.** It was vanilla from an older version, or a workaround that no longer applied. The pack's own changes came down to a few dozen lines.
 - **An include library had a `#version`**, which is fine before 26.3 but fails now (exp 09).

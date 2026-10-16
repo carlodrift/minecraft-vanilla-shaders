@@ -10,9 +10,9 @@ Each frame in which a world is rendered with a player, the game builds a list of
 
 1. **`minecraft:end_of_frame`**, always requested. Vanilla does not ship one, so without a pack the log contains `Requested post effect does not exist: minecraft:end_of_frame`. This warning is harmless.
 2. **The effects added with `/posteffect`**, in the order they were added.
-3. **The effect of the mob being spectated:** `minecraft:creeper`, `minecraft:spider`, or `minecraft:invert` for an enderman.
+3. **The effect of the mob being spectated:** `minecraft:creeper` for a creeper, `minecraft:spider` for a spider or cave spider, `minecraft:invert` for an enderman.
 
-They run after the world, after the glowing-entity outline is drawn onto it, and before the GUI. The HUD, menus and chat are never affected *(code)*. Menu blur (`minecraft:blur`) and the glowing outline (`minecraft:entity_outline`) are separate, built-in uses of the same system.
+They run after the world, the hand and held item, and the glowing-entity outline, and before the GUI. The HUD, menus and chat are never affected *(code)*. Menu blur (`minecraft:blur`) and the glowing outline (`minecraft:entity_outline`) are separate, built-in uses of the same system.
 
 An effect that fails is skipped for the rest of the session, until the next resource reload *(code)*.
 
