@@ -13,7 +13,11 @@ Each experiment is a directory with an experiment.json:
         {"path": "assets/minecraft/shaders/core/position_color.fsh",
          "vanilla": "assets/minecraft/shaders/core/position_color.fsh",   # start from the game's file
          "edits": [{"find": "...", "replace": "..."}]},                    # each find must match once
-        {"path": "assets/mylib/shaders/include/x.glsl", "content": "..."} # or a file written as-is
+        {"path": "assets/mylib/shaders/include/x.glsl", "content": "..."}, # or a file written as-is
+        {"path": "assets/minecraft/textures/entity/creeper/creeper.png",     # or a vanilla PNG whose dark
+         "vanilla_image": "assets/minecraft/textures/entity/creeper/creeper.png",  # pixels in a region get
+         "mark": {"region": [8, 8, 16, 16], "max_brightness": 150, "alpha": 254,   # a marker alpha
+                  "color": [120, 255, 140]}}                                       # (and optionally a color)
       ],
       "scene": {                       # optional: in game, join a test world and take a screenshot
         "commands": ["posteffect add @s mylib:gray"],
@@ -36,6 +40,9 @@ import sys
 import tempfile
 import zipfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import pngutil  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MC = os.path.expanduser("~/Library/Application Support/minecraft")
 
@@ -55,6 +62,20 @@ def build(exp, name, jar, out_dir, pack_format):
                 if count != 1:
                     raise SystemExit(f"{name}: edit matches {count} times in {spec['vanilla']}: {edit['find']!r}")
                 text = text.replace(edit["find"], edit["replace"])
+        elif "vanilla_image" in spec:
+            # Copy a vanilla PNG, marking the dark pixels of a region with an alpha (and a color) (see "mark").
+            width, height, rows = pngutil.read(jar.read(spec["vanilla_image"]))
+            mark = spec["mark"]
+            x0, y0, x1, y1 = mark["region"]
+            for y in range(y0, y1):
+                for x in range(x0, x1):
+                    if rows[y][x][3] == 255 and sum(rows[y][x][:3]) <= mark["max_brightness"]:
+                        rows[y][x] = list(mark.get("color", rows[y][x][:3])) + [mark["alpha"]]
+            target = os.path.join(pack, spec["path"])
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "wb") as f:
+                f.write(pngutil.write(width, height, rows))
+            continue
         else:
             text = spec["content"]
         target = os.path.join(pack, spec["path"])

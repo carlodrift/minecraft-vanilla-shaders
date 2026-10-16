@@ -6,6 +6,7 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 |---|---|
 | [terrain-wave](terrain-wave/) | Core vertex shader: displace chunk geometry in `core/terrain.vsh` |
 | [depth-outlines](depth-outlines/) | Post effect: edge detection on depth, applied on every frame through `end_of_frame` |
+| [emissive-entities](emissive-entities/) | Core fragment shader + texture: pixels marked with alpha 254 ignore the lightmap |
 
 An example is built from your installed game: vanilla files plus the edits in its `example.json`, and its own files. This keeps vanilla files out of the repository.
 

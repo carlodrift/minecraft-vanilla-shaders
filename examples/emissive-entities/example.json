@@ -1,0 +1,54 @@
+{
+  "title": "Emissive entity pixels: texels with alpha 254 ignore the lightmap",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/entity.fsh",
+      "vanilla": "assets/minecraft/shaders/core/entity.fsh",
+      "edits": [
+        {
+          "find": "vec4 calculateFinalColor(vec4 color) {",
+          "replace": "// Set in main() for texels marked as emissive (alpha 254).\nbool emissivePixel = false;\n\nvec4 calculateFinalColor(vec4 color) {"
+        },
+        {
+          "find": "    #ifndef EMISSIVE\n    color *= lightMapColor;\n    #endif",
+          "replace": "    #ifndef EMISSIVE\n    if (!emissivePixel) {\n        color *= lightMapColor;\n    }\n    #endif"
+        },
+        {
+          "find": "    vec4 color = texture(Sampler0, texCoord0);\n",
+          "replace": "    vec4 color = texture(Sampler0, texCoord0);\n    // Texels with alpha 254 are emissive: drawn opaque, ignoring the lightmap.\n    if (abs(color.a * 255.0 - 254.0) < 0.5) {\n        emissivePixel = true;\n        color.a = 1.0;\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/textures/entity/creeper/creeper.png",
+      "vanilla_image": "assets/minecraft/textures/entity/creeper/creeper.png",
+      "mark": {
+        "region": [
+          8,
+          8,
+          16,
+          16
+        ],
+        "max_brightness": 150,
+        "alpha": 254,
+        "color": [
+          120,
+          255,
+          140
+        ]
+      }
+    }
+  ],
+  "scene": {
+    "commands": [
+      "gamerule spawn_mobs false",
+      "difficulty easy",
+      "time set 18000",
+      "summon creeper -14 4 6 {NoAI:1b,PersistenceRequired:1b,Rotation:[180f,0f]}",
+      "summon creeper -11 4 7 {NoAI:1b,PersistenceRequired:1b,Rotation:[200f,0f]}",
+      "gamemode spectator",
+      "tp @s -12.5 5.6 1.5 0 5"
+    ]
+  }
+}
