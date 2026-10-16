@@ -1,0 +1,68 @@
+# Tools
+
+All tools run against a Minecraft installation from the official launcher. Install the version once from the launcher.
+
+Requirements:
+- Java 25 or newer, on `PATH` or in the `JAVA` environment variable.
+- Python 3.
+- macOS. The paths and the launch arguments assume macOS for now.
+
+The tools load the game's own classes and libraries from `~/Library/Application Support/minecraft`. Nothing from the game is copied into this repository.
+
+## `mcshaders check [pack]`
+
+```sh
+tools/mcshaders check path/to/resource-pack
+```
+
+This checks a resource pack's shaders the way the game loads them, in a few seconds, without launching the game. Without a pack, it checks vanilla.
+
+**What it does:**
+- **Compiles** every variant of every program the pack touches, with shaderc and the game's compiler options, once for each combination of the three device-dependent defines.
+- **Validates** every pipeline as the game does after compiling: vertex inputs against the vertex format, varyings between the two programs, and uniforms against the pipeline.
+- **Includes post effects**, both the vanilla ones and the pack's own `post_effect/*.json`.
+
+Each problem is printed once, with the pipelines it breaks. The exit status is non-zero if anything fails.
+
+## `mcshaders pipelines`
+
+```sh
+tools/mcshaders pipelines > pipelines.jsonl
+```
+
+Prints every render pipeline of the game as one JSON object per line: programs, defines, uniforms, vertex format and render state.
+
+## `reference.py`
+
+```sh
+python3 tools/reference.py
+```
+
+Regenerates `reference/<version>/pipelines.json` and the pages in `docs/reference/` from the installed game.
+
+## `launch.py`
+
+```sh
+python3 tools/launch.py --gamedir build/game --pack path/to/pack --backend vulkan
+python3 tools/launch.py --gamedir build/game --pack path/to/pack --backend opengl --seconds 20
+```
+
+This starts the game offline, in its own game directory, so your worlds and settings are left alone.
+
+**Options:**
+- `--pack` copies the pack in and enables it.
+- `--backend` picks OpenGL or Vulkan.
+- `--seconds` stops the game after that many seconds and prints the shader-related lines of the log.
+- `--world` joins a singleplayer world directly. The world must exist in the game directory's `saves/`.
+
+## `experiments.py`
+
+```sh
+python3 tools/experiments.py            # check every experiment
+python3 tools/experiments.py --ingame   # also load each one in the game, on OpenGL and Vulkan
+python3 tools/experiments.py 20 21      # only experiments whose id starts with 20 or 21
+```
+
+This builds each experiment's pack from the installed game's vanilla files, runs it, and rewrites [experiments/RESULTS.md](../experiments/RESULTS.md).
+
+All tools default to version 26.3. Set `MC_VERSION` to use another version for `mcshaders`, or pass `--version` to the Python tools.
