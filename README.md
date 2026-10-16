@@ -7,10 +7,10 @@ Every statement here is either checked against the game's code, reproduced by an
 ## Contents
 
 - [Writing shaders for 26.3](docs/writing-shaders.md): how the game loads shaders, and the rules a shader must follow to load.
-- [How a frame is drawn](docs/rendering.md): the drawing order, and what each core program draws, with screenshots.
-- [Porting to 26.3](docs/porting.md): method, checklist, and what changed version by version since 1.21.8.
-- [Techniques](docs/techniques.md): texture markers, telling GUI from world, translucency with Improved Transparency, tagging pixels for post effects, replacing includes, animating, depth, displacement.
 - [Post effects](docs/post-effects.md): `end_of_frame`, `/posteffect`, the JSON format, samplers, uniforms and depth.
+- [How a frame is drawn](docs/rendering.md): the drawing order, and what each core program draws, with screenshots.
+- [Techniques](docs/techniques.md): texture markers, telling GUI from world, translucency with Improved Transparency, tagging pixels for post effects, replacing includes, animating, depth, displacement.
+- [Porting to 26.3](docs/porting.md): method, checklist, and what changed version by version since 1.21.8.
 - Reference, generated from the game:
   - [Core shader programs](docs/reference/core-shaders.md): for each program, its pipelines, defines, available uniforms (with the `#ifdef` that guards each one) and vertex inputs.
   - [Uniforms](docs/reference/uniforms.md): every uniform block (with its std140 layout) and sampler.
@@ -19,11 +19,20 @@ Every statement here is either checked against the game's code, reproduced by an
 - [Experiments](experiments/) and their [results](experiments/RESULTS.md), in game on OpenGL and Vulkan.
 - [Tools](tools/): `mcshaders check` validates a pack the way the game does, without launching it.
 
+## Quick start
+
+Requirements: macOS, Java 25+, Python 3, and Minecraft 26.3 installed once with the official launcher.
+
+```sh
+tools/mcshaders check path/to/your/pack        # compile and validate your shaders like the game does
+python3 tools/examples.py emissive-glow --out ~/Desktop   # build an example pack to try in game
+```
+
 ## Status
 
 Tested on macOS (Apple M4 Pro): OpenGL 4.1 Metal and Vulkan through MoltenVK. Other GPUs and drivers are not covered yet. The tools run on macOS only for now.
 
-A [GitHub Actions workflow](.github/workflows/check.yml) downloads the 26.3 client from Mojang and checks that vanilla, every experiment and every example still behave as documented, and that the generated reference is up to date.
+A [GitHub Actions workflow](.github/workflows/check.yml) downloads the 26.3 client from Mojang. It then checks, without launching the game, that vanilla shaders and every example pass `tools/mcshaders check`, that every experiment still gets its expected verdict, that the generated reference is up to date, and that every link resolves. The in-game results come from local runs and are recorded in [RESULTS.md](experiments/RESULTS.md).
 
 ## License
 
