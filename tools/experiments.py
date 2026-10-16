@@ -40,10 +40,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MC = os.path.expanduser("~/Library/Application Support/minecraft")
 
 
-def build(exp_dir, jar, out_dir, pack_format):
-    with open(os.path.join(exp_dir, "experiment.json")) as f:
-        exp = json.load(f)
-    pack = os.path.join(out_dir, os.path.basename(exp_dir))
+def build(exp, name, jar, out_dir, pack_format):
+    """Build the pack described by `exp` (experiment.json / example.json content) into out_dir/name."""
+    pack = os.path.join(out_dir, name)
     shutil.rmtree(pack, ignore_errors=True)
     os.makedirs(pack)
     with open(os.path.join(pack, "pack.mcmeta"), "w") as f:
@@ -54,7 +53,7 @@ def build(exp_dir, jar, out_dir, pack_format):
             for edit in spec.get("edits", []):
                 count = text.count(edit["find"])
                 if count != 1:
-                    raise SystemExit(f"{exp_dir}: edit matches {count} times in {spec['vanilla']}: {edit['find']!r}")
+                    raise SystemExit(f"{name}: edit matches {count} times in {spec['vanilla']}: {edit['find']!r}")
                 text = text.replace(edit["find"], edit["replace"])
         else:
             text = spec["content"]
@@ -155,7 +154,9 @@ def main():
             results = json.load(f)
 
     for d in dirs:
-        exp, pack = build(os.path.join(exp_root, d), jar, out_dir, pack_format)
+        with open(os.path.join(exp_root, d, "experiment.json")) as f:
+            exp = json.load(f)
+        exp, pack = build(exp, d, jar, out_dir, pack_format)
         row = results.get(d, {})
         row.update(title=exp["title"], expect=exp["expect"], version=args.version)
         row["check"], row["check_message"] = run_check(pack, env)

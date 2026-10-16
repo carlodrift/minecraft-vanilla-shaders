@@ -1,0 +1,26 @@
+{
+  "title": "Terrain wave: ripple all chunk geometry in the vertex shader",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "    vec3 pos = Position + (ChunkPosition - CameraBlockPos) + CameraOffset;\n",
+          "replace": "    vec3 pos = Position + (ChunkPosition - CameraBlockPos) + CameraOffset;\n    // World position of the vertex: its position inside the chunk section plus the section origin.\n    vec3 worldPos = Position + vec3(ChunkPosition);\n    pos.y += 1.2 * sin(worldPos.x * 0.35 + GameTime * 1200.0) * cos(worldPos.z * 0.35);\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "fill -12 3 4 18 3 4 minecraft:red_wool",
+      "fill -12 3 10 18 3 10 minecraft:lime_wool",
+      "fill -12 3 16 18 3 16 minecraft:blue_wool",
+      "fill -12 3 22 18 3 22 minecraft:yellow_wool",
+      "gamemode spectator",
+      "tp @s 3 16 -10 0 35"
+    ]
+  }
+}

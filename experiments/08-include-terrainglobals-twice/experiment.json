@@ -1,0 +1,16 @@
+{
+  "title": "Vanilla `terrainglobals.glsl` has a broken include guard (typo): including it twice fails",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <minecraft:terrainglobals.glsl>\n"
+        }
+      ]
+    }
+  ]
+}

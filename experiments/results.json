@@ -97,6 +97,20 @@
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": "ShaderCompileException: Couldn't parse GLSL: minecraft:core/position_color:4: error: '#' : invalid directive: moj_import"
   },
+  "08-include-terrainglobals-twice": {
+    "check": "fail",
+    "check_message": "minecraft:terrainglobals.glsl:4: error: 'TerrainUniform' : Cannot reuse block name within the same interface: uniform",
+    "expect": "fail",
+    "ingame_date": "2026-10-17",
+    "opengl": "fail",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "ShaderCompileException: Couldn't parse GLSL: minecraft:terrainglobals.glsl:4: error: 'TerrainUniform' : Cannot reuse block name within the same interface: uniform",
+    "title": "Vanilla `terrainglobals.glsl` has a broken include guard (typo): including it twice fails",
+    "version": "26.3",
+    "vulkan": "fail",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": "ShaderCompileException: Couldn't parse GLSL: minecraft:terrainglobals.glsl:4: error: 'TerrainUniform' : Cannot reuse block name within the same interface: uniform"
+  },
   "10-comment-before-version": {
     "check": "pass",
     "check_message": "",

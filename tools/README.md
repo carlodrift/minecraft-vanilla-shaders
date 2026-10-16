@@ -54,6 +54,8 @@ This starts the game offline, in its own game directory, so your worlds and sett
 - `--backend` picks OpenGL or Vulkan.
 - `--seconds` stops the game after that many seconds and prints the shader-related lines of the log.
 - `--world` joins a singleplayer world directly. The world must exist in the game directory's `saves/`.
+- `--script` drives the game with the test agent (see below), for example to create a world, run commands and take screenshots.
+- `--size` sets the window size, for example `640x360`. The default is `854x480`. Screenshots come out at twice that on Retina screens.
 
 ## `gallery.py`
 
@@ -67,6 +69,10 @@ For each core fragment program, this builds a pack that makes the vanilla progra
 ## `agent/ShaderTestAgent.java`
 
 A Java agent that `launch.py --script` loads into the game. It creates a fresh flat test world, runs commands, hides the HUD, takes screenshots with the game's own screenshot function, and quits. No mod is installed and no OS screen-capture permission is needed. The script format is in the file's header.
+
+## `examples.py`
+
+Checks, films and builds the [examples](../examples/). Run `python3 tools/examples.py --help` for the options.
 
 ## `experiments.py`
 

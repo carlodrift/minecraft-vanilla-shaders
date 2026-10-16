@@ -54,7 +54,7 @@ Vanilla pipelines always reference `minecraft:core/...`. To change how something
   - **Quotes do not mean "relative to this file":** a `"helper.glsl"` placed next to the shader in `core/` is not found (exp 02).
   - **Identifier rules apply:** lowercase letters, digits, `_ - . /` only. `DynamicTransforms.glsl` fails with `malformed id` (exp 05).
 - **`#moj_import` no longer exists.** It fails with `invalid directive: moj_import` (exp 07).
-- **Vanilla includes have include guards**, so including one twice is harmless (exp 06). Give your own includes guards too:
+- **Vanilla includes have include guards**, so including one twice is harmless (exp 06). The exception is `terrainglobals.glsl`: a typo in its guard (`MINECRAFT_TERRAINGLOBLAS_GLSL`) breaks it, and including it twice fails with `Cannot reuse block name` (exp 08). Give your own includes guards too:
 
 ```glsl
 #ifndef MYLIB_NOISE_GLSL
