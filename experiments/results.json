@@ -111,6 +111,20 @@
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": "ShaderCompileException: Couldn't parse GLSL: minecraft:terrainglobals.glsl:4: error: 'TerrainUniform' : Cannot reuse block name within the same interface: uniform"
   },
+  "09-include-with-version": {
+    "check": "fail",
+    "check_message": "mylib:with_version.glsl:1: error: '#version' : must occur first in shader",
+    "expect": "fail",
+    "ingame_date": "2026-10-17",
+    "opengl": "fail",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "ShaderCompileException: Couldn't parse GLSL: mylib:with_version.glsl:1: error: '#version' : must occur first in shader",
+    "title": "An include file may not contain `#version` (vanilla includes did until 26.2)",
+    "version": "26.3",
+    "vulkan": "fail",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": "ShaderCompileException: Couldn't parse GLSL: mylib:with_version.glsl:1: error: '#version' : must occur first in shader"
+  },
   "10-comment-before-version": {
     "check": "pass",
     "check_message": "",

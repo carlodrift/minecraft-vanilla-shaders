@@ -15,6 +15,7 @@ Tested on: OpenGL 4.1 Metal - 90.5; Vulkan 1.2.350 MoltenVK 1.4.2
 | [06-include-twice](06-include-twice/) Including the same vanilla file twice is harmless (include guards) | pass | pass | pass | pass |  |  |
 | [07-moj-import](07-moj-import/) `#moj_import` (pre-26.3 syntax) is no longer understood | fail | fail | fail | fail | minecraft:shaders/core/position_color.fsh:4: error: '#' : invalid directive: moj_import |  |
 | [08-include-terrainglobals-twice](08-include-terrainglobals-twice/) Vanilla `terrainglobals.glsl` has a broken include guard (typo): including it twice fails | fail | fail | fail | fail | minecraft:terrainglobals.glsl:4: error: 'TerrainUniform' : Cannot reuse block name within the same interface: uniform |  |
+| [09-include-with-version](09-include-with-version/) An include file may not contain `#version` (vanilla includes did until 26.2) | fail | fail | fail | fail | mylib:with_version.glsl:1: error: '#version' : must occur first in shader |  |
 | [10-comment-before-version](10-comment-before-version/) A comment may precede `#version` | pass | pass | pass | pass |  |  |
 | [11-define-before-version](11-define-before-version/) A preprocessor directive may not precede `#version` | fail | fail | fail | fail | minecraft:shaders/core/position_color.fsh:2: error: '#version' : must occur first in shader |  |
 | [12-version-450](12-version-450/) `#version 450` is accepted, on both backends | pass | pass | pass | pass |  |  |

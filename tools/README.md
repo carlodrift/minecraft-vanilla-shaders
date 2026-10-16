@@ -74,6 +74,15 @@ A Java agent that `launch.py --script` loads into the game. It creates a fresh f
 
 Checks, films and builds the [examples](../examples/). Run `python3 tools/examples.py --help` for the options.
 
+## `vanilla.py`
+
+```sh
+python3 tools/vanilla.py extract 26.1.2 build/vanilla-26.1.2   # vanilla shaders of an installed version
+python3 tools/vanilla.py diff 26.2 26.3 [-u]                   # what changed between two versions
+```
+
+Used by [Porting to 26.3](../docs/porting.md).
+
 ## `experiments.py`
 
 ```sh

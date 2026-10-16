@@ -1,0 +1,20 @@
+{
+  "title": "An include file may not contain `#version` (vanilla includes did until 26.2)",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>",
+          "replace": "#include <minecraft:oit.glsl>\n#include <mylib:with_version.glsl>"
+        }
+      ]
+    },
+    {
+      "path": "assets/mylib/shaders/include/with_version.glsl",
+      "content": "#version 330\n\nfloat withVersionHelper(float x) { return x; }\n"
+    }
+  ]
+}
