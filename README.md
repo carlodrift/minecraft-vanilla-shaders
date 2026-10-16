@@ -21,7 +21,9 @@ Every statement here is either checked against the game's code, reproduced by an
 
 ## Status
 
-Work in progress. Tested on macOS (Apple M4 Pro): OpenGL 4.1 Metal and Vulkan through MoltenVK. Other GPUs and drivers are not covered yet.
+Tested on macOS (Apple M4 Pro): OpenGL 4.1 Metal and Vulkan through MoltenVK. Other GPUs and drivers are not covered yet. The tools run on macOS only for now.
+
+A [GitHub Actions workflow](.github/workflows/check.yml) downloads the 26.3 client from Mojang and checks that vanilla, every experiment and every example still behave as documented, and that the generated reference is up to date.
 
 ## License
 

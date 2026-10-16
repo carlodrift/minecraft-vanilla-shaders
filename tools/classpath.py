@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-mc = os.path.expanduser("~/Library/Application Support/minecraft")
+mc = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 version = sys.argv[1]
 with open(os.path.join(mc, "versions", version, version + ".json")) as f:
     meta = json.load(f)

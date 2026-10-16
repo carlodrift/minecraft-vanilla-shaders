@@ -42,6 +42,7 @@ def main():
     gamedir = os.path.join(ROOT, "build", "game")
     os.makedirs(gamedir, exist_ok=True)
 
+    failed = 0
     for name in names:
         src = os.path.join(root, name)
         with open(os.path.join(src, "example.json")) as f:
@@ -59,8 +60,11 @@ def main():
         if args.out:
             line += f" -> {pack}"
         print(line)
+        failed += verdict != "pass"
     if not args.out:
         shutil.rmtree(out_dir)
+    if failed:
+        raise SystemExit(f"{failed} example(s) failed tools/mcshaders check")
 
 
 if __name__ == "__main__":

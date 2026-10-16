@@ -18,7 +18,8 @@ import subprocess
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MC = os.path.expanduser("~/Library/Application Support/minecraft")
+# The launcher's directory; MINECRAFT_DIR overrides it (e.g. for a client fetched by tools/fetch.py).
+MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 OIT_BOOKKEEPING = {"OIT_WAVELET_RANK", "OIT_COEFF_COUNT", "OIT_COEFF_ATTACHMENT_COUNT"}
 
 

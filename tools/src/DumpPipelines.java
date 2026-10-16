@@ -29,7 +29,9 @@ public class DumpPipelines {
             sb.append("},\"flags\":[");
             sb.append(String.join(",", new TreeSet<>(p.getShaderDefines().flags()).stream().map(DumpPipelines::q).toList()));
             sb.append("],\"uniforms\":[");
+            // Sorted: the game's own order is not stable from one run to the next.
             sb.append(String.join(",", BindGroupLayout.flattenUniforms(p.getBindGroupLayouts()).stream()
+                .sorted(Comparator.comparing(BindGroupLayout.UniformDescription::name))
                 .map(u -> "{\"name\":" + q(u.name()) + ",\"type\":" + q(u.type().name()) + "}").toList()));
             sb.append("],\"vertex_formats\":[");
             List<String> formats = new ArrayList<>();

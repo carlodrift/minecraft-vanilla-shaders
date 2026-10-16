@@ -47,7 +47,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pngutil  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MC = os.path.expanduser("~/Library/Application Support/minecraft")
+# The launcher's directory; MINECRAFT_DIR overrides it (e.g. for a client fetched by tools/fetch.py).
+MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 
 
 def build(exp, name, jar, out_dir, pack_format):
@@ -194,6 +195,7 @@ def main():
         with open(results_path) as f:
             results = json.load(f)
 
+    mismatches = 0
     for d in dirs:
         with open(os.path.join(exp_root, d, "experiment.json")) as f:
             exp = json.load(f)
@@ -213,6 +215,7 @@ def main():
                 line += f" {backend}={verdict}"
         mismatch = {row.get(k) for k in ("check", "opengl", "vulkan") if row.get(k)} != {exp["expect"]}
         print(line + ("   <-- MISMATCH" if mismatch else ""))
+        mismatches += mismatch
         results[d] = row
 
     with open(results_path, "w") as f:
@@ -220,6 +223,8 @@ def main():
         f.write("\n")
     write_markdown(results, os.path.join(exp_root, "RESULTS.md"))
     shutil.rmtree(out_dir)
+    if mismatches:
+        raise SystemExit(f"{mismatches} experiment(s) did not give the expected result")
 
 
 def write_markdown(results, path):

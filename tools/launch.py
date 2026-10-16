@@ -19,7 +19,8 @@ import time
 import uuid
 import zipfile
 
-MC = os.path.expanduser("~/Library/Application Support/minecraft")
+# The launcher's directory; MINECRAFT_DIR overrides it (e.g. for a client fetched by tools/fetch.py).
+MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 
 
 def allowed(rules):

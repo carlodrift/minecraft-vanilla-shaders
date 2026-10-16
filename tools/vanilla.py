@@ -4,14 +4,16 @@
     python3 tools/vanilla.py diff 26.2 26.3          # files added, removed and changed between two versions
     python3 tools/vanilla.py diff 26.2 26.3 -u       # with a unified diff of the changed files
 
-Versions must be installed by the launcher (~/Library/Application Support/minecraft/versions).
+Versions must be installed by the launcher (~/Library/Application Support/minecraft/versions),
+or in MINECRAFT_DIR (see tools/fetch.py).
 """
 import argparse
 import difflib
 import os
 import zipfile
 
-MC = os.path.expanduser("~/Library/Application Support/minecraft")
+# The launcher's directory; MINECRAFT_DIR overrides it (e.g. for a client fetched by tools/fetch.py).
+MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 PREFIXES = ("assets/minecraft/shaders/", "assets/minecraft/post_effect/")
 
 

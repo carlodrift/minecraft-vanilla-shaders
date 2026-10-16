@@ -7,7 +7,15 @@ Requirements:
 - Python 3.
 - macOS. The paths and the launch arguments assume macOS for now.
 
-The tools load the game's own classes and libraries from `~/Library/Application Support/minecraft`. Nothing from the game is copied into this repository.
+The tools load the game's own classes and libraries from `~/Library/Application Support/minecraft`, or from `$MINECRAFT_DIR` if set. Nothing from the game is copied into this repository.
+
+## `fetch.py`
+
+```sh
+MINECRAFT_DIR=build/minecraft python3 tools/fetch.py 26.3
+```
+
+Downloads the vanilla client jar and its libraries from Mojang into `$MINECRAFT_DIR` (SHA-1 checked), without the official launcher. That is enough for `mcshaders`, `reference.py`, `vanilla.py`, `experiments.py` and `examples.py` without `--ingame` or `--screenshots`. Launching the game also needs the assets, which only the launcher installs. The [CI workflow](../.github/workflows/check.yml) uses it.
 
 ## `mcshaders check [pack]`
 

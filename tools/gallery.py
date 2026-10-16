@@ -18,7 +18,8 @@ import tempfile
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MC = os.path.expanduser("~/Library/Application Support/minecraft")
+# The launcher's directory; MINECRAFT_DIR overrides it (e.g. for a client fetched by tools/fetch.py).
+MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 
 # Programs that never draw into the world view (atlases, depth copies, OIT bookkeeping, title screen).
 NOT_IN_SCENE = {"animate_sprite_blit", "animate_sprite_interpolate", "blit_depth", "integrate_depth", "lightmap",

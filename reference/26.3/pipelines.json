@@ -8,16 +8,16 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "SpriteAnimationInfo",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Sprite",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "SpriteAnimationInfo",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -36,20 +36,20 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "SpriteAnimationInfo",
-    "type": "UNIFORM_BUFFER"
+    "name": "CurrentSprite",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CurrentSprite",
+    "name": "NextSprite",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "NextSprite",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "SpriteAnimationInfo",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -73,6 +73,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -89,16 +97,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -154,6 +154,18 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "GlintSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -170,20 +182,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "GlintSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -238,6 +238,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -254,16 +262,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -318,6 +318,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -334,16 +342,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -395,6 +395,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -411,16 +419,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -470,6 +470,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -479,10 +483,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -529,6 +529,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -538,10 +542,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -660,8 +660,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -672,8 +672,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -717,6 +717,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -733,16 +741,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -792,8 +792,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -804,8 +804,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -839,6 +839,18 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "CloudFaces",
+    "type": "TEXEL_BUFFER"
+   },
+   {
+    "name": "CloudInfo",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -849,18 +861,6 @@
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "CloudInfo",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "CloudFaces",
-    "type": "TEXEL_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -879,8 +879,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -891,8 +891,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -930,11 +930,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -942,12 +946,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -991,7 +991,7 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -999,19 +999,19 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -1056,11 +1056,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1072,15 +1076,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -1127,16 +1127,12 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
@@ -1144,6 +1140,10 @@
    },
    {
     "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -1204,11 +1204,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1294,11 +1294,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1337,11 +1337,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1380,6 +1380,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -1389,10 +1393,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -1431,6 +1431,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -1447,16 +1455,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -1508,11 +1508,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1526,10 +1530,6 @@
    {
     "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -1561,11 +1561,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1579,10 +1583,6 @@
    {
     "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -1612,8 +1612,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -1624,8 +1624,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -1670,6 +1670,10 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -1679,10 +1683,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -1741,6 +1741,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -1757,19 +1765,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -1822,6 +1822,14 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -1838,19 +1846,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -1906,6 +1906,18 @@
   ],
   "uniforms": [
    {
+    "name": "DissolveMaskSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -1918,27 +1930,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DissolveMaskSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -1993,6 +1993,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -2009,19 +2017,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -2096,6 +2096,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -2105,10 +2109,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -2163,6 +2163,14 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -2179,19 +2187,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -2244,6 +2244,18 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "GlintSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -2260,23 +2272,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler1",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "GlintSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -2327,6 +2327,14 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -2343,19 +2351,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -2410,6 +2410,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -2426,19 +2434,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -2491,6 +2491,14 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -2507,19 +2515,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -2575,11 +2575,19 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler1",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Lighting",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -2591,16 +2599,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Lighting",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler1",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -2654,6 +2654,10 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -2663,10 +2667,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -2721,8 +2721,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -2733,8 +2733,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -2772,6 +2772,18 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "CloudFaces",
+    "type": "TEXEL_BUFFER"
+   },
+   {
+    "name": "CloudInfo",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -2782,18 +2794,6 @@
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "CloudInfo",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "CloudFaces",
-    "type": "TEXEL_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -2812,6 +2812,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -2821,10 +2825,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -2863,11 +2863,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -2906,11 +2906,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -2949,8 +2949,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -2961,8 +2961,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3000,8 +3000,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -3012,8 +3012,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3053,8 +3053,8 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -3065,8 +3065,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3107,8 +3107,8 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -3119,8 +3119,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3158,11 +3158,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3201,8 +3201,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -3213,8 +3213,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3252,8 +3252,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -3264,8 +3264,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3328,15 +3328,7 @@
   ],
   "uniforms": [
    {
-    "name": "Lighting",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3348,7 +3340,15 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Lighting",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3417,7 +3417,7 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3425,15 +3425,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3501,15 +3501,7 @@
   ],
   "uniforms": [
    {
-    "name": "Lighting",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3521,7 +3513,15 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Lighting",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3588,7 +3588,7 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -3596,16 +3596,16 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3643,11 +3643,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "LightmapInfo",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Globals",
+    "name": "LightmapInfo",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -3667,6 +3667,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -3676,10 +3680,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -3714,6 +3714,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -3723,10 +3727,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -3769,6 +3769,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -3778,10 +3782,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -3824,6 +3824,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -3833,10 +3837,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -3879,6 +3879,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -3888,10 +3892,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -3934,8 +3934,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -3946,8 +3946,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -3992,18 +3992,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -4012,16 +4000,28 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -4074,6 +4074,26 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -4086,32 +4106,12 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -4168,32 +4168,12 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "CloudInfo",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "CloudFaces",
     "type": "TEXEL_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "CloudInfo",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Coeff0",
@@ -4202,6 +4182,26 @@
    {
     "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -4227,26 +4227,6 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -4255,8 +4235,28 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -4305,28 +4305,28 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -4367,28 +4367,28 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -4433,28 +4433,28 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -4495,28 +4495,28 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -4558,18 +4558,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -4578,11 +4566,23 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -4630,18 +4630,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -4650,16 +4638,28 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -4718,6 +4718,26 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -4730,35 +4750,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -4817,6 +4817,26 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -4829,35 +4849,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -4918,6 +4918,26 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -4930,28 +4950,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Sampler1",
@@ -5012,18 +5012,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -5032,16 +5020,28 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -5102,6 +5102,26 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -5114,28 +5134,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -5192,32 +5192,12 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "CloudInfo",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "CloudFaces",
     "type": "TEXEL_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "CloudInfo",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Coeff0",
@@ -5226,6 +5206,26 @@
    {
     "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -5252,6 +5252,26 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -5264,35 +5284,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
+    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -5352,6 +5352,30 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "GlintSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -5364,39 +5388,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler1",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "GlintSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -5457,6 +5457,30 @@
   ],
   "uniforms": [
    {
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "GlintSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -5469,39 +5493,15 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler1",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "GlintSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler1",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -5564,18 +5564,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -5584,11 +5572,23 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -5630,7 +5630,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -5638,24 +5650,12 @@
     "type": "UNIFORM_BUFFER"
    },
    {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
-    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -5704,11 +5704,31 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -5717,26 +5737,6 @@
    },
    {
     "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -5787,20 +5787,8 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "TerrainUniform",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Coeff0",
@@ -5811,7 +5799,7 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -5819,11 +5807,23 @@
     "type": "UNIFORM_BUFFER"
    },
    {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -5875,22 +5875,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "TerrainUniform",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -5899,7 +5883,7 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -5907,8 +5891,24 @@
     "type": "UNIFORM_BUFFER"
    },
    {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "TerrainUniform",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -5971,18 +5971,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -5991,20 +5979,32 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6054,18 +6054,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -6074,20 +6062,32 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6137,18 +6137,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -6157,20 +6145,32 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6219,18 +6219,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -6239,20 +6227,32 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6302,18 +6302,6 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -6322,20 +6310,32 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6384,11 +6384,31 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "Coeff0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -6397,26 +6417,6 @@
    },
    {
     "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -6467,8 +6467,20 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
+    "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -6479,19 +6491,7 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Coeff1",
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -6532,19 +6532,15 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
     "name": "Coeff0",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "Coeff1",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -6554,6 +6550,10 @@
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [],
@@ -6580,6 +6580,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -6590,14 +6598,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -6651,8 +6651,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -6663,16 +6671,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6730,15 +6730,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "CloudFaces",
+    "type": "TEXEL_BUFFER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
+    "name": "CloudInfo",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -6746,12 +6742,16 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudInfo",
+    "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudFaces",
-    "type": "TEXEL_BUFFER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -6778,11 +6778,15 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -6790,12 +6794,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -6879,11 +6879,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -6930,11 +6930,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -6985,11 +6985,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -7036,11 +7036,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -7088,7 +7088,7 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -7096,11 +7096,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Projection",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -7149,6 +7149,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -7159,14 +7167,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -7225,8 +7225,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7237,16 +7245,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7305,8 +7305,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7317,16 +7325,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7385,8 +7385,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7397,16 +7405,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7464,6 +7464,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -7474,14 +7482,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -7543,8 +7543,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7555,16 +7563,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7622,15 +7622,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "CloudFaces",
+    "type": "TEXEL_BUFFER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
+    "name": "CloudInfo",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -7638,12 +7634,16 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudInfo",
+    "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudFaces",
-    "type": "TEXEL_BUFFER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -7671,8 +7671,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7683,16 +7691,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7751,8 +7751,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7763,16 +7771,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7831,8 +7831,16 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Lighting",
@@ -7843,16 +7851,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -7915,7 +7915,7 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -7923,11 +7923,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Projection",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -7970,7 +7970,7 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -7978,11 +7978,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Projection",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -8033,11 +8033,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -8047,14 +8055,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8105,11 +8105,15 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -8121,11 +8125,7 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -8186,16 +8186,16 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "TerrainUniform",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8259,6 +8259,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -8271,16 +8279,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8331,6 +8331,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -8343,16 +8351,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8403,6 +8403,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -8415,16 +8423,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8474,6 +8474,14 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -8486,16 +8494,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8546,6 +8546,10 @@
   ],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -8555,10 +8559,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -8613,11 +8613,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -8627,14 +8635,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8685,8 +8685,8 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -8697,8 +8697,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -8740,6 +8740,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -8750,18 +8762,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8815,6 +8815,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -8829,18 +8841,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -8898,15 +8898,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "CloudFaces",
+    "type": "TEXEL_BUFFER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
+    "name": "CloudInfo",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -8918,12 +8914,16 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudInfo",
+    "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudFaces",
-    "type": "TEXEL_BUFFER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -8950,18 +8950,6 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
@@ -8970,8 +8958,20 @@
     "type": "UNIFORM_BUFFER"
    },
    {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -9021,19 +9021,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -9076,19 +9076,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -9135,19 +9135,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -9190,19 +9190,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
     "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -9246,11 +9246,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Projection",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -9258,11 +9258,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -9311,6 +9311,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9321,18 +9333,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9391,6 +9391,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9405,18 +9417,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9475,6 +9475,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9489,18 +9501,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9559,6 +9559,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9573,18 +9585,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9642,6 +9642,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9652,18 +9664,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9725,6 +9725,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9739,18 +9751,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9808,15 +9808,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "CloudFaces",
+    "type": "TEXEL_BUFFER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Projection",
+    "name": "CloudInfo",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -9828,12 +9824,16 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudInfo",
+    "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "CloudFaces",
-    "type": "TEXEL_BUFFER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [],
@@ -9861,6 +9861,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9875,18 +9887,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -9945,6 +9945,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -9959,18 +9971,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10029,6 +10029,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -10043,18 +10055,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10117,11 +10117,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Projection",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -10129,11 +10129,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -10176,7 +10176,11 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -10184,15 +10188,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Projection",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -10243,11 +10243,23 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -10257,18 +10269,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10319,11 +10319,19 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -10335,15 +10343,7 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -10396,11 +10396,15 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -10412,12 +10416,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -10481,6 +10481,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -10493,20 +10505,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10557,6 +10557,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -10569,20 +10581,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10633,6 +10633,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -10645,20 +10657,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10708,6 +10708,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -10720,20 +10732,8 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10784,6 +10784,18 @@
   ],
   "uniforms": [
    {
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
@@ -10794,18 +10806,6 @@
    {
     "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10855,11 +10855,23 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DepthBoundsSampler",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -10869,18 +10881,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DepthBoundsSampler",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10931,8 +10931,12 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
+    "name": "DepthBoundsSampler",
     "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -10943,12 +10947,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DepthBoundsSampler",
+    "name": "Sampler0",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -10982,11 +10982,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -11021,11 +11021,19 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -11035,14 +11043,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -11084,8 +11084,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -11096,8 +11096,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11135,8 +11135,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -11147,8 +11147,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11186,8 +11186,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -11198,8 +11198,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11229,6 +11229,10 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
@@ -11238,10 +11242,6 @@
    },
    {
     "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -11284,7 +11284,7 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -11292,11 +11292,11 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Projection",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -11327,7 +11327,7 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -11335,19 +11335,19 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -11390,11 +11390,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -11406,15 +11410,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -11459,16 +11459,12 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
@@ -11476,6 +11472,10 @@
    },
    {
     "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -11618,28 +11618,28 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11683,28 +11683,28 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11748,28 +11748,28 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11814,8 +11814,8 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -11826,8 +11826,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11865,28 +11865,28 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -11930,8 +11930,8 @@
   ],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -11942,8 +11942,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -12007,7 +12007,7 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -12015,19 +12015,19 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Sampler0",
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
@@ -12070,11 +12070,19 @@
   "flags": [],
   "uniforms": [
    {
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -12084,14 +12092,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -12135,11 +12135,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -12151,15 +12155,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -12206,16 +12206,12 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
@@ -12223,6 +12219,10 @@
    },
    {
     "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -12283,8 +12283,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -12295,8 +12295,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
@@ -12334,11 +12334,11 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -12373,11 +12373,19 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "DynamicTransforms",
     "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Projection",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -12387,14 +12395,6 @@
    {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
-   },
-   {
-    "name": "Projection",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
    }
   ],
   "vertex_formats": [
@@ -12436,11 +12436,15 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Globals",
+    "name": "ChunkSection",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "TerrainUniform",
+    "name": "Fog",
+    "type": "UNIFORM_BUFFER"
+   },
+   {
+    "name": "Globals",
     "type": "UNIFORM_BUFFER"
    },
    {
@@ -12452,15 +12456,11 @@
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "Fog",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
-    "name": "ChunkSection",
+    "name": "TerrainUniform",
     "type": "UNIFORM_BUFFER"
    }
   ],
@@ -12505,16 +12505,12 @@
   ],
   "uniforms": [
    {
-    "name": "Globals",
-    "type": "UNIFORM_BUFFER"
-   },
-   {
     "name": "Fog",
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "Sampler2",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "Globals",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Projection",
@@ -12522,6 +12518,10 @@
    },
    {
     "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
+   },
+   {
+    "name": "Sampler2",
     "type": "COMBINED_IMAGE_SAMPLER"
    },
    {
@@ -12582,8 +12582,8 @@
   "flags": [],
   "uniforms": [
    {
-    "name": "Sampler0",
-    "type": "COMBINED_IMAGE_SAMPLER"
+    "name": "DynamicTransforms",
+    "type": "UNIFORM_BUFFER"
    },
    {
     "name": "Globals",
@@ -12594,8 +12594,8 @@
     "type": "UNIFORM_BUFFER"
    },
    {
-    "name": "DynamicTransforms",
-    "type": "UNIFORM_BUFFER"
+    "name": "Sampler0",
+    "type": "COMBINED_IMAGE_SAMPLER"
    }
   ],
   "vertex_formats": [
