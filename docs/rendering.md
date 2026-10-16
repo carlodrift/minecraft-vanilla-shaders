@@ -22,6 +22,7 @@ The order comes from the 26.3 client code. The screenshots come from [tools/gall
 8. **Outline blit**: the glowing outline is composited onto the world with `core/blit_screen`. *(code)*
 9. **Post effects**: `end_of_frame`, then `/posteffect`, then the spectated mob's (see [Post effects](post-effects.md)). They apply to everything above, **including the hand**. *(code)*
 10. **GUI**: HUD, chat, menus, in a separate pass after the depth is cleared. Post effects never touch it. *(code)*
+    Entities shown in the GUI, such as the player preview in the inventory, use a separate GUI lightmap: they stay lit at night. *(code, checked in game)*
 
 Two consequences worth knowing:
 - **The hand's depth is not in the main depth when a post effect is active.** The hand draws into its own depth buffer then, so a post effect that reads depth does not see the hand. *(code)*

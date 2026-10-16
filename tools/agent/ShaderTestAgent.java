@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
  *   wait <seconds>
  *   command <command>     run a command as the player, without the leading slash
  *   hud off|on            hide or show the HUD (like F1)
+ *   inventory             open the player's inventory screen (closed by the next world action or quit)
  *   screenshot <name>     save screenshots/<name>.png from the game's own framebuffer
  *   quit
  */
@@ -56,6 +57,8 @@ public class ShaderTestAgent {
                     });
                     case "screenshot" -> onGameThread(mc, () -> Screenshot.grab(mc.gameDirectory, arg + ".png", mc.gameRenderer.mainRenderTarget(), 1,
                         message -> log("screenshot " + arg + ": " + message.getString())));
+                    case "inventory" -> onGameThread(mc, () -> mc.gui.setScreen(
+                        new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)));
                     case "quit" -> onGameThread(mc, mc::stop);
                     default -> log("unknown action: " + parts[0]);
                 }
