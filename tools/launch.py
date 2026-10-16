@@ -79,6 +79,9 @@ def main():
     p.add_argument("--backend", default="default", choices=["default", "opengl", "vulkan"])
     p.add_argument("--seconds", type=int)
     p.add_argument("--world", help="quick-play into this singleplayer world (must exist in DIR/saves)")
+    p.add_argument("--script", help="drive the game with tools/agent/ShaderTestAgent.java and this script; "
+                                    "with --seconds, waits for the game to quit (or the timeout)")
+    p.add_argument("--size", default="854x480", help="window size, WIDTHxHEIGHT")
     args = p.parse_args()
 
     gamedir = os.path.abspath(args.gamedir)
@@ -130,8 +133,13 @@ def main():
     game = [a for a in flatten([a for a in meta["arguments"]["game"] if isinstance(a, str)], values)]
     if args.world:
         game += ["--quickPlaySingleplayer", args.world]
+    width, height = args.size.split("x")
+    game += ["--width", width, "--height", height]
     java = os.environ.get("JAVA", "java")
-    cmd = [java, "-Xmx4G"] + jvm + [meta["mainClass"]] + game
+    agent = []
+    if args.script:
+        agent = [f"-javaagent:{build_agent(java, classpath)}={os.path.abspath(args.script)}"]
+    cmd = [java, "-Xmx4G"] + agent + jvm + [meta["mainClass"]] + game
 
     log = os.path.join(gamedir, "logs", "latest.log")
     if os.path.exists(log):
@@ -141,6 +149,7 @@ def main():
     if args.seconds is None:
         print(f"started pid {proc.pid}")
         return
+    # Agent output goes to stdout.log; a script ending with "quit" stops the game before the timeout.
     deadline = time.time() + args.seconds
     while time.time() < deadline and proc.poll() is None:
         time.sleep(1)
@@ -153,10 +162,33 @@ def main():
     if os.path.exists(log):
         with open(log, errors="replace") as f:
             for line in f:
-                if re.search(r"shader|pipeline|GLSL|Vulkan|OpenGL|backend|Reloading ResourceManager|ERROR", line, re.I):
+                if re.search(r"shader|pipeline|GLSL|Vulkan|OpenGL|backend|Reloading ResourceManager|ERROR|post effect|post chain", line, re.I):
                     print(line.rstrip()[:400])
     else:
         print("no latest.log; see", os.path.join(gamedir, "stdout.log"))
+    with open(os.path.join(gamedir, "stdout.log"), errors="replace") as f:
+        for line in f:
+            if line.startswith("[shader-test-agent]"):
+                print(line.rstrip())
+
+
+def build_agent(java, classpath):
+    """Compile tools/agent/ShaderTestAgent.java against the game into build/agent/, if out of date."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    source = os.path.join(root, "tools", "agent", "ShaderTestAgent.java")
+    out = os.path.join(root, "build", "agent")
+    jar = os.path.join(out, "shader-test-agent.jar")
+    if os.path.exists(jar) and os.path.getmtime(jar) > os.path.getmtime(source):
+        return jar
+    os.makedirs(os.path.join(out, "classes"), exist_ok=True)
+    bindir = os.path.dirname(java) if os.path.dirname(java) else ""
+    javac = os.path.join(bindir, "javac") if bindir else "javac"
+    jartool = os.path.join(bindir, "jar") if bindir else "jar"
+    subprocess.run([javac, "-cp", ":".join(classpath), "-d", os.path.join(out, "classes"), source], check=True)
+    with open(os.path.join(out, "MANIFEST.MF"), "w") as f:
+        f.write("Premain-Class: ShaderTestAgent\n")
+    subprocess.run([jartool, "cfm", jar, os.path.join(out, "MANIFEST.MF"), "-C", os.path.join(out, "classes"), "."], check=True)
+    return jar
 
 
 if __name__ == "__main__":
