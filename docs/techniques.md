@@ -23,6 +23,26 @@ bool inGui = ProjMat[2][3] == 0.0;
 
 In [exp 59](../experiments/59-gui-or-world/), `core/item.fsh` turns magenta only when `inGui` is true. The hotbar icons turn magenta, while the dropped sword and the one held in hand are unchanged, on both backends.
 
+## Change the color of translucent things (Improved Transparency)
+
+With the **Improved Transparency** graphics option, translucent terrain, entities, particles and clouds go through order-independent transparency (OIT). The same program then runs in three passes, selected by defines (see [How a frame is drawn](rendering.md)):
+- `OIT_DEPTH_BOUNDS` and `OIT_TRANSMITTANCE`, together `OIT_ALPHA_ONLY`: only the alpha counts, and there is no `fragColor`;
+- `OIT_ACCUMULATE`: the color is weighted by `sampleColorForAccumulation()` inside vanilla's `calculateFinalColor()`.
+
+**Change `color` before `calculateFinalColor()`, never `fragColor` after it.**
+
+| | Improved Transparency off | Improved Transparency on |
+|---|---|---|
+| Red tint applied to `color` before `calculateFinalColor()` | ![](../experiments/60-tint-translucent-before/vulkan.png) exp 60 | ![](../experiments/61-tint-translucent-before-oit/vulkan.png) exp 61 |
+| `fragColor` overwritten after `calculateFinalColor()` | ![](../experiments/62-overwrite-translucent-after/vulkan.png) exp 62 | ![](../experiments/63-overwrite-translucent-after-oit/vulkan.png) exp 63 |
+
+- **Changed before**, the tint looks the same with the option on or off.
+- **Overwritten after**, the color skips the OIT weighting. The water and glass come out brighter and more opaque with the option on.
+
+If you change alpha, change it in the `OIT_ALPHA_ONLY` path too, so the transmittance passes see the same alpha as the color pass.
+
+The option is off by default. To turn it on from `options.txt`, also set `graphicsPreset:"custom"`: a named preset ("fancy"…) re-applies its own values when the options load. `tools/launch.py --option` handles this.
+
 ## Tag pixels for a post effect
 
 A post effect only sees the final image. To let it treat some pixels differently, the core shader that draws them writes a **tag in the alpha channel of `minecraft:main`**.

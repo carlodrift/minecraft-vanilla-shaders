@@ -55,6 +55,7 @@ This starts the game offline, in its own game directory, so your worlds and sett
 - `--seconds` stops the game after that many seconds and prints the shader-related lines of the log.
 - `--world` joins a singleplayer world directly. The world must exist in the game directory's `saves/`.
 - `--script` drives the game with the test agent (see below), for example to create a world, run commands and take screenshots.
+- `--option KEY=VALUE` sets an `options.txt` entry, for example `--option 'graphicsPreset="custom"' --option improvedTransparency=true`. The graphics preset and Improved Transparency are reset to their defaults on every launch.
 - `--size` sets the window size, for example `640x360`. The default is `854x480`. Screenshots come out at twice that on Retina screens.
 
 ## `gallery.py`

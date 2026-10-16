@@ -45,7 +45,7 @@ def flatten(args, values):
     return out
 
 
-def set_options(path, pack_name, backend, data_version):
+def set_options(path, pack_name, backend, data_version, extra=()):
     # Without a version line the game treats options.txt as very old and resets these settings.
     lines = [f"version:{data_version}"]
     if os.path.exists(path):
@@ -59,7 +59,12 @@ def set_options(path, pack_name, backend, data_version):
         "tutorialStep": "none",
         "joinedFirstServer": "true",
         "pauseOnLostFocus": "false",
+        # Reset on every launch so a previous --option does not leak into the next run. A named
+        # graphics preset re-applies its own values on load: use graphicsPreset="custom" to change them.
+        "graphicsPreset": '"fancy"',
+        "improvedTransparency": "false",
     }
+    wanted.update(extra)
     seen = set()
     for i, line in enumerate(lines):
         key = line.split(":", 1)[0]
@@ -82,6 +87,8 @@ def main():
     p.add_argument("--script", help="drive the game with tools/agent/ShaderTestAgent.java and this script; "
                                     "with --seconds, waits for the game to quit (or the timeout)")
     p.add_argument("--size", default="854x480", help="window size, WIDTHxHEIGHT")
+    p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE",
+                   help="set an options.txt entry, e.g. improvedTransparency=true (repeatable)")
     args = p.parse_args()
 
     gamedir = os.path.abspath(args.gamedir)
@@ -99,7 +106,8 @@ def main():
     jar = os.path.join(MC, "versions", args.version, args.version + ".jar")
     with zipfile.ZipFile(jar) as z:
         data_version = json.loads(z.read("version.json"))["world_version"]
-    set_options(os.path.join(gamedir, "options.txt"), pack_name, args.backend, data_version)
+    set_options(os.path.join(gamedir, "options.txt"), pack_name, args.backend, data_version,
+                [tuple(o.split("=", 1)) for o in args.option])
 
     with open(os.path.join(MC, "versions", args.version, args.version + ".json")) as f:
         meta = json.load(f)

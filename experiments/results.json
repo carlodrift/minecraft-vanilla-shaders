@@ -516,5 +516,61 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "60-tint-translucent-before": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "Tinting translucent terrain by changing `color` before `calculateFinalColor` (Improved Transparency off)",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "61-tint-translucent-before-oit": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "The same, with Improved Transparency on: the tint still shows",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "62-overwrite-translucent-after": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "Overwriting `fragColor` after `calculateFinalColor` (Improved Transparency off)",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "63-overwrite-translucent-after-oit": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "The same, with Improved Transparency on: the result is wrong",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }

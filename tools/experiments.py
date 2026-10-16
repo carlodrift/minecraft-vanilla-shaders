@@ -22,6 +22,7 @@ Each experiment is a directory with an experiment.json:
       "scene": {                       # optional: in game, join a test world and take a screenshot
         "commands": ["posteffect add @s mylib:gray"],
         "hud": true,                   # keep the HUD in the screenshot
+        "options": {"improvedTransparency": "true"},   # options.txt entries
         "log_pass": ["regex that must appear in the log"],
         "log_fail": ["regex that must not appear"]
       }
@@ -124,6 +125,8 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
         if os.path.exists(shot):
             os.remove(shot)
         cmd += ["--script", script, "--seconds", "90", "--size", "640x360"]
+        for key, value in scene.get("options", {}).items():
+            cmd += ["--option", f"{key}={value}"]
     else:
         cmd += ["--seconds", "20"]
     subprocess.run(cmd, capture_output=True, env=env)

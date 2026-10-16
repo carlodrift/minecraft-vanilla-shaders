@@ -1,0 +1,22 @@
+{
+  "title": "Tinting translucent terrain by changing `color` before `calculateFinalColor` (Improved Transparency off)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "    #ifdef ALPHA_CUTOUT\n    if (color.a < ALPHA_CUTOUT) {",
+          "replace": "    #ifndef OIT_ALPHA_ONLY\n    // Tint translucent texels red, before the vanilla color path.\n    if (color.a < 0.99) {\n        color.rgb *= vec3(1.0, 0.25, 0.25);\n    }\n    #endif\n    #ifdef ALPHA_CUTOUT\n    if (color.a < ALPHA_CUTOUT) {"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "fill 0 3 3 6 3 4 minecraft:water",
+      "fill 1 4 6 5 6 6 minecraft:light_blue_stained_glass"
+    ]
+  }
+}

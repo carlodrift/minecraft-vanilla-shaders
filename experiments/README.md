@@ -26,3 +26,4 @@ Numbering:
 | 3x | vertex inputs |
 | 4x | uniforms and samplers |
 | 5x | post effects (in a test world, with screenshots) |
+| 6x | Improved Transparency (OIT) |

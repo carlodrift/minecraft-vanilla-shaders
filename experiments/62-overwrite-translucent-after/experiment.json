@@ -1,0 +1,22 @@
+{
+  "title": "Overwriting `fragColor` after `calculateFinalColor` (Improved Transparency off)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "    fragColor = calculateFinalColor(color);\n",
+          "replace": "    fragColor = calculateFinalColor(color);\n    // Overwrite the output of translucent texels with red, after the vanilla color path.\n    if (color.a < 0.99) {\n        fragColor = vec4(1.0, 0.0, 0.0, color.a);\n    }\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "fill 0 3 3 6 3 4 minecraft:water",
+      "fill 1 4 6 5 6 6 minecraft:light_blue_stained_glass"
+    ]
+  }
+}
