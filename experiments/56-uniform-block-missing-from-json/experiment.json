@@ -1,0 +1,26 @@
+{
+  "title": "A post shader's own uniform block must be listed in the pass's `uniforms`",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/mylib/shaders/post/copy.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = vec4(texture(InSampler, texCoord).rgb, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/mylib/shaders/post/tint.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\nuniform sampler2D InSampler;\n\nlayout(std140) uniform TintConfig {\n    vec4 Tint;\n};\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = vec4(texture(InSampler, texCoord).rgb * Tint.rgb, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"targets\": {\n    \"swap\": {}\n  },\n  \"passes\": [\n    {\n      \"vertex_shader\": \"minecraft:core/screenquad\",\n      \"fragment_shader\": \"mylib:post/tint\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"minecraft:main\"\n        }\n      ],\n      \"output\": \"swap\"\n    },\n    {\n      \"vertex_shader\": \"minecraft:core/screenquad\",\n      \"fragment_shader\": \"mylib:post/copy\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"swap\"\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    }
+  ],
+  "scene": {
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect",
+      "can not be used as a post effect",
+      "Requested post effect does not exist: mylib"
+    ]
+  }
+}

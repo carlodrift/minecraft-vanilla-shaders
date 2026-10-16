@@ -14,7 +14,12 @@ Each experiment is a directory with an experiment.json:
          "vanilla": "assets/minecraft/shaders/core/position_color.fsh",   # start from the game's file
          "edits": [{"find": "...", "replace": "..."}]},                    # each find must match once
         {"path": "assets/mylib/shaders/include/x.glsl", "content": "..."} # or a file written as-is
-      ]
+      ],
+      "scene": {                       # optional: in game, join a test world and take a screenshot
+        "commands": ["posteffect add @s mylib:gray"],
+        "log_pass": ["regex that must appear in the log"],
+        "log_fail": ["regex that must not appear"]
+      }
     }
 
 Packs are built from the installed game jar, so the repository contains no copy of vanilla files.
@@ -66,20 +71,62 @@ def run_check(pack, env):
     return ("pass" if r.returncode == 0 else "fail"), (problems[0] if problems else "")
 
 
-def run_game(pack, backend, gamedir, env):
+SCENE = """world shader-test
+wait 2
+command time set noon
+command setblock 2 4 5 minecraft:red_wool
+command setblock 3 4 5 minecraft:lime_wool
+command setblock 4 4 5 minecraft:blue_wool
+command setblock 3 5 5 minecraft:glowstone
+command tp @s 3 6 0 0 20
+hud off
+wait 3
+"""
+
+
+def run_game(exp, exp_dir, pack, backend, gamedir, env):
+    """Load the pack in the game. With a "scene", join a test world, run its commands and take a screenshot."""
     name = os.path.basename(pack)
-    subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "launch.py"), "--gamedir", gamedir,
-                    "--pack", pack, "--backend", backend, "--seconds", "20"], capture_output=True, env=env)
+    cmd = [sys.executable, "-I", os.path.join(ROOT, "tools", "launch.py"), "--gamedir", gamedir,
+           "--pack", pack, "--backend", backend]
+    scene = exp.get("scene")
+    if scene is not None:
+        script = os.path.join(gamedir, "script.txt")
+        with open(script, "w") as f:
+            f.write(SCENE)
+            for command in scene.get("commands", []):
+                f.write(f"command {command}\nwait 1\n")
+            f.write("wait 2\nscreenshot experiment\nwait 1\nquit\n")
+        shot = os.path.join(gamedir, "screenshots", "experiment.png")
+        if os.path.exists(shot):
+            os.remove(shot)
+        cmd += ["--script", script, "--seconds", "90", "--size", "640x360"]
+    else:
+        cmd += ["--seconds", "20"]
+    subprocess.run(cmd, capture_output=True, env=env)
     shutil.rmtree(os.path.join(gamedir, "resourcepacks", name), ignore_errors=True)
     with open(os.path.join(gamedir, "logs", "latest.log"), errors="replace") as f:
         log = f.read()
     device = re.search(r"Using graphics backend (\w+), using drivers: (.*)", log)
+    device = device.groups() if device else None
     if "Caught error loading resourcepacks" in log:
         m = re.search(r"(ShaderCompileException: .*|Couldn't parse GLSL: .*)", log)
-        return "fail", (m.group(1) if m else ""), device.groups() if device else None
-    if f"file/{name}" in log:
-        return "pass", "", device.groups() if device else None
-    return "not loaded", "", device.groups() if device else None
+        return "fail", (m.group(1) if m else "packs removed"), device
+    if f"file/{name}" not in log:
+        return "not loaded", "", device
+    if scene is not None:
+        shot = os.path.join(gamedir, "screenshots", "experiment.png")
+        if os.path.exists(shot):
+            target = os.path.join(exp_dir, f"{backend}.png")
+            subprocess.run(["sips", "-Z", "640", shot, "--out", target], capture_output=True)
+        for pattern in scene.get("log_fail", []):
+            m = re.search(pattern + ".*", log)
+            if m:
+                return "fail", m.group(0)[:200], device
+        for pattern in scene.get("log_pass", []):
+            if not re.search(pattern, log):
+                return "fail", f"log never matched: {pattern}", device
+    return "pass", "", device
 
 
 def main():
@@ -115,7 +162,7 @@ def main():
         line = f"{d:40} expect={exp['expect']:4} check={row['check']:4}"
         if args.ingame:
             for backend in ("opengl", "vulkan"):
-                verdict, message, device = run_game(pack, backend, gamedir, env)
+                verdict, message, device = run_game(exp, os.path.join(exp_root, d), pack, backend, gamedir, env)
                 row[backend] = verdict
                 row[backend + "_message"] = message
                 if device:
@@ -143,15 +190,17 @@ def write_markdown(results, path):
         "",
         "Tested on: " + "; ".join(devices) if devices else "Not run in game yet.",
         "",
-        "| Experiment | Expected | check | OpenGL | Vulkan | Message |",
-        "|---|---|---|---|---|---|",
+        "| Experiment | Expected | check | OpenGL | Vulkan | Message | Screenshot |",
+        "|---|---|---|---|---|---|---|",
     ]
     for d, r in sorted(results.items()):
         message = r.get("check_message") or r.get("opengl_message") or ""
         message = message.replace("|", "\\|")
         if len(message) > 140:
             message = message[:137] + "..."
-        lines.append(f"| [{d}]({d}/) {r['title']} | {r['expect']} | {r['check']} | {r.get('opengl', '-')} | {r.get('vulkan', '-')} | {message} |")
+        shots = " · ".join(f"[{b}]({d}/{b.lower()}.png)" for b in ("OpenGL", "Vulkan")
+                           if os.path.exists(os.path.join(os.path.dirname(path), d, f"{b.lower()}.png")))
+        lines.append(f"| [{d}]({d}/) {r['title']} | {r['expect']} | {r['check']} | {r.get('opengl', '-')} | {r.get('vulkan', '-')} | {message} | {shots} |")
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
 

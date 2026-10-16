@@ -10,6 +10,7 @@ import com.mojang.renderpearl.frontend.shaders.SPIRVModule;
 import com.mojang.renderpearl.frontend.shaders.SpvUtil;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostChainConfig;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -192,6 +193,14 @@ public class Check {
                 return;
             }
             PostChainConfig config = PostChainConfig.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(json)).getOrThrow();
+            // Post effects run as end_of_frame or through /posteffect may only use minecraft:main among the
+            // game's targets (minecraft:entity_outline is the only vanilla chain allowed more).
+            Set<Identifier> external = new TreeSet<>(PostChain.getReferencedExternalTargets(config));
+            external.remove(PostChain.MAIN_TARGET_ID);
+            if (!external.isEmpty() && !id.equals("minecraft:entity_outline")) {
+                problems.computeIfAbsent("post effect " + id + " uses targets a post effect cannot access: " + external, m -> new TreeMap<>())
+                    .put("all", new TreeSet<>(Set.of("post_effect/" + id.replace(":", "/"))));
+            }
             for (int i = 0; i < config.passes().size(); i++) {
                 PostChainConfig.Pass pass = config.passes().get(i);
                 BindGroupLayout.Builder uniforms = BindGroupLayout.builder();

@@ -7,6 +7,7 @@ Every statement here is either checked against the game's code, reproduced by an
 ## Contents
 
 - [Writing shaders for 26.3](docs/writing-shaders.md): how the game loads shaders, and the rules a shader must follow to load.
+- [Post effects](docs/post-effects.md): `end_of_frame`, `/posteffect`, the JSON format, samplers, uniforms and depth.
 - Reference, generated from the game:
   - [Core shader programs](docs/reference/core-shaders.md): for each program, its pipelines, defines, available uniforms (with the `#ifdef` that guards each one) and vertex inputs.
   - [Uniforms](docs/reference/uniforms.md): every uniform block (with its std140 layout) and sampler.
