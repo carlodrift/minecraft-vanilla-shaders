@@ -55,6 +55,19 @@ This starts the game offline, in its own game directory, so your worlds and sett
 - `--seconds` stops the game after that many seconds and prints the shader-related lines of the log.
 - `--world` joins a singleplayer world directly. The world must exist in the game directory's `saves/`.
 
+## `gallery.py`
+
+```sh
+python3 tools/gallery.py                 # every program, plus a vanilla baseline
+python3 tools/gallery.py terrain entity  # only these programs
+```
+
+For each core fragment program, this builds a pack that makes the vanilla program output magenta, loads it in a test scene, and saves screenshots with and without the HUD to `docs/images/programs/`. It is used by [How a frame is drawn](../docs/rendering.md).
+
+## `agent/ShaderTestAgent.java`
+
+A Java agent that `launch.py --script` loads into the game. It creates a fresh flat test world, runs commands, hides the HUD, takes screenshots with the game's own screenshot function, and quits. No mod is installed and no OS screen-capture permission is needed. The script format is in the file's header.
+
 ## `experiments.py`
 
 ```sh
