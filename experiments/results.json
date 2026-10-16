@@ -572,5 +572,33 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "64-texture-input": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "A pass can read a texture: `location` `mylib:overlay` is `assets/mylib/textures/effect/overlay.png`",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "65-persistent-target": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "A `persistent` target keeps its content between frames (motion trails while the camera turns)",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }

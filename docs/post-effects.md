@@ -69,7 +69,7 @@ Intermediate textures, by name. All their fields are optional *(code)*:
 | Field | Default | Meaning |
 |---|---|---|
 | `width`, `height` | screen size | size in pixels |
-| `persistent` | `false` | keep the content from one frame to the next |
+| `persistent` | `false` | keep the content from one frame to the next (exp 65: motion trails) |
 | `clear_color` | `0` (transparent black) | ARGB color the target is cleared to |
 
 The format is always RGBA8 *(code)*.
@@ -92,9 +92,11 @@ There are two kinds of inputs. Each one becomes a sampler named `<sampler_name>S
 | Kind | Fields |
 |---|---|
 | Target | `sampler_name`, `target`, optional `use_depth_buffer` (read the target's depth instead of its color) and `bilinear` |
-| Texture | `sampler_name`, `location`, `width`, `height`, optional `bilinear`. `location` `ns:path` reads `assets/ns/textures/effect/path.png` *(code)* |
+| Texture | `sampler_name`, `location`, `width`, `height`, optional `bilinear`. `location` `ns:path` reads `assets/ns/textures/effect/path.png` (exp 64) |
 
 Two inputs of one pass cannot share a `sampler_name` *(code)*.
+
+**A texture input comes out upside down** with the `texCoord` of `minecraft:core/screenquad`. The top row of the PNG lands at the bottom of the screen, on both backends (exp 64). To show it the right way up, sample `vec2(texCoord.x, 1.0 - texCoord.y)`. Targets don't have this problem: `minecraft:main` and your own targets read straight.
 
 ### `uniforms`
 

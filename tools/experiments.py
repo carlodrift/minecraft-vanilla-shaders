@@ -23,6 +23,7 @@ Each experiment is a directory with an experiment.json:
         "commands": ["posteffect add @s mylib:gray"],
         "hud": true,                   # keep the HUD in the screenshot
         "options": {"improvedTransparency": "true"},   # options.txt entries
+        "quick": ["tp @s ~ ~ ~ ~5 ~"],  # run 50 ms apart right before the screenshot
         "log_pass": ["regex that must appear in the log"],
         "log_fail": ["regex that must not appear"]
       }
@@ -64,6 +65,15 @@ def build(exp, name, jar, out_dir, pack_format):
                 if count != 1:
                     raise SystemExit(f"{name}: edit matches {count} times in {spec['vanilla']}: {edit['find']!r}")
                 text = text.replace(edit["find"], edit["replace"])
+        elif "png" in spec:
+            # A small generated image: "colors" lists width x height RGBA pixels, row by row.
+            png = spec["png"]
+            rows = [png["colors"][y * png["width"]:(y + 1) * png["width"]] for y in range(png["height"])]
+            target = os.path.join(pack, spec["path"])
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "wb") as f:
+                f.write(pngutil.write(png["width"], png["height"], rows))
+            continue
         elif "vanilla_image" in spec:
             # Copy a vanilla PNG, marking the dark pixels of a region with an alpha (and a color) (see "mark").
             width, height, rows = pngutil.read(jar.read(spec["vanilla_image"]))
@@ -120,7 +130,11 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
                 f.write("hud on\n")
             for command in scene.get("commands", []):
                 f.write(f"command {command}\nwait 1\n")
-            f.write("wait 2\nscreenshot experiment\nwait 1\nquit\n")
+            f.write("wait 2\n")
+            # "quick" commands run 50 ms apart right before the screenshot, e.g. to move the camera.
+            for command in scene.get("quick", []):
+                f.write(f"command {command}\nwait 0.05\n")
+            f.write("screenshot experiment\nwait 1\nquit\n")
         shot = os.path.join(gamedir, "screenshots", "experiment.png")
         if os.path.exists(shot):
             os.remove(shot)
