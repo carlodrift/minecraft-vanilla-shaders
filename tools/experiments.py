@@ -21,6 +21,7 @@ Each experiment is a directory with an experiment.json:
       ],
       "scene": {                       # optional: in game, join a test world and take a screenshot
         "commands": ["posteffect add @s mylib:gray"],
+        "hud": true,                   # keep the HUD in the screenshot
         "log_pass": ["regex that must appear in the log"],
         "log_fail": ["regex that must not appear"]
       }
@@ -114,6 +115,8 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
         script = os.path.join(gamedir, "script.txt")
         with open(script, "w") as f:
             f.write(SCENE)
+            if scene.get("hud"):
+                f.write("hud on\n")
             for command in scene.get("commands", []):
                 f.write(f"command {command}\nwait 1\n")
             f.write("wait 2\nscreenshot experiment\nwait 1\nquit\n")

@@ -1,0 +1,28 @@
+{
+  "title": "A shader can tell GUI from world: GUI projections are orthographic (`ProjMat[2][3] == 0`)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/item.fsh",
+      "vanilla": "assets/minecraft/shaders/core/item.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <minecraft:projection.glsl>\n"
+        },
+        {
+          "find": "    fragColor = calculateFinalColor(color);\n",
+          "replace": "    fragColor = calculateFinalColor(color);\n    // Orthographic projection: drawn in the GUI. Perspective: drawn in the world or in hand.\n    if (ProjMat[2][3] == 0.0) {\n        fragColor = vec4(1.0, 0.0, 1.0, 1.0);\n    }\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "hud": true,
+    "commands": [
+      "summon item 4 5 5 {Item:{id:\"minecraft:diamond_sword\",count:1},NoGravity:1b,Age:-32768,PickupDelay:32767}",
+      "item replace entity @s hotbar.0 with minecraft:diamond_sword",
+      "item replace entity @s hotbar.1 with minecraft:apple"
+    ]
+  }
+}
