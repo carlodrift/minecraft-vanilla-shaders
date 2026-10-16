@@ -1,0 +1,16 @@
+{
+  "title": "`#version 450` is accepted, on both backends",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#version 330",
+          "replace": "#version 450"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Including the same vanilla file twice is harmless (include guards)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>",
+          "replace": "#include <minecraft:oit.glsl>\n#include <minecraft:dynamictransforms.glsl>"
+        }
+      ]
+    }
+  ]
+}

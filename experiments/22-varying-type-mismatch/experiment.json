@@ -1,0 +1,20 @@
+{
+  "title": "A fragment input must have the same type as the vertex output at its location",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) in vec4 vertexColor;",
+          "replace": "layout(location = 0) in vec3 vertexColorRgb;"
+        },
+        {
+          "find": "vec4 color = vertexColor;",
+          "replace": "vec4 color = vec4(vertexColorRgb, 1.0);"
+        }
+      ]
+    }
+  ]
+}

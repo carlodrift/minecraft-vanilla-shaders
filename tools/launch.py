@@ -17,6 +17,7 @@ import subprocess
 import sys
 import time
 import uuid
+import zipfile
 
 MC = os.path.expanduser("~/Library/Application Support/minecraft")
 
@@ -44,8 +45,9 @@ def flatten(args, values):
     return out
 
 
-def set_options(path, pack_name, backend):
-    lines = []
+def set_options(path, pack_name, backend, data_version):
+    # Without a version line the game treats options.txt as very old and resets these settings.
+    lines = [f"version:{data_version}"]
     if os.path.exists(path):
         with open(path) as f:
             lines = [l.rstrip("\n") for l in f]
@@ -91,7 +93,10 @@ def main():
         elif os.path.isdir(target):
             shutil.rmtree(target)
         shutil.copytree(args.pack, target)
-    set_options(os.path.join(gamedir, "options.txt"), pack_name, args.backend)
+    jar = os.path.join(MC, "versions", args.version, args.version + ".jar")
+    with zipfile.ZipFile(jar) as z:
+        data_version = json.loads(z.read("version.json"))["world_version"]
+    set_options(os.path.join(gamedir, "options.txt"), pack_name, args.backend, data_version)
 
     with open(os.path.join(MC, "versions", args.version, args.version + ".json")) as f:
         meta = json.load(f)

@@ -1,0 +1,24 @@
+{
+  "title": "`#include \"x.glsl\"` does not look next to the including shader (core/)",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>",
+          "replace": "#include <minecraft:oit.glsl>\n#include \"exp_helper.glsl\""
+        },
+        {
+          "find": "color *= ColorModulator;",
+          "replace": "color *= ColorModulator * expHelper(1.0);"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/exp_helper.glsl",
+      "content": "#ifndef EXP_HELPER_GLSL\n#define EXP_HELPER_GLSL\nfloat expHelper(float x) { return x; }\n#endif\n"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Include names are identifiers: uppercase letters are rejected",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:dynamictransforms.glsl>",
+          "replace": "#include <minecraft:DynamicTransforms.glsl>"
+        }
+      ]
+    }
+  ]
+}

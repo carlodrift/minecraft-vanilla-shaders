@@ -1,0 +1,16 @@
+{
+  "title": "A comment may precede `#version`",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#version 330",
+          "replace": "// A comment line\n#version 330"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "A vertex attribute must use the base type of its format (float vs int)",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.vsh",
+      "edits": [
+        {
+          "find": "in vec4 Color;",
+          "replace": "in ivec4 Color;"
+        },
+        {
+          "find": "vertexColor = Color;",
+          "replace": "vertexColor = vec4(Color);"
+        }
+      ]
+    }
+  ]
+}

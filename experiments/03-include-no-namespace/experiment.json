@@ -1,0 +1,16 @@
+{
+  "title": "An include without namespace defaults to minecraft:",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:dynamictransforms.glsl>",
+          "replace": "#include <dynamictransforms.glsl>"
+        }
+      ]
+    }
+  ]
+}

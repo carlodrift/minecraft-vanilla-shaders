@@ -1,0 +1,20 @@
+{
+  "title": "Vertex outputs and fragment inputs are matched by location: names do not matter",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) in vec4 vertexColor;",
+          "replace": "layout(location = 0) in vec4 renamedColor;"
+        },
+        {
+          "find": "vec4 color = vertexColor;",
+          "replace": "vec4 color = renamedColor;"
+        }
+      ]
+    }
+  ]
+}

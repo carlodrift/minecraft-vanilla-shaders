@@ -1,0 +1,16 @@
+{
+  "title": "Every `in`/`out` needs `layout(location = N)`",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) in vec4 vertexColor;",
+          "replace": "in vec4 vertexColor;"
+        }
+      ]
+    }
+  ]
+}

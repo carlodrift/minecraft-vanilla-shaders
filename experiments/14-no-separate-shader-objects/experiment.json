@@ -1,0 +1,16 @@
+{
+  "title": "Without GL_ARB_separate_shader_objects, `layout(location)` on varyings is rejected",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": ""
+        }
+      ]
+    }
+  ]
+}

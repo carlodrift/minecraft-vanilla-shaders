@@ -1,0 +1,16 @@
+{
+  "title": "A preprocessor directive may not precede `#version`",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#version 330",
+          "replace": "#define EXP_BEFORE_VERSION\n#version 330"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "A vanilla uniform block may be declared by hand if its layout matches exactly",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) in vec4 vertexColor;",
+          "replace": "layout(location = 0) in vec4 vertexColor;\nlayout(std140) uniform Globals { ivec3 CameraBlockPos; float GlintAlpha; vec3 CameraOffset; float GameTime; vec2 ScreenSize; int MenuBlurRadius; int UseRgss; };"
+        },
+        {
+          "find": "color *= ColorModulator;",
+          "replace": "color *= ColorModulator * (0.5 + 0.5 * fract(GameTime));"
+        }
+      ]
+    }
+  ]
+}

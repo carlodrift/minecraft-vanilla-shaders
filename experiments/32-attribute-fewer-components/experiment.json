@@ -1,0 +1,20 @@
+{
+  "title": "A vertex attribute may read fewer components than the format provides",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.vsh",
+      "edits": [
+        {
+          "find": "in vec4 Color;",
+          "replace": "in vec3 Color;"
+        },
+        {
+          "find": "vertexColor = Color;",
+          "replace": "vertexColor = vec4(Color, 1.0);"
+        }
+      ]
+    }
+  ]
+}

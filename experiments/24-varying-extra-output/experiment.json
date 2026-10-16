@@ -1,0 +1,20 @@
+{
+  "title": "A vertex output the fragment shader does not read is fine",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.vsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) out vec4 vertexColor;",
+          "replace": "layout(location = 0) out vec4 vertexColor;\nlayout(location = 5) out vec4 unusedOutput;"
+        },
+        {
+          "find": "vertexColor = Color;",
+          "replace": "vertexColor = Color;\n    unusedOutput = Color;"
+        }
+      ]
+    }
+  ]
+}

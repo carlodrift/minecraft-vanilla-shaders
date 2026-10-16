@@ -1,0 +1,20 @@
+{
+  "title": "Uniforms outside a block are rejected (except samplers)",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) in vec4 vertexColor;",
+          "replace": "layout(location = 0) in vec4 vertexColor;\nuniform float LooseValue;"
+        },
+        {
+          "find": "color *= ColorModulator;",
+          "replace": "color *= ColorModulator * LooseValue;"
+        }
+      ]
+    }
+  ]
+}

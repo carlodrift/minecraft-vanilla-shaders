@@ -1,0 +1,16 @@
+{
+  "title": "Declaring a sampler the pipeline does not provide fails even if it is never used",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 0) in vec4 vertexColor;",
+          "replace": "layout(location = 0) in vec4 vertexColor;\nuniform sampler2D Sampler9;"
+        }
+      ]
+    }
+  ]
+}

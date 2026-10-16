@@ -1,0 +1,20 @@
+{
+  "title": "Vertex attributes are matched to the vertex format by name",
+  "expect": "fail",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_color.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.vsh",
+      "edits": [
+        {
+          "find": "in vec3 Position;",
+          "replace": "in vec3 VertexPosition;"
+        },
+        {
+          "find": "vec4(Position, 1.0)",
+          "replace": "vec4(VertexPosition, 1.0)"
+        }
+      ]
+    }
+  ]
+}
