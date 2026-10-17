@@ -8,7 +8,11 @@
     },
     {
       "path": "assets/minecraft/post_effect/end_of_frame.json",
-      "content": "{\n  \"targets\": {},\n  \"passes\": [\n    {\n      \"vertex_shader\": \"minecraft:core/screenquad\",\n      \"fragment_shader\": \"mylib:post/grayscale\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"minecraft:main\"\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+      "content": "{\n  \"targets\": {},\n  \"passes\": [\n    {\n      \"vertex_shader\": \"mylib:post/fullscreen\",\n      \"fragment_shader\": \"mylib:post/grayscale\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"minecraft:main\"\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    },
+    {
+      "path": "assets/mylib/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes: the same as vanilla core/screenquad (26.3) and\n// core/screentriangle (26.4), shipped with the pack so it does not depend on either.\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
     }
   ],
   "scene": {

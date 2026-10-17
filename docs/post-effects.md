@@ -42,7 +42,7 @@ Requires permission level 2 *(code)*. The effect can live in any namespace, for 
   },
   "passes": [
     {
-      "vertex_shader": "minecraft:core/screenquad",
+      "vertex_shader": "mylib:post/fullscreen",
       "fragment_shader": "mylib:post/tint",
       "inputs": [
         { "sampler_name": "In", "target": "minecraft:main" }
@@ -53,7 +53,7 @@ Requires permission level 2 *(code)*. The effect can live in any namespace, for 
       }
     },
     {
-      "vertex_shader": "minecraft:core/screenquad",
+      "vertex_shader": "mylib:post/fullscreen",
       "fragment_shader": "mylib:post/copy",
       "inputs": [ { "sampler_name": "In", "target": "swap" } ],
       "output": "minecraft:main"
@@ -82,7 +82,7 @@ A single pass may read `minecraft:main` and write `minecraft:main` (exp 54). You
 
 | Field | |
 |---|---|
-| `vertex_shader`, `fragment_shader` | program identifiers. `minecraft:core/screenquad` is the vanilla full-screen vertex program |
+| `vertex_shader`, `fragment_shader` | program identifiers. For the vertex program, ship your own full-screen one (see [The shaders](#the-shaders)) |
 | `inputs` | the textures the pass reads (see below) |
 | `output` | the target the pass writes |
 | `uniforms` | values for the pass's own uniform blocks (see below) |
@@ -96,7 +96,7 @@ There are two kinds of inputs. Each one becomes a sampler named `<sampler_name>S
 
 Two inputs of one pass cannot share a `sampler_name` *(code)*.
 
-**A texture input comes out upside down** with the `texCoord` of `minecraft:core/screenquad`. The top row of the PNG lands at the bottom of the screen, on both backends (exp 64). To show it the right way up, sample `vec2(texCoord.x, 1.0 - texCoord.y)`. Targets don't have this problem: `minecraft:main` and your own targets read straight.
+**A texture input comes out upside down** with the usual full-screen `texCoord` (below, and vanilla's). The top row of the PNG lands at the bottom of the screen, on both backends (exp 64). To show it the right way up, sample `vec2(texCoord.x, 1.0 - texCoord.y)`. Targets don't have this problem: `minecraft:main` and your own targets read straight.
 
 ### `uniforms`
 
@@ -131,13 +131,34 @@ layout(std140) uniform TintConfig {   // filled from the JSON "uniforms"
     vec4 Tint;
 };
 
-layout(location = 0) in vec2 texCoord;   // from minecraft:core/screenquad
+layout(location = 0) in vec2 texCoord;   // from the full-screen vertex shader below
 layout(location = 0) out vec4 fragColor;
 
 void main() {
     fragColor = vec4(texture(InSampler, texCoord).rgb * Tint.rgb, 1.0);
 }
 ```
+
+### The vertex shader
+
+Every pass needs a vertex program that covers the screen. Vanilla has one, but its name changes between versions: `minecraft:core/screenquad` in 26.3, renamed `minecraft:core/screentriangle` in the 26.4 snapshots. If a pack references the vanilla one, its post effects break with the next version, and a broken post effect disables every pack in the middle of the game. **Ship your own.** It is a few lines, and this one behaves like vanilla's in both versions:
+
+```glsl
+// assets/mylib/shaders/post/fullscreen.vsh, used as "vertex_shader": "mylib:post/fullscreen"
+#version 330
+#extension GL_ARB_separate_shader_objects : require
+
+layout(location = 0) out vec2 texCoord;
+
+void main() {
+    // One triangle covering the screen: vertices (-1,-1), (3,-1), (-1,3).
+    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+    texCoord = uv;
+}
+```
+
+Every post-effect experiment and example in this repository uses it.
 
 A pass can use exactly these uniforms *(code, and the message of exp 56)*:
 - **`Globals`**: `GameTime`, `ScreenSize`, `CameraBlockPos`, `CameraOffset`… See [uniforms.md](reference/uniforms.md#globals). Include it with `#include <minecraft:globals.glsl>`.
