@@ -78,6 +78,10 @@ A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanil
 - **Keep every block and function the vanilla file declares**, with the same signatures. Other programs call them.
 - **Run `tools/mcshaders check`:** a mistake in an include breaks every program that uses it.
 
+## Restyle glowing outlines
+
+Replace the post effect `assets/minecraft/post_effect/entity_outline.json`. It reads the silhouettes of glowing entities from the `minecraft:entity_outline` target (team color in RGB, coverage in alpha), and must write the outline back into that target, alpha included. The game then composites it onto the world. See [thick-outlines](../examples/thick-outlines/).
+
 ## Animate
 
 - **Use `GameTime` from `Globals`**, available to almost every core program (see [core-shaders.md](reference/core-shaders.md)) and to every post pass. It is `((game ticks % 24000) + partial tick) / 24000`: it goes from 0 to 1 every 24000 ticks (20 minutes), then **wraps back to 0** *(code)*. For a seamless loop, use a whole number of periods: `sin(GameTime * 6.2831853 * N)` repeats N times per wrap, that is every 24000 / N ticks. See [terrain-wave](../examples/terrain-wave/).
