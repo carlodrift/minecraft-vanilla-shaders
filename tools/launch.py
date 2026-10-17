@@ -2,10 +2,14 @@
 
     python3 tools/launch.py --gamedir DIR [--pack PACK_DIR] [--backend opengl|vulkan|default]
                             [--seconds N] [--world NAME] [--version 26.3]
+                            [--fabric LOADER_VERSION --mod JAR ...]
 
 The pack is linked into DIR/resourcepacks and enabled in DIR/options.txt. With --seconds, the game
 is stopped after N seconds and the shader-related lines of DIR/logs/latest.log are printed.
 Requires Java 25+ (JAVA environment variable, or java on PATH).
+
+With --fabric, the game runs with that Fabric Loader version (fetched from meta.fabricmc.net into
+build/fabric/), and DIR/mods holds exactly the --mod jars. Use it to test a pack with a mod such as Sodium.
 """
 import argparse
 import json
@@ -16,11 +20,37 @@ import signal
 import subprocess
 import sys
 import time
+import urllib.request
 import uuid
 import zipfile
 
 # The launcher's directory; MINECRAFT_DIR overrides it (e.g. for a client fetched by tools/fetch.py).
 MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def fabric_profile(version, loader):
+    """The Fabric launcher profile for this game and loader version, with its libraries downloaded."""
+    cache = os.path.join(ROOT, "build", "fabric")
+    path = os.path.join(cache, f"{version}-{loader}.json")
+    if not os.path.exists(path):
+        os.makedirs(cache, exist_ok=True)
+        url = f"https://meta.fabricmc.net/v2/versions/loader/{version}/{loader}/profile/json"
+        with urllib.request.urlopen(url, timeout=30) as response, open(path, "wb") as f:
+            f.write(response.read())
+    with open(path) as f:
+        profile = json.load(f)
+    jars = []
+    for lib in profile["libraries"]:
+        group, artifact, ver = lib["name"].split(":")
+        rel = f"{group.replace('.', '/')}/{artifact}/{ver}/{artifact}-{ver}.jar"
+        jar = os.path.join(cache, "libraries", rel)
+        if not os.path.exists(jar):
+            os.makedirs(os.path.dirname(jar), exist_ok=True)
+            with urllib.request.urlopen(lib["url"] + rel, timeout=60) as response, open(jar, "wb") as f:
+                f.write(response.read())
+        jars.append((f"{group}:{artifact}", jar))
+    return profile, jars
 
 
 def allowed(rules):
@@ -100,7 +130,11 @@ def main():
     p.add_argument("--size", default="854x480", help="window size, WIDTHxHEIGHT")
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE",
                    help="set an options.txt entry, e.g. improvedTransparency=true (repeatable)")
+    p.add_argument("--fabric", metavar="LOADER_VERSION", help="run with this Fabric Loader version, e.g. 0.20.0")
+    p.add_argument("--mod", action="append", default=[], metavar="JAR", help="a mod jar for DIR/mods (with --fabric; repeatable)")
     args = p.parse_args()
+    if args.mod and not args.fabric:
+        p.error("--mod needs --fabric")
 
     gamedir = os.path.abspath(args.gamedir)
     os.makedirs(os.path.join(gamedir, "resourcepacks"), exist_ok=True)
@@ -130,6 +164,21 @@ def main():
             if os.path.exists(path):
                 classpath.append(path)
     classpath.append(os.path.join(MC, "versions", args.version, args.version + ".jar"))
+    main_class = meta["mainClass"]
+    fabric_jvm = []
+    mods = os.path.join(gamedir, "mods")
+    shutil.rmtree(mods, ignore_errors=True)
+    if args.fabric:
+        profile, fabric_jars = fabric_profile(args.version, args.fabric)
+        # Fabric's libraries win over the game's own copies of the same artifact.
+        names = {name for name, _ in fabric_jars}
+        classpath = [jar for _, jar in fabric_jars] + [c for c in classpath if not any(
+            f"/{n.split(':')[0].replace('.', '/')}/{n.split(':')[1]}/" in c for n in names)]
+        main_class = profile["mainClass"]
+        fabric_jvm = profile.get("arguments", {}).get("jvm", [])
+        os.makedirs(mods)
+        for mod in args.mod:
+            shutil.copy(mod, mods)
     natives = os.path.join(gamedir, "natives")
     values = {
         "auth_player_name": "ShaderTest",
@@ -156,9 +205,13 @@ def main():
     game += ["--width", width, "--height", height]
     java = os.environ.get("JAVA", "java")
     agent = []
-    if args.script:
+    if args.script and args.fabric:
+        # Under Fabric the agent runs as a mod (tools/agent/ShaderTestFabric.java), in Fabric's class loader.
+        shutil.copy(build_agent(java, classpath, fabric=True), mods)
+        agent = [f"-Dshadertest.script={os.path.abspath(args.script)}"]
+    elif args.script:
         agent = [f"-javaagent:{build_agent(java, classpath)}={os.path.abspath(args.script)}"]
-    cmd = [java, "-Xmx4G"] + agent + jvm + [meta["mainClass"]] + game
+    cmd = [java, "-Xmx4G"] + agent + fabric_jvm + jvm + [main_class] + game
 
     log = os.path.join(gamedir, "logs", "latest.log")
     if os.path.exists(log):
@@ -191,21 +244,26 @@ def main():
                 print(line.rstrip())
 
 
-def build_agent(java, classpath):
-    """Compile tools/agent/ShaderTestAgent.java against the game into build/agent/, if out of date."""
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    source = os.path.join(root, "tools", "agent", "ShaderTestAgent.java")
-    out = os.path.join(root, "build", "agent")
+def build_agent(java, classpath, fabric=False):
+    """Compile tools/agent/ into build/agent/, if out of date: a Java agent jar, or with fabric, a Fabric mod jar."""
+    sources = [os.path.join(ROOT, "tools", "agent", name)
+               for name in ["ShaderTestAgent.java"] + (["ShaderTestFabric.java"] if fabric else [])]
+    out = os.path.join(ROOT, "build", "agent-fabric" if fabric else "agent")
     jar = os.path.join(out, "shader-test-agent.jar")
-    if os.path.exists(jar) and os.path.getmtime(jar) > os.path.getmtime(source):
+    if os.path.exists(jar) and all(os.path.getmtime(jar) > os.path.getmtime(s) for s in sources):
         return jar
+    shutil.rmtree(os.path.join(out, "classes"), ignore_errors=True)
     os.makedirs(os.path.join(out, "classes"), exist_ok=True)
     bindir = os.path.dirname(java) if os.path.dirname(java) else ""
     javac = os.path.join(bindir, "javac") if bindir else "javac"
     jartool = os.path.join(bindir, "jar") if bindir else "jar"
-    subprocess.run([javac, "-cp", ":".join(classpath), "-d", os.path.join(out, "classes"), source], check=True)
+    subprocess.run([javac, "-cp", ":".join(classpath), "-d", os.path.join(out, "classes")] + sources, check=True)
     with open(os.path.join(out, "MANIFEST.MF"), "w") as f:
         f.write("Premain-Class: ShaderTestAgent\n")
+    if fabric:
+        with open(os.path.join(out, "classes", "fabric.mod.json"), "w") as f:
+            json.dump({"schemaVersion": 1, "id": "shadertest", "version": "1", "environment": "client",
+                       "entrypoints": {"client": ["ShaderTestFabric"]}}, f)
     subprocess.run([jartool, "cfm", jar, os.path.join(out, "MANIFEST.MF"), "-C", os.path.join(out, "classes"), "."], check=True)
     return jar
 

@@ -11,13 +11,14 @@ Every statement here is either checked against the game's code, reproduced by an
 - [Post effects](docs/post-effects.md): `end_of_frame`, `/posteffect`, the JSON format, samplers, uniforms and depth.
 - [How a frame is drawn](docs/rendering.md): the drawing order, and what each core program draws, with screenshots.
 - [Techniques](docs/techniques.md): texture markers, telling GUI from world, isolating GUI elements, translucency with Improved Transparency, tagging pixels for post effects, passing data from datapacks, light levels, camera / world position / FOV, detecting the Nether, sending positions to post effects, restyling glowing outlines, replacing includes, animating, depth, displacement.
+- [Sodium](docs/sodium.md): what the Sodium mod changes for a shader pack, and how a pack can support it.
 - [Porting to 26.3](docs/porting.md): method, checklist, and what changed version by version since 1.21.8.
 - [What changes in 26.4](docs/next-version.md): what the 26.4 snapshots break or add, tracked ahead of the release.
 - Reference, generated from the game:
   - [Core shader programs](docs/reference/core-shaders.md): for each program, its pipelines, defines, available uniforms (with the `#ifdef` that guards each one) and vertex inputs.
   - [Uniforms](docs/reference/uniforms.md): every uniform block (with its std140 layout) and sampler.
   - [Render pipelines](docs/reference/pipelines.md): all 192 of them.
-- [Examples](examples/): complete packs with screenshots (terrain wave, depth outlines, emissive entities, emissive glow, atmosphere, thick outlines, text effects, GUI theme, world anchor, procedural sprite).
+- [Examples](examples/): complete packs with screenshots (terrain wave, depth outlines, emissive entities, emissive glow, atmosphere, thick outlines, text effects, GUI theme, world anchor, procedural sprite, data bus, scattered sky).
 - [Experiments](experiments/) and their [results](experiments/RESULTS.md), in game on OpenGL and Vulkan.
 - [Tools](tools/): `mcshaders check` validates a pack the way the game does, without launching it.
 
@@ -40,4 +41,4 @@ A [GitHub Actions workflow](.github/workflows/check.yml) downloads the 26.3 clie
 
 Tools under MIT, documentation under CC BY 4.0, example and experiment shader code under CC0. Details in [LICENSE.md](LICENSE.md).
 
-Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft. This repository contains no vanilla Minecraft files: the tools read them from your own installation.
+Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft. This repository contains no vanilla Minecraft files and no Sodium files: the tools read them from your own installation and from the Sodium jar.

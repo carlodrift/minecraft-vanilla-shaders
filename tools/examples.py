@@ -3,6 +3,8 @@
     python3 tools/examples.py                       # check every example
     python3 tools/examples.py --screenshots         # also film each one in game (Vulkan) into examples/<name>/
     python3 tools/examples.py terrain-wave --out ~/Desktop   # build a ready-to-use pack folder
+    python3 tools/examples.py --sodium JAR [--screenshots]   # check (and film) with Sodium's terrain pipelines;
+                                                             # screenshots go to build/sodium-shots/
 
 An example uses the experiment format (see tools/experiments.py): files built from the installed game's
 vanilla files plus edits, and a "scene" with commands to run before the screenshot.
@@ -29,6 +31,7 @@ def main():
     p.add_argument("--screenshots", action="store_true")
     p.add_argument("--out", help="write the built packs here instead of a temporary directory")
     p.add_argument("--version", default="26.3")
+    p.add_argument("--sodium", metavar="JAR", help="also check Sodium's terrain pipelines, and film with Fabric and Sodium")
     args = p.parse_args()
 
     env = dict(os.environ, MC_VERSION=args.version)
@@ -47,12 +50,16 @@ def main():
         src = os.path.join(root, name)
         with open(os.path.join(src, "example.json")) as f:
             exp, pack = experiments.build(json.load(f), name, jar, out_dir, pack_format)
-        verdict, message = experiments.run_check(pack, env)
+        sodium = os.path.abspath(args.sodium) if args.sodium else None
+        verdict, message = experiments.run_check(pack, env, sodium)
         line = f"{name:24} check={verdict}" + (f" ({message})" if message else "")
         if args.screenshots:
-            game_verdict, game_message, _ = experiments.run_game(exp, src, pack, "vulkan", gamedir, env)
-            shot = os.path.join(src, "vulkan.png")
-            if os.path.exists(shot):
+            game_verdict, game_message, _ = experiments.run_game(exp, src, pack, "vulkan", gamedir, env, sodium)
+            shot = os.path.join(src, "vulkan-sodium.png" if sodium else "vulkan.png")
+            if sodium and os.path.exists(shot):
+                os.makedirs(os.path.join(ROOT, "build", "sodium-shots"), exist_ok=True)
+                shutil.move(shot, os.path.join(ROOT, "build", "sodium-shots", name + ".png"))
+            elif os.path.exists(shot):
                 subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "85", shot,
                                 "--out", os.path.join(src, "screenshot.jpg")], capture_output=True)
                 os.remove(shot)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs the repository tools against an installed Minecraft version.
-#   tools/mcshaders check [resource-pack-dir]
+#   tools/mcshaders check [resource-pack-dir] [--sodium SODIUM_JAR]   (also Sodium's terrain pipelines)
 #   tools/mcshaders pipelines            (JSON lines, one per render pipeline)
 # Environment: MC_VERSION (default 26.3), JAVA (default: java on PATH, must be 25+)
 set -euo pipefail
@@ -13,6 +13,19 @@ flags=(--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow 
 
 cmd="${1:-}"
 shift || true
+# --sodium JAR: Sodium's classes and shaders join the classpath, and Check builds its pipelines too.
+rest=()
+sodium=()
+while [ $# -gt 0 ]; do
+  if [ "$1" = "--sodium" ]; then
+    sodium=(--sodium "$(cd "$(dirname "$2")" && pwd)/$(basename "$2")")
+    shift 2
+  else
+    rest+=("$1")
+    shift
+  fi
+done
+set -- "${rest[@]+"${rest[@]}"}"
 # Absolute paths, then run from a scratch directory: the game's logging creates logs/ in the working directory.
 args=()
 for a in "$@"; do args+=("$(cd "$(dirname "$a")" && pwd)/$(basename "$a")"); done
@@ -34,8 +47,14 @@ if unzip -l "$jar" com/mojang/blaze3d/pipeline/RenderPipeline.class >/dev/null 2
   src="$work/src"
 fi
 
+if [ ${#sodium[@]} -gt 0 ]; then
+  # After the game jar was detected above (the last classpath entry).
+  flags=(--enable-native-access=ALL-UNNAMED --sun-misc-unsafe-memory-access=allow -cp "$cp:${sodium[1]}")
+  sodium=(--sodium)
+fi
+
 case "$cmd" in
-  check) exec "$java" "${flags[@]}" "$src/Check.java" "$@" ;;
+  check) exec "$java" "${flags[@]}" "$src/Check.java" "$@" "${sodium[@]+"${sodium[@]}"}" ;;
   pipelines) exec "$java" "${flags[@]}" "$src/DumpPipelines.java" "$@" ;;
   *) sed -n '2,5p' "$0" >&2; exit 2 ;;
 esac

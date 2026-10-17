@@ -39,6 +39,10 @@ fragColor = apply_fog(sky, ...);           // vanilla passed ColorModulator
 
 The sky disc is only drawn by `core/sky`, so the new varying only has to match there. [core-shaders.md](../../docs/reference/core-shaders.md) lists each program's partners: always check them before changing an interface.
 
+## With Sodium
+
+The sky gradient works. The terrain keeps the vanilla fog: Sodium's terrain shader includes `sodium:fog.glsl`, not `minecraft:fog.glsl`, and Sodium warns that the pack may be incompatible ([Sodium](../../docs/sodium.md)).
+
 ## Try it
 
 ```sh

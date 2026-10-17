@@ -23,6 +23,10 @@ pos.y += 1.2 * sin(worldPos.x * 0.35 + GameTime * 6.2831853 * 200.0) * cos(world
 
 `pos` also feeds the fog distances further down, so the fog follows the displaced geometry.
 
+## With Sodium
+
+No wave: Sodium draws terrain with its own shader, which has no game time and no camera position ([Sodium](../../docs/sodium.md)).
+
 ## Try it
 
 ```sh

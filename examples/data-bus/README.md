@@ -46,6 +46,10 @@ What it took, observed on both backends:
 - **No bus when the sky disc isn't drawn.** According to the code, that is in lava, in powder snow, under effects that hide the sky, and in the Nether and the End. Not tested in game. The post effect then does nothing, because it looks for the marker first.
 - **Column x = 0 shows its neighbour's colors.** At one pixel wide, this is invisible.
 
+## With Sodium
+
+Sodium draws terrain with `sodium:blocks/block_layer_opaque`, which would cover the bus. The example protects the column there too, with the same macro, and lists `terrain.fsh` in `pack.mcmeta` under `"sodium": {"ignored_shaders"}` so that Sodium doesn't warn. It renders the same with and without Sodium ([Sodium](../../docs/sodium.md)). Building it adds Sodium's license next to that file.
+
 ## Try it
 
 ```sh

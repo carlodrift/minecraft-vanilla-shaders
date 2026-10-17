@@ -17,6 +17,8 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 | [scattered-sky](scattered-sky/) | Core + post: a physically based sky drawn by a post effect, with vanilla's fog turned toward it, exposure and tonemapping |
 | [data-bus](data-bus/) | Core + post: a reserved screen column carries the projection, the view rotation, the sky and fog colors and the sun direction to a post effect |
 
+With the Sodium mod, the examples that change terrain shaders behave differently: see [Sodium](../docs/sodium.md#the-examples-under-sodium).
+
 An example is built from your installed game: vanilla files plus the edits in its `example.json`, and its own files. This keeps vanilla files out of the repository.
 
 ```sh

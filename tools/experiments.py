@@ -14,6 +14,9 @@ Each experiment is a directory with an experiment.json:
          "vanilla": "assets/minecraft/shaders/core/position_color.fsh",   # start from the game's file
          "edits": [{"find": "...", "replace": "..."}]},                    # each find must match once
         {"path": "assets/mylib/shaders/include/x.glsl", "content": "..."}, # or a file written as-is
+        {"path": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",     # or a Sodium file plus edits,
+         "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",   # from the Sodium jar (SODIUM_JAR,
+         "edits": [...]},                                                   # or build/mods/); left out without
         {"path": "assets/minecraft/textures/entity/creeper/creeper.png",     # or a vanilla PNG whose dark
          "vanilla_image": "assets/minecraft/textures/entity/creeper/creeper.png",  # pixels in a region get
          "mark": {"region": [8, 8, 16, 16], "max_brightness": 150, "alpha": 254,   # a marker alpha
@@ -37,6 +40,7 @@ Results are written to experiments/RESULTS.md.
 """
 import argparse
 import datetime
+import glob
 import json
 import os
 import re
@@ -54,20 +58,48 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MC = os.environ.get("MINECRAFT_DIR", os.path.expanduser("~/Library/Application Support/minecraft"))
 
 
+def sodium_jar():
+    """The Sodium jar to read Sodium files from: SODIUM_JAR, or the newest build/mods/sodium-fabric-*.jar."""
+    if os.environ.get("SODIUM_JAR"):
+        return os.environ["SODIUM_JAR"]
+    jars = sorted(glob.glob(os.path.join(ROOT, "build", "mods", "sodium-fabric-*.jar")), key=os.path.getmtime)
+    return jars[-1] if jars else None
+
+
 def build(exp, name, jar, out_dir, pack_format):
     """Build the pack described by `exp` (experiment.json / example.json content) into out_dir/name."""
     pack = os.path.join(out_dir, name)
     shutil.rmtree(pack, ignore_errors=True)
     os.makedirs(pack)
+    meta = {"pack": {"description": exp["title"], "min_format": pack_format, "max_format": pack_format}}
+    meta.update(exp.get("mcmeta", {}))   # extra pack.mcmeta sections, e.g. "sodium"
     with open(os.path.join(pack, "pack.mcmeta"), "w") as f:
-        json.dump({"pack": {"description": exp["title"], "min_format": pack_format, "max_format": pack_format}}, f)
+        json.dump(meta, f)
+    sodium = None
     for spec in exp["files"]:
-        if "vanilla" in spec:
-            text = jar.read(spec["vanilla"]).decode()
+        if "vanilla" in spec or "sodium" in spec:
+            if "sodium" in spec:
+                if sodium is None:
+                    path = sodium_jar()
+                    if path is None:
+                        print(f"{name}: no Sodium jar, {spec['path']} left out (see tools/fetch.py sodium)", file=sys.stderr)
+                        continue
+                    sodium = zipfile.ZipFile(path)
+                    # Sodium's files are under the PolyForm Shield 1.0.0 license, which must come with them.
+                    target = os.path.join(pack, "assets", "sodium", "LICENSE-Sodium.md")
+                    os.makedirs(os.path.dirname(target), exist_ok=True)
+                    with open(target, "w") as f:
+                        f.write("The files under assets/sodium/ are modified from Sodium (https://github.com/CaffeineMC/sodium),\n"
+                                "by JellySquid and the CaffeineMC contributors, under this license:\n\n"
+                                + sodium.read("LICENSE.md").decode())
+                source, origin = sodium.read(spec["sodium"]).decode(), spec["sodium"]
+            else:
+                source, origin = jar.read(spec["vanilla"]).decode(), spec["vanilla"]
+            text = source
             for edit in spec.get("edits", []):
                 count = text.count(edit["find"])
                 if count != 1:
-                    raise SystemExit(f"{name}: edit matches {count} times in {spec['vanilla']}: {edit['find']!r}")
+                    raise SystemExit(f"{name}: edit matches {count} times in {origin}: {edit['find']!r}")
                 text = text.replace(edit["find"], edit["replace"])
         elif "png" in spec:
             # A small generated image: "colors" lists width x height RGBA pixels, row by row,
@@ -106,8 +138,13 @@ def build(exp, name, jar, out_dir, pack_format):
     return exp, pack
 
 
-def run_check(pack, env):
-    r = subprocess.run([os.path.join(ROOT, "tools", "mcshaders"), "check", pack], capture_output=True, text=True, env=env)
+# Fabric Loader version for runs with Sodium.
+FABRIC_LOADER = "0.20.0"
+
+
+def run_check(pack, env, sodium=None):
+    r = subprocess.run([os.path.join(ROOT, "tools", "mcshaders"), "check", pack] + (["--sodium", sodium] if sodium else []),
+                       capture_output=True, text=True, env=env)
     problems = [l[4:] for l in r.stdout.splitlines() if l.startswith("  | ")]
     return ("pass" if r.returncode == 0 else "fail"), (problems[0] if problems else "")
 
@@ -133,7 +170,7 @@ hud off
 """
 
 
-def run_game(exp, exp_dir, pack, backend, gamedir, env):
+def run_game(exp, exp_dir, pack, backend, gamedir, env, sodium=None):
     """Load the pack in the game. With a "scene", join a test world, run its commands and take a screenshot."""
     name = os.path.basename(pack)
     cmd = [sys.executable, "-I", os.path.join(ROOT, "tools", "launch.py"), "--gamedir", gamedir,
@@ -157,11 +194,13 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
         shot = os.path.join(gamedir, "screenshots", "experiment.png")
         if os.path.exists(shot):
             os.remove(shot)
-        cmd += ["--script", script, "--seconds", "90", "--size", "640x360"]
+        cmd += ["--script", script, "--seconds", "150" if sodium else "90", "--size", "640x360"]
         for key, value in scene.get("options", {}).items():
             cmd += ["--option", f"{key}={value}"]
     else:
-        cmd += ["--seconds", "20"]
+        cmd += ["--seconds", "40" if sodium else "20"]
+    if sodium:
+        cmd += ["--fabric", FABRIC_LOADER, "--mod", sodium]
     subprocess.run(cmd, capture_output=True, env=env)
     shutil.rmtree(os.path.join(gamedir, "resourcepacks", name), ignore_errors=True)
     with open(os.path.join(gamedir, "logs", "latest.log"), errors="replace") as f:
@@ -176,7 +215,7 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
     if scene is not None:
         shot = os.path.join(gamedir, "screenshots", "experiment.png")
         if os.path.exists(shot):
-            target = os.path.join(exp_dir, f"{backend}.png")
+            target = os.path.join(exp_dir, f"{backend}{'-sodium' if sodium else ''}.png")
             subprocess.run(["sips", "-Z", "640", shot, "--out", target], capture_output=True)
         for pattern in scene.get("log_fail", []):
             m = re.search(pattern + ".*", log)

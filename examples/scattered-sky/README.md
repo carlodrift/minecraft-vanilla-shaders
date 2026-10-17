@@ -53,6 +53,10 @@ Observed on Vulkan and OpenGL:
 - **Clouds are found by height.** A pack or datapack that moves them (the `cloud_height` attribute) needs `SKY_CLOUD_BOTTOM` changed.
 - **Cost:** 16 × 4 samples per pixel and per light, every frame. Fine on a recent GPU, heavy at 4K on a small one.
 
+## With Sodium
+
+Like [data-bus](../data-bus/#with-sodium), it also edits Sodium's terrain shader: the bus protection, and alpha 1 for cutout blocks. It renders the same with and without Sodium ([Sodium](../../docs/sodium.md)). Under Sodium, the sky is not drawn while the camera is in a fluid, so neither is the bus.
+
 ## Try it
 
 ```sh

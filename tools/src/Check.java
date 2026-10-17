@@ -47,7 +47,10 @@ import java.util.stream.Stream;
  *    against the pipeline's vertex format (by name), vertex outputs against fragment inputs (by
  *    location), uniform blocks and samplers against the pipeline's uniforms (by name), push constants.
  *
- * Usage: Check [resource-pack-dir]   (without a pack, checks vanilla only)
+ * Usage: Check [resource-pack-dir] [--sodium]   (without a pack, checks vanilla only)
+ *
+ * With --sodium (and a Sodium jar on the classpath, see tools/mcshaders), Sodium's terrain pipelines are
+ * checked too: they are built by Sodium's own code, read through reflection, so they match the jar.
  */
 public class Check {
     static final String[] DEVICE_MACROS = {
@@ -82,7 +85,9 @@ public class Check {
 
     public static void main(String[] args) throws IOException {
         SharedConstants.tryDetectVersion();
-        pack = args.length > 0 ? Path.of(args[0]) : null;
+        List<String> rest = new ArrayList<>(List.of(args));
+        boolean sodium = rest.remove("--sodium");
+        pack = !rest.isEmpty() ? Path.of(rest.get(0)) : null;
         if (pack != null && !Files.isDirectory(pack.resolve("assets"))) {
             System.err.println("Not a resource pack directory (no assets/): " + pack);
             System.exit(2);
@@ -91,6 +96,9 @@ public class Check {
         List<RenderPipeline> pipelines = new ArrayList<>(RenderPipelines.requiredPipelines());
         pipelines.addAll(RenderPipelines.optionalPipelines());
         pipelines.addAll(postPipelines());
+        if (sodium) {
+            pipelines.addAll(sodiumPipelines());
+        }
 
         long compiler = Shaderc.shaderc_compiler_initialize();
         int checkedPipelines = 0;
@@ -221,6 +229,48 @@ public class Check {
             }
         });
         return result;
+    }
+
+    /**
+     * Sodium's terrain pipelines (sodium:blocks/block_layer_opaque), as Sodium builds them: its
+     * ShaderChunkRenderer.createShader for each terrain pass, and createOITShader for each OIT stage.
+     */
+    static List<RenderPipeline> sodiumPipelines() {
+        String base = "net.caffeinemc.mods.sodium.client.render.chunk.";
+        try {
+            Object vertexType = Class.forName(base + "vertex.format.ChunkMeshFormats").getField("COMPACT").get(null);
+            Class<?> rendererClass = Class.forName(base + "ShaderChunkRenderer");
+            // An instance without running its constructor, which would allocate GPU buffers.
+            var unsafeField = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Object unsafe = unsafeField.get(null);
+            Object renderer = unsafe.getClass().getMethod("allocateInstance", Class.class)
+                .invoke(unsafe, Class.forName(base + "DefaultChunkRenderer"));
+            for (String field : List.of("vertexType", "vertexFormat")) {
+                var f = rendererClass.getDeclaredField(field);
+                f.setAccessible(true);
+                f.set(renderer, field.equals("vertexType") ? vertexType : vertexType.getClass().getMethod("getVertexFormat").invoke(vertexType));
+            }
+            Class<?> passClass = Class.forName(base + "terrain.TerrainRenderPass");
+            var create = rendererClass.getDeclaredMethod("createShader", String.class, passClass);
+            var createOit = rendererClass.getDeclaredMethod("createOITShader", String.class, passClass,
+                net.minecraft.client.renderer.oit.OitStage.class);
+            create.setAccessible(true);
+            createOit.setAccessible(true);
+            List<RenderPipeline> result = new ArrayList<>();
+            for (Object pass : (Object[]) Class.forName(base + "terrain.DefaultTerrainRenderPasses").getField("ALL").get(null)) {
+                result.add((RenderPipeline) create.invoke(renderer, "blocks/block_layer_opaque", pass));
+                net.minecraft.client.renderer.oit.OitPipelineSet oit =
+                    (net.minecraft.client.renderer.oit.OitPipelineSet) createOit.invoke(renderer, "blocks/block_layer_opaque", pass,
+                        net.minecraft.client.renderer.oit.OitStage.values()[0]);   // builds the set for every stage
+                for (net.minecraft.client.renderer.oit.OitStage stage : net.minecraft.client.renderer.oit.OitStage.values()) {
+                    result.add(oit.getPipeline(stage));
+                }
+            }
+            return result;
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("cannot read Sodium's pipelines from its jar (Sodium 0.9 for 26.3 expected)", e);
+        }
     }
 
     static Compiled compile(long compiler, Variant v, int profile) {

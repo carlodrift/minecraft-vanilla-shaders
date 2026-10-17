@@ -373,6 +373,20 @@
           "replace": "void main() {\n    BUS_PROTECT_ALWAYS\n"
         }
       ]
+    },
+    {
+      "path": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",
+      "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // With Sodium, terrain is drawn by this program instead of core/terrain: protect the bus here too.\n    BUS_PROTECT_ALWAYS\n"
+        }
+      ]
     }
   ],
   "scene": {
@@ -386,5 +400,12 @@
       "Failed to load post chain",
       "Failed to apply post effect"
     ]
+  },
+  "mcmeta": {
+    "sodium": {
+      "ignored_shaders": [
+        "terrain.fsh"
+      ]
+    }
   }
 }

@@ -166,6 +166,24 @@
       ]
     },
     {
+      "path": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",
+      "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <sky:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SKY_PROTECT_BUS_ALWAYS   // terrain is never drawn with an orthographic projection\n"
+        },
+        {
+          "find": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n",
+          "replace": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n    if (ALPHA_CUTOUT > 0.4) {\n        color.a = 1.0;\n    }\n"
+        }
+      ]
+    },
+    {
       "path": "assets/minecraft/shaders/core/entity.fsh",
       "vanilla": "assets/minecraft/shaders/core/entity.fsh",
       "edits": [
@@ -417,5 +435,12 @@
         }
       ]
     }
-  ]
+  ],
+  "mcmeta": {
+    "sodium": {
+      "ignored_shaders": [
+        "terrain.fsh"
+      ]
+    }
+  }
 }
