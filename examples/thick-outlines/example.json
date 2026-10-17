@@ -23,7 +23,10 @@
     "commands": [
       "summon cow 1 4 7 {NoAI:1b,Glowing:1b,Rotation:[150f,0f]}",
       "summon pig 5 4 7 {NoAI:1b,Glowing:1b,Rotation:[210f,0f]}",
-      "summon armor_stand 3 4 9 {Glowing:1b,ShowArms:1b,Rotation:[180f,0f]}"
+      "summon armor_stand 3 4 9 {Glowing:1b,ShowArms:1b,Rotation:[180f,0f]}",
+      "team add red",
+      "team modify red color red",
+      "team join red @e[type=pig]"
     ],
     "log_fail": [
       "Failed to load post chain",

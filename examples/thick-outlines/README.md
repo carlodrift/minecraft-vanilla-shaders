@@ -22,7 +22,7 @@ Glowing entities get a thick, crisp, tinted outline instead of vanilla's thin bl
 | `outline:post/dilate` | `minecraft:entity_outline` | `swap` | outside a silhouette, takes the color of the nearest silhouette pixel within `Radius` (a disc), tinted by `Tint` |
 | `outline:post/copy` | `swap` | `minecraft:entity_outline` | copies back, **keeping alpha**, since the composite uses it |
 
-- **Team colors still work**, because the outline takes the silhouette's color: with `/team modify <team> color`, the outline is that color times `Tint`.
+- **Team colors still work**, because the outline takes the silhouette's color: the outline is the team color times `Tint`. In the screenshot, the pig is in a red team (`/team modify red color red`).
 - **`Radius` is in pixels**, so the outline keeps the same thickness at any distance. It costs about `Radius²` texture reads per pixel near outlines.
 - **The vertex shader is the pack's own** (`outline:post/fullscreen`, see [Post effects](../../docs/post-effects.md#the-vertex-shader)).
 
