@@ -1,0 +1,26 @@
+{
+  "title": "In the Nether, `Light1_Direction.y` is negative: a shader can tell it apart (the pig turns red)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/entity.vsh",
+      "vanilla": "assets/minecraft/shaders/core/entity.vsh",
+      "edits": [
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n    #if defined(PER_FACE_LIGHTING) || !defined(NO_CARDINAL_LIGHTING)\n    // Nether-style lighting: the second light points down. In the GUI it does too, so exclude orthographic projections.\n    if (Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0) {\n        #ifdef PER_FACE_LIGHTING\n        vertexPerFaceColorBack.rgb *= vec3(1.0, 0.25, 0.25);\n        vertexPerFaceColorFront.rgb *= vec3(1.0, 0.25, 0.25);\n        #else\n        vertexColor.rgb *= vec3(1.0, 0.25, 0.25);\n        #endif\n    }\n    #endif\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "execute in minecraft:the_nether run fill -3 64 -3 9 72 9 minecraft:air",
+      "execute in minecraft:the_nether run fill -3 63 -3 9 63 9 minecraft:netherrack",
+      "execute in minecraft:the_nether run tp @s 3 65.4 0 0 10",
+      "gamemode spectator",
+      "tp @s 3 65.4 0 0 10",
+      "summon pig 3 64 3 {NoAI:1b,Rotation:[180f,0f]}"
+    ]
+  }
+}

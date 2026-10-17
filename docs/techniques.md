@@ -135,6 +135,19 @@ Use it for light-dependent effects that vanilla's lightmap can't express, like e
 
 In `entity.vsh`, the `PER_FACE_LIGHTING` variants (`entity_cutout` and others: mobs, for example) output `vertexPerFaceColorFront` and `vertexPerFaceColorBack` instead of `vertexColor`. An effect on the vertex color has to change both outputs, or it won't show on most mobs.
 
+## Detect the Nether
+
+The light directions of the `Lighting` block (`Light0_Direction`, `Light1_Direction`) depend on the dimension *(code)*. With Nether lighting, the second light points down:
+
+```glsl
+#include <minecraft:light.glsl>   // Lighting: available to item, and to entity variants that use lighting
+bool netherLighting = Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0;
+```
+
+- **In the Nether, a pig tinted by this test turns red. The same shader leaves it unchanged in the Overworld** ([exp 75](../experiments/75-nether-lighting/), [exp 76](../experiments/76-overworld-lighting/)).
+- **Exclude the GUI:** entities shown in the GUI are lit from below too, hence the orthographic test.
+- **This detects Nether-style lighting, not the Nether itself.** The game picks the lighting from the dimension type *(code)*. The End and the Overworld share the same lighting, so this test can't tell them apart.
+
 ## Read depth in a post effect
 
 Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The hand is not in that depth while a post effect is active ([How a frame is drawn](rendering.md)).
