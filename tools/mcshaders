@@ -17,9 +17,25 @@ shift || true
 args=()
 for a in "$@"; do args+=("$(cd "$(dirname "$a")" && pwd)/$(basename "$a")"); done
 set -- "${args[@]+"${args[@]}"}"
-cd "$(mktemp -d)"
+work="$(mktemp -d)"
+cd "$work"
+
+# The sources are written against 26.3. From 26.4 some classes moved package: adapt the imports.
+src="$here/src"
+jar="${cp##*:}"
+if unzip -l "$jar" com/mojang/blaze3d/pipeline/RenderPipeline.class >/dev/null 2>&1; then
+  mkdir -p "$work/src"
+  for f in "$here"/src/*.java; do
+    sed -e 's/com\.mojang\.renderpearl\.api\.pipeline\.RenderPipeline;/com.mojang.blaze3d.pipeline.RenderPipeline;/' \
+        -e 's/com\.mojang\.renderpearl\.api\.vertex\./com.mojang.blaze3d.vertex./' \
+        -e 's/com\.mojang\.renderpearl\.backend\.api\.SpvModule;/com.mojang.renderpearl.api.pipeline.SpvModule;/' \
+        "$f" > "$work/src/$(basename "$f")"
+  done
+  src="$work/src"
+fi
+
 case "$cmd" in
-  check) exec "$java" "${flags[@]}" "$here/src/Check.java" "$@" ;;
-  pipelines) exec "$java" "${flags[@]}" "$here/src/DumpPipelines.java" "$@" ;;
+  check) exec "$java" "${flags[@]}" "$src/Check.java" "$@" ;;
+  pipelines) exec "$java" "${flags[@]}" "$src/DumpPipelines.java" "$@" ;;
   *) sed -n '2,5p' "$0" >&2; exit 2 ;;
 esac

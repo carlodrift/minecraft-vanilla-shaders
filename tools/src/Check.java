@@ -67,7 +67,8 @@ public class Check {
 
     record Variant(Identifier shader, ShaderType type, Map<String, String> values, Set<String> flags) {
         Identifier file() {
-            return type.idConverter().idToFile(shader);
+            // assets/<ns>/shaders/<path>.vsh|.fsh, as ShaderManager loads them.
+            return shader.withPath(path -> "shaders/" + path + (type == ShaderType.FRAGMENT ? ".fsh" : ".vsh"));
         }
     }
 
@@ -274,7 +275,7 @@ public class Check {
                 ByteBuffer spirv = Shaderc.shaderc_result_get_bytes(result);
                 ByteBuffer copy = MemoryUtil.memCalloc(spirv.remaining());
                 MemoryUtil.memCopy(spirv, copy);
-                return new Compiled(new SPIRVModule(copy, v.type()), null, fromPack);
+                return new Compiled(spirvModule(v.file().toString(), copy, v.type()), null, fromPack);
             } finally {
                 Shaderc.shaderc_result_release(result);
             }
@@ -410,6 +411,23 @@ public class Check {
             }
         }
         return slots;
+    }
+
+    /** The game's SPIR-V reflection wrapper: (spv, type) in 26.3, (name, spv, type, entry point) in 26.4. */
+    static SpvModule spirvModule(String name, ByteBuffer spv, ShaderType type) {
+        try {
+            for (java.lang.reflect.Constructor<?> c : SPIRVModule.class.getConstructors()) {
+                if (c.getParameterCount() == 2) {
+                    return (SpvModule) c.newInstance(spv, type);
+                }
+                if (c.getParameterCount() == 4) {
+                    return (SpvModule) c.newInstance(name, spv, type, "main");
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+        throw new IllegalStateException("unknown SPIRVModule constructor");
     }
 
     /** Reads assets/<namespace>/<path>, from the pack first, then from the game jar. */
