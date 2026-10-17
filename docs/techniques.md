@@ -128,7 +128,7 @@ Use it for light-dependent effects that vanilla's lightmap can't express, like e
 | What | How | Evidence |
 |---|---|---|
 | Camera position (world) | `vec3(CameraBlockPos) - CameraOffset` (`Globals`) | *(code)* |
-| World position, entities and items | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
+| World position, entities | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
 | World position, terrain | `Position + vec3(ChunkPosition)` | [terrain-wave](../examples/terrain-wave/) |
 | Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option | [exp 73](../experiments/73-fov-from-projection/) |
 

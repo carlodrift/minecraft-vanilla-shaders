@@ -68,9 +68,14 @@ def build(exp, name, jar, out_dir, pack_format):
                     raise SystemExit(f"{name}: edit matches {count} times in {spec['vanilla']}: {edit['find']!r}")
                 text = text.replace(edit["find"], edit["replace"])
         elif "png" in spec:
-            # A small generated image: "colors" lists width x height RGBA pixels, row by row.
+            # A small generated image: "colors" lists width x height RGBA pixels, row by row,
+            # or "pattern": "coords" writes each pixel's coordinates in green and blue.
             png = spec["png"]
-            rows = [png["colors"][y * png["width"]:(y + 1) * png["width"]] for y in range(png["height"])]
+            if png.get("pattern") == "coords":
+                # Each pixel holds its own coordinates: red = png["red"], green = x, blue = y.
+                rows = [[[png["red"], x, y, 255] for x in range(png["width"])] for y in range(png["height"])]
+            else:
+                rows = [png["colors"][y * png["width"]:(y + 1) * png["width"]] for y in range(png["height"])]
             target = os.path.join(pack, spec["path"])
             os.makedirs(os.path.dirname(target), exist_ok=True)
             with open(target, "wb") as f:
