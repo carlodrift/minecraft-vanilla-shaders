@@ -24,6 +24,7 @@ Each experiment is a directory with an experiment.json:
         "hud": true,                   # keep the HUD in the screenshot
         "options": {"improvedTransparency": "true"},   # options.txt entries
         "quick": ["tp @s ~ ~ ~ ~5 ~"],  # run 50 ms apart right before the screenshot
+        "inventory": true,             # open the inventory screen for the screenshot
         "log_pass": ["regex that must appear in the log"],
         "log_fail": ["regex that must not appear"]
       }
@@ -135,6 +136,8 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
             # "quick" commands run 50 ms apart right before the screenshot, e.g. to move the camera.
             for command in scene.get("quick", []):
                 f.write(f"command {command}\nwait 0.05\n")
+            if scene.get("inventory"):
+                f.write("inventory\nwait 1\n")
             f.write("screenshot experiment\nwait 1\nquit\n")
         shot = os.path.join(gamedir, "screenshots", "experiment.png")
         if os.path.exists(shot):

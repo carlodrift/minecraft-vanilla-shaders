@@ -39,7 +39,7 @@ The same program draws an item in the world, in hand and in the hotbar. GUI draw
 bool inGui = ProjMat[2][3] == 0.0;
 ```
 
-In [exp 59](../experiments/59-gui-or-world/), `core/item.fsh` turns magenta only when `inGui` is true. The hotbar icons turn magenta, while the dropped sword and the one held in hand are unchanged, on both backends.
+In [exp 59](../experiments/59-gui-or-world/), `core/item.fsh` turns magenta only when `inGui` is true. The hotbar icons turn magenta, while the dropped sword and the one held in hand are unchanged, on both backends. [gui-theme](../examples/gui-theme/) uses the same test to recolor the GUI textures only.
 
 ## Change the color of translucent things (Improved Transparency)
 

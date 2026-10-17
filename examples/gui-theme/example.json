@@ -1,0 +1,32 @@
+{
+  "title": "GUI theme: shift the neutral greys of GUI textures towards blue, in position_tex_color.fsh",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_tex_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_tex_color.fsh",
+      "edits": [
+        {
+          "find": "uniform sampler2D Sampler0;\n",
+          "replace": "#include <minecraft:projection.glsl>\n\nuniform sampler2D Sampler0;\n"
+        },
+        {
+          "find": "    fragColor = color * ColorModulator;",
+          "replace": "    // GUI theme: in the GUI (orthographic projection), shift neutral greys towards blue, keeping their brightness.\n    // Colored texels (icons, the health bar...) have some saturation and are left alone.\n    if (ProjMat[2][3] == 0.0) {\n        float lum = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n        float saturation = max(max(color.r, color.g), color.b) - min(min(color.r, color.g), color.b);\n        if (saturation < 0.06) {\n            color.rgb = lum * vec3(0.78, 0.9, 1.25);\n        }\n    }\n    fragColor = color * ColorModulator;"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "hud": true,
+    "inventory": true,
+    "commands": [
+      "gamemode survival",
+      "item replace entity @s hotbar.0 with minecraft:diamond_sword",
+      "item replace entity @s hotbar.1 with minecraft:apple 12",
+      "item replace entity @s hotbar.2 with minecraft:oak_planks 64",
+      "item replace entity @s inventory.4 with minecraft:torch 32",
+      "item replace entity @s armor.chest with minecraft:iron_chestplate"
+    ]
+  }
+}
