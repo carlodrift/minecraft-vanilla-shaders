@@ -29,7 +29,7 @@ if (abs(tex.r * 255.0 - 254.0) < 0.5 && tex.a > 0.99) {
 
 - **The rest of the pack is a plain custom item:** `items/orb.json` points to `models/item/orb.json`, which uses the texture through `item/generated`.
 - **It works in the GUI too:** GUI icons are drawn by `core/item` into the icon atlas ([Techniques](../../docs/techniques.md#isolate-an-element-of-the-gui)), so the hotbar shows the orb.
-- **It handles every variant:** in the `OIT_ALPHA_ONLY` passes it only reports alpha, so it also works with Improved Transparency.
+- **It compiles in every variant** (`tools/mcshaders check`). In the `OIT_ALPHA_ONLY` passes it only reports alpha. It was filmed with Improved Transparency off, the default.
 - **The edge is stepped at 1/64 of the sprite**, the resolution of the coordinate texture. Use a larger texture for a smoother edge.
 - **The pulse uses a whole number of periods per `GameTime` wrap** ([Techniques](../../docs/techniques.md#animate)).
 
