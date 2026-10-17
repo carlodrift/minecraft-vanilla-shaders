@@ -27,7 +27,7 @@ if (all(lessThan(abs(Color.rgb * 255.0 - vec3(254.0, 1.0, 2.0)), vec3(0.5)))) {
 }
 ```
 
-In both experiments, a control in `#FE0103` is left untouched. Compare in the vertex shader, on the raw `Color`: the fragment shader only sees it after lighting and the lightmap.
+In both experiments, a control in `#FE0103` is left untouched. [text-effects](../examples/text-effects/) uses this to trigger rainbow and wave effects on any text. Compare in the vertex shader, on the raw `Color`: the fragment shader only sees it after lighting and the lightmap.
 
 ## Tell the GUI from the world
 

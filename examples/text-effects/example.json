@@ -1,0 +1,31 @@
+{
+  "title": "Text effects selected by an exact text color: rainbow (#FE0101) and wave (#FE0102)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/text.vsh",
+      "vanilla": "assets/minecraft/shaders/core/text.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:projection.glsl>\n",
+          "replace": "#include <minecraft:projection.glsl>\n#include <minecraft:globals.glsl>\n"
+        },
+        {
+          "find": "#endif\n    texCoord0 = UV0;\n",
+          "replace": "#endif\n    // Text effects selected by an exact text color, set from commands or a datapack.\n    // gl_VertexIndex / 4 is the glyph's index in the text: the effect works in the world and in the GUI alike.\n    float glyph = float(gl_VertexIndex / 4);\n    vec3 rgb = Color.rgb * 255.0;\n    if (all(lessThan(abs(rgb - vec3(254.0, 1.0, 1.0)), vec3(0.5)))) {\n        // #FE0101: rainbow, scrolling once every 30 seconds (600 periods per GameTime wrap).\n        float hue = fract(glyph * 0.08 - GameTime * 800.0);\n        vec3 rainbow = clamp(abs(fract(hue + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);\n        vertexColor = vec4(rainbow, Color.a);\n    } else if (all(lessThan(abs(rgb - vec3(254.0, 1.0, 2.0)), vec3(0.5)))) {\n        // #FE0102: wave, in clip space so the height is the same at any distance and in the GUI.\n        gl_Position.y += sin(glyph * 0.9 + GameTime * 6.2831853 * 2400.0) * 0.025 * gl_Position.w;\n        vertexColor = vec4(1.0, 1.0, 1.0, Color.a);\n    }\n    texCoord0 = UV0;\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "hud": true,
+    "commands": [
+      "summon text_display 3 6.4 5 {text:{text:\"Rainbow text\",color:\"#FE0101\"},billboard:\"center\",transformation:{scale:[1.6f,1.6f,1.6f],translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f]}}",
+      "summon text_display 3 5.9 5 {text:{text:\"Wavy text\",color:\"#FE0102\"},billboard:\"center\",transformation:{scale:[1.6f,1.6f,1.6f],translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f]}}",
+      "summon text_display 3 5.4 5 {text:{text:\"Plain text\",color:\"#FFFFFF\"},billboard:\"center\",transformation:{scale:[1.6f,1.6f,1.6f],translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f]}}",
+      "title @s times 0 200 0",
+      "title @s title {text:\"Wavy title\",color:\"#FE0102\"}",
+      "title @s subtitle {text:\"rainbow subtitle\",color:\"#FE0101\"}"
+    ]
+  }
+}

@@ -19,7 +19,7 @@ Glowing entities get a thick, crisp, tinted outline instead of vanilla's thin bl
 
 | Pass | Reads | Writes | Does |
 |---|---|---|---|
-| `outline:post/dilate` | `minecraft:entity_outline` | `swap` | outside a silhouette, takes the color of the nearest silhouette pixel within `Radius` (a disc), tinted by `Tint` |
+| `outline:post/dilate` | `minecraft:entity_outline` | `swap` | outside a silhouette, takes the color of a silhouette pixel within `Radius` (a disc), tinted by `Tint` |
 | `outline:post/copy` | `swap` | `minecraft:entity_outline` | copies back, **keeping alpha**, since the composite uses it |
 
 - **Team colors still work**, because the outline takes the silhouette's color: the outline is the team color times `Tint`. In the screenshot, the pig is in a red team (`/team modify red color red`).
