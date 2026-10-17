@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Read depth in a post effect](#read-depth-in-a-post-effect)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect)
 
 ## Mark texels in a texture
 
@@ -79,7 +79,7 @@ bool netherLighting = Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0;
 | Camera position (world) | `vec3(CameraBlockPos) - CameraOffset` (`Globals`) | *(code)* |
 | World position, entities | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
 | World position, terrain | `Position + vec3(ChunkPosition)` | [terrain-wave](../examples/terrain-wave/) |
-| Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option | [exp 73](../experiments/73-fov-from-projection/) |
+| Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option, more when flying or sprinting (dynamic FOV is in `ProjMat`) | [exp 73](../experiments/73-fov-from-projection/), [data-bus](../examples/data-bus/) |
 
 In `entity.vsh`, the `PER_FACE_LIGHTING` variants (`entity_cutout` and others: mobs, for example) output `vertexPerFaceColorFront` and `vertexPerFaceColorBack` instead of `vertexColor`. An effect on the vertex color has to change both outputs, or it won't show on most mobs.
 
@@ -158,6 +158,17 @@ Tagging pixels ([above](#tag-pixels-for-a-post-effect)) tells a post effect *whi
 - **In the post effect,** find the marker with `texelFetch`, decode the value, then paint over the strip.
 
 [world-anchor](../examples/world-anchor/) does this end to end, and lists what had to be found out along the way. NDC (-1, -1) is the bottom-left corner on both backends. The moved quad must stay front-facing, since back faces are culled. And the vertex a `flat` varying comes from differs between OpenGL and Vulkan.
+
+## Give post effects the camera: a data bus
+
+Post effects have no `ProjMat` and no view matrix, so they can't turn depth into a direction or a position. Control pixels can carry them, but the strip must survive the whole frame. [data-bus](../examples/data-bus/) reserves **column x = 0 of the screen**:
+
+- **Every program that draws the world discards its fragments in that column**, unless the render is orthographic (`ProjMat[2][3] == 0`: the GUI and the GUI icon atlas).
+- **`core/sky` writes `ProjMat`, its `ModelViewMat` (the camera's rotation), the sky color and `FogColor` there.** A float fits in a pixel as 4 bytes, through `floatBitsToUint`, because the sky pipeline doesn't blend.
+- **`core/position_tex` adds the sun's direction.** The sun is the quad with scale 30 (the moon's is 20). Its pipeline blends additively, so the sky clears its rows to black first, and the value goes in RGB with alpha 1.
+- **The post effect decodes the column, then paints it over.** View direction of a pixel: `inverse(proj) * vec4(ndc, 1, 1)`. World direction: `transpose(mat3(view))` times that.
+
+The sky and the sun have no depth test and no depth write, and are drawn first ([How a frame is drawn](rendering.md#frame-order)), so whatever they write is overwritten by later draws unless those discard. There is no bus where the sky disc isn't drawn: the post effect must check the marker first.
 
 ## Read depth in a post effect
 

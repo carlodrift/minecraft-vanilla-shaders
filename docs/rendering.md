@@ -11,7 +11,7 @@ The order comes from the 26.3 client code. The screenshots come from [tools/gall
 ## Frame order
 
 1. **Clear** the main target to the fog color, and its depth to 0. *(code)*
-2. **Sky**: sky color, sunrise and sunset glow, sun, moon and stars. In the End, the End sky. Skipped in lava, powder snow, and under effects that hide the sky. *(code)*
+2. **Sky**: sky color, sunrise and sunset glow, sun, moon and stars. In the End, the End sky. Skipped in lava, powder snow, and under effects that hide the sky. *(code)* None of these pipelines tests or writes depth, and the sun, the moon and the stars blend additively ([pipelines.json](../reference/26.3/pipelines.json)), so later draws simply cover the sky ([data-bus](../examples/data-bus/)).
 3. **Opaque**: opaque and cutout terrain (`core/terrain`), then solid "features": entities, block entities, items, particles… *(code)*
 4. **Translucent.** It depends on the **Improved Transparency** option, off by default. *(code)*
    - **Off:** translucent features, translucent terrain, clouds, weather, then the world border, drawn directly into the main target.

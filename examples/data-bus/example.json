@@ -1,0 +1,390 @@
+{
+  "title": "Data bus: projection, view rotation, sky and fog colors and the sun direction, made available to post effects",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/bus/shaders/post/bus_check.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <bus:bus.glsl>\n\n// Decode the data bus, check that the values are consistent, redraw the sky from them.\nuniform sampler2D InSampler;\nuniform sampler2D DepthSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nint busTexelRow(int row, bool fromBottom, int height) {\n    return fromBottom ? row : height - 1 - row;\n}\n\nvec4 busTexel(int row, bool fromBottom, ivec2 size) {\n    return texelFetch(InSampler, ivec2(0, busTexelRow(row, fromBottom, size.y)), 0);\n}\n\nbool isMarker(vec4 c) {\n    return all(lessThan(abs(c.rgb - vec3(1.0, 0.0, 1.0)), vec3(0.01)));\n}\n\nvoid main() {\n    ivec2 size = textureSize(InSampler, 0);\n    ivec2 pixel = ivec2(texCoord * vec2(size));\n    vec3 color = texture(InSampler, texCoord).rgb;\n\n    bool fromBottom = isMarker(texelFetch(InSampler, ivec2(0, 0), 0));\n    bool present = fromBottom || isMarker(texelFetch(InSampler, ivec2(0, size.y - 1), 0));\n\n    if (present) {\n        mat4 proj;\n        mat4 view;\n        for (int i = 0; i < 16; i++) {\n            proj[i / 4][i % 4] = bus_unpack_float(busTexel(BUS_ROW_PROJ + i, fromBottom, size));\n            view[i / 4][i % 4] = bus_unpack_float(busTexel(BUS_ROW_VIEW + i, fromBottom, size));\n        }\n        vec3 skyColor = busTexel(BUS_ROW_SKY, fromBottom, size).rgb;\n        vec3 fogColor = busTexel(BUS_ROW_FOG, fromBottom, size).rgb;\n        vec3 sunDir = vec3(bus_unpack_signed(busTexel(BUS_ROW_SUN, fromBottom, size)),\n                           bus_unpack_signed(busTexel(BUS_ROW_SUN + 1, fromBottom, size)),\n                           bus_unpack_signed(busTexel(BUS_ROW_SUN + 2, fromBottom, size)));\n\n        // Consistency checks.\n        float fov = degrees(2.0 * atan(1.0 / proj[1][1]));\n        bool fovOk = abs(fov - 70.0) < 0.5;\n        bool aspectOk = abs(proj[0][0] * ScreenSize.x / ScreenSize.y - proj[1][1]) < 0.01;\n        bool viewOk = abs(determinant(mat3(view)) - 1.0) < 0.01;\n        bool sunOk = abs(length(sunDir) - 1.0) < 0.01;\n\n        // Sky pixels (depth 0: nothing drawn, reversed depth) get a sky computed from the bus.\n        float depth = texture(DepthSampler, texCoord).r;\n        if (depth <= 0.0) {\n            vec4 nearPoint = inverse(proj) * vec4(texCoord * 2.0 - 1.0, 1.0, 1.0);\n            vec3 viewDir = normalize(nearPoint.xyz / nearPoint.w);\n            vec3 worldDir = transpose(mat3(view)) * viewDir;     // the view matrix maps world to view\n            color = mix(fogColor, skyColor, smoothstep(-0.02, 0.3, worldDir.y));\n            float sun = smoothstep(0.9990, 0.9995, dot(viewDir, sunDir));\n            color = mix(color, vec3(1.0, 0.95, 0.8), sun);\n        }\n\n        // Status squares, top-left, one per check (FOV, aspect, view, sun): green if it passes.\n        bool checks[4] = bool[4](fovOk, aspectOk, viewOk, sunOk);\n        for (int c = 0; c < 4; c++) {\n            if (pixel.x >= 8 + c * 40 && pixel.x < 40 + c * 40 && pixel.y >= size.y - 40 && pixel.y < size.y - 8) {\n                color = checks[c] ? vec3(0.1, 0.9, 0.2) : vec3(0.9, 0.1, 0.1);\n            }\n        }\n        // Fifth square: where the bus starts in the texture. Blue: texel row 0. Yellow: the last row.\n        if (pixel.x >= 168 && pixel.x < 200 && pixel.y >= size.y - 40 && pixel.y < size.y - 8) {\n            color = fromBottom ? vec3(0.1, 0.3, 1.0) : vec3(1.0, 0.9, 0.1);\n        }\n    }\n\n    // Paint the bus column over with its neighbour.\n    if (pixel.x == 0) {\n        color = texelFetch(InSampler, ivec2(1, pixel.y), 0).rgb;\n    }\n    fragColor = vec4(color, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/bus/shaders/post/copy.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = vec4(texture(InSampler, texCoord).rgb, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/bus/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes, shipped with the pack (vanilla renamed its own in 26.4).\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
+    },
+    {
+      "path": "assets/bus/shaders/include/bus.glsl",
+      "content": "#ifndef BUS_BUS_GLSL\n#define BUS_BUS_GLSL\n\n// Data bus.\n//\n// Column x = 0 of the screen carries values from core shaders to the post effects. Every program that\n// draws the world discards its fragments in that column (BUS_PROTECT), and the writers relocate\n// their geometry onto a strip of it. The post effects read the values, then paint the column over.\n//\n// Rows, numbered from NDC y = -1 (the bottom of the screen):\n#define BUS_ROW_MARKER 0      // magenta: the bus was written this frame\n#define BUS_ROW_PROJ 1        // ProjMat, 16 floats, column-major\n#define BUS_ROW_VIEW 17       // view rotation (the sky's ModelViewMat), 16 floats, column-major\n#define BUS_ROW_SKY 33        // sky color (ColorModulator of the sky disc), 3 channels\n#define BUS_ROW_FOG 34        // FogColor\n#define BUS_SKY_ROWS 35       // rows written by the sky\n#define BUS_ROW_SUN 35        // view-space sun direction: 3 components, 24-bit fixed point\n#define BUS_SUN_ROWS 3\n// The sun is drawn with additive blending (color = src * alpha + dst), after the sky: the sky clears the\n// sun's rows to black first, so the sum is exactly what the sun writes.\n#define BUS_SKY_STRIP_ROWS 38 // rows covered by the sky's strip: its own values, then the cleared sun rows\n\n// Discard fragments that would land on the bus column. Orthographic renders (the GUI, and the GUI item\n// atlas, which core/item draws into) are left alone: they happen elsewhere or after the post effects.\n// Needs ProjMat (#include <minecraft:projection.glsl>).\n#define BUS_PROTECT if (gl_FragCoord.x < 1.0 && ProjMat[2][3] != 0.0) { discard; }\n// For full-screen copies onto the world (blit_screen), which have no ProjMat.\n#define BUS_PROTECT_ALWAYS if (gl_FragCoord.x < 1.0) { discard; }\n\n// A float as 4 bytes (RGBA). Only for writers without blending: the alpha channel is part of the value.\nvec4 bus_pack_float(float v) {\n    uint b = floatBitsToUint(v);\n    return vec4(float((b >> 24u) & 255u), float((b >> 16u) & 255u), float((b >> 8u) & 255u), float(b & 255u)) / 255.0;\n}\n\nfloat bus_unpack_float(vec4 c) {\n    uvec4 b = uvec4(round(c * 255.0));\n    return uintBitsToFloat((b.x << 24u) | (b.y << 16u) | (b.z << 8u) | b.w);\n}\n\n// A value in [-1, 1] as 24-bit fixed point in RGB, alpha 1: safe for writers with alpha blending.\nvec4 bus_pack_signed(float v) {\n    uint q = uint(round(clamp(v * 0.5 + 0.5, 0.0, 1.0) * 16777215.0));\n    return vec4(float((q >> 16u) & 255u), float((q >> 8u) & 255u), float(q & 255u), 255.0) / 255.0;\n}\n\nfloat bus_unpack_signed(vec4 c) {\n    uvec3 b = uvec3(round(c.rgb * 255.0));\n    return float((b.x << 16u) | (b.y << 8u) | b.z) / 16777215.0 * 2.0 - 1.0;\n}\n\n// Clip-space position of a corner of the strip covering bus rows [firstRow, firstRow + rows).\n// corner is (0 or 1, 0 or 1). Corners (0,0), (1,0), (1,1), (0,1) in that order are front-facing.\nvec4 bus_strip_corner(vec2 corner, int firstRow, int rows, vec2 screenSize) {\n    vec2 pixel = vec2(corner.x, float(firstRow) + corner.y * float(rows));\n    return vec4(-1.0 + 2.0 * pixel / screenSize, 0.0, 1.0);\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"targets\": {\n    \"swap\": {}\n  },\n  \"passes\": [\n    {\n      \"vertex_shader\": \"bus:post/fullscreen\",\n      \"fragment_shader\": \"bus:post/bus_check\",\n      \"inputs\": [\n        { \"sampler_name\": \"In\", \"target\": \"minecraft:main\" },\n        { \"sampler_name\": \"Depth\", \"target\": \"minecraft:main\", \"use_depth_buffer\": true }\n      ],\n      \"output\": \"swap\"\n    },\n    {\n      \"vertex_shader\": \"bus:post/fullscreen\",\n      \"fragment_shader\": \"bus:post/copy\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"swap\" } ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/sky.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:projection.glsl>\n",
+          "replace": "#include <minecraft:projection.glsl>\n#include <minecraft:globals.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 1) out float cylindricalVertexDistance;\n",
+          "replace": "layout(location = 1) out float cylindricalVertexDistance;\n// The bus row each fragment writes.\nlayout(location = 2) out float busRow;\n"
+        },
+        {
+          "find": "    cylindricalVertexDistance = fog_cylindrical_distance(Position);\n",
+          "replace": "    cylindricalVertexDistance = fog_cylindrical_distance(Position);\n\n    // The sky disc becomes the data bus writer. Its 10 vertices are a triangle fan around vertex 0:\n    // vertices 0, 1, 2, 3 make the strip's two triangles, the others collapse onto vertex 3.\n    // The visible sky is redrawn by the post effect from the values written here.\n    int i = gl_VertexIndex;\n    vec2 corner = i == 0 ? vec2(0.0, 0.0) : i == 1 ? vec2(1.0, 0.0) : i == 2 ? vec2(1.0, 1.0) : vec2(0.0, 1.0);\n    gl_Position = bus_strip_corner(corner, 0, BUS_SKY_STRIP_ROWS, ScreenSize);\n    busRow = corner.y * float(BUS_SKY_STRIP_ROWS);\n"
+        }
+      ],
+      "vanilla": "assets/minecraft/shaders/core/sky.vsh"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/sky.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:dynamictransforms.glsl>\n",
+          "replace": "#include <minecraft:dynamictransforms.glsl>\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 1) in float cylindricalVertexDistance;\n",
+          "replace": "layout(location = 1) in float cylindricalVertexDistance;\nlayout(location = 2) in float busRow;\n"
+        },
+        {
+          "find": "    fragColor = apply_fog(ColorModulator, sphericalVertexDistance, cylindricalVertexDistance, 0.0, FogSkyEnd, FogSkyEnd, FogSkyEnd, FogColor);\n",
+          "replace": "    // Write the data bus (see bus:bus.glsl). The sky pipeline has no blending: all 4 channels are kept.\n    int row = int(floor(busRow));\n    if (row == BUS_ROW_MARKER) {\n        fragColor = vec4(1.0, 0.0, 1.0, 1.0);\n    } else if (row < BUS_ROW_VIEW) {\n        int k = row - BUS_ROW_PROJ;\n        fragColor = bus_pack_float(ProjMat[k / 4][k % 4]);\n    } else if (row < BUS_ROW_SKY) {\n        int k = row - BUS_ROW_VIEW;\n        fragColor = bus_pack_float(ModelViewMat[k / 4][k % 4]);\n    } else if (row == BUS_ROW_SKY) {\n        fragColor = vec4(ColorModulator.rgb, 1.0);\n    } else if (row == BUS_ROW_FOG) {\n        fragColor = vec4(FogColor.rgb, 1.0);\n    } else {\n        fragColor = vec4(0.0, 0.0, 0.0, 1.0);   // the sun's rows, cleared for its additive blending\n    }\n"
+        }
+      ],
+      "vanilla": "assets/minecraft/shaders/core/sky.fsh"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_tex.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:projection.glsl>\n",
+          "replace": "#include <minecraft:projection.glsl>\n#include <minecraft:globals.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 0) out vec2 texCoord0;\n",
+          "replace": "layout(location = 0) out vec2 texCoord0;\n// The sun writes its direction onto the data bus.\nlayout(location = 1) flat out int isSun;\nlayout(location = 2) out float busRow;\nlayout(location = 3) flat out vec3 sunDirection;\n"
+        },
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n\n    // The sun and the moon both use this program. The sun quad is scaled by 30, the moon's by 20.\n    isSun = abs(length(ModelViewMat[0].xyz) - 30.0) < 1.0 ? 1 : 0;\n    busRow = 0.0;\n    // Direction of the sun's center, in view space: the quad is centered on its local origin.\n    sunDirection = normalize((ModelViewMat * vec4(0.0, 0.0, 0.0, 1.0)).xyz);\n    if (isSun == 1) {\n        int k = gl_VertexIndex % 4;\n        vec2 corner = vec2(k == 1 || k == 2 ? 1.0 : 0.0, k == 2 || k == 3 ? 1.0 : 0.0);\n        gl_Position = bus_strip_corner(corner, BUS_ROW_SUN, BUS_SUN_ROWS, ScreenSize);\n        busRow = float(BUS_ROW_SUN) + corner.y * float(BUS_SUN_ROWS);\n    }\n"
+        }
+      ],
+      "vanilla": "assets/minecraft/shaders/core/position_tex.vsh"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_tex.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:dynamictransforms.glsl>\n",
+          "replace": "#include <minecraft:dynamictransforms.glsl>\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 0) in vec2 texCoord0;\n",
+          "replace": "layout(location = 0) in vec2 texCoord0;\nlayout(location = 1) flat in int isSun;\nlayout(location = 2) in float busRow;\nlayout(location = 3) flat in vec3 sunDirection;\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // The sun writes its view-space direction (celestial blends with alpha: RGB fixed point, alpha 1).\n    if (isSun == 1) {\n        int k = int(floor(busRow)) - BUS_ROW_SUN;\n        fragColor = bus_pack_signed(k == 0 ? sunDirection.x : k == 1 ? sunDirection.y : sunDirection.z);\n        return;\n    }\n    BUS_PROTECT\n"
+        }
+      ],
+      "vanilla": "assets/minecraft/shaders/core/position_tex.fsh"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/block.fsh",
+      "vanilla": "assets/minecraft/shaders/core/block.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/entity.fsh",
+      "vanilla": "assets/minecraft/shaders/core/entity.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/item.fsh",
+      "vanilla": "assets/minecraft/shaders/core/item.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/particle.fsh",
+      "vanilla": "assets/minecraft/shaders/core/particle.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/text.fsh",
+      "vanilla": "assets/minecraft/shaders/core/text.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/clouds.fsh",
+      "vanilla": "assets/minecraft/shaders/core/clouds.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/world_border.fsh",
+      "vanilla": "assets/minecraft/shaders/core/world_border.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_beacon_beam.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_beacon_beam.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_lightning.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_lightning.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_lines.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_lines.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_leash.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_leash.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_end_portal.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_end_portal.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_crumbling.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_crumbling.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_entity_shadow.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_entity_shadow.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/glint.fsh",
+      "vanilla": "assets/minecraft/shaders/core/glint.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/stars.fsh",
+      "vanilla": "assets/minecraft/shaders/core/stars.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/oit_composite.fsh",
+      "vanilla": "assets/minecraft/shaders/core/oit_composite.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/blit_screen.fsh",
+      "vanilla": "assets/minecraft/shaders/core/blit_screen.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <bus:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    BUS_PROTECT_ALWAYS\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "time set 1500",
+      "setblock 6 4 2 minecraft:red_wool",
+      "setblock 6 5 2 minecraft:glowstone",
+      "tp @s 0 4 0 -90 -15"
+    ],
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect"
+    ]
+  }
+}

@@ -14,6 +14,7 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 | [procedural-sprite](procedural-sprite/) | Custom item model whose texture encodes its coordinates; `core/item.fsh` draws a procedural glowing orb |
 | [thick-outlines](thick-outlines/) | Post effect: replace `minecraft:entity_outline` for thick, crisp, tinted outlines on glowing entities |
 | [emissive-glow](emissive-glow/) | Core + post: emissive pixels tag the main target's alpha, and a post effect blooms only them |
+| [data-bus](data-bus/) | Core + post: a reserved screen column carries the projection, the view rotation, the sky and fog colors and the sun direction to a post effect |
 
 An example is built from your installed game: vanilla files plus the edits in its `example.json`, and its own files. This keeps vanilla files out of the repository.
 
