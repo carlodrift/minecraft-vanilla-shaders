@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect)
 
 ## Mark texels in a texture
 
@@ -94,6 +94,7 @@ float skyLight   = float(UV2.y) / 16.0;   // 0..15: light from the sky
 
 - **The levels don't depend on the time of day.** In [exp 69](../experiments/69-light-levels/), `terrain.vsh` shows block light in red and sky light in green. At midnight, open ground is still full green (sky light 15), and only the area around glowstone gets red. Day and night are applied afterwards, by the lightmap texture (`Sampler2`) that `sample_lightmap()` reads.
 - **With smooth lighting, the values are interpolated** between levels, so compare with thresholds rather than exact levels.
+- **Vanilla also shades each face by its direction**, in the vertex color: up 1, down 0.5, north and south 0.8, east and west 0.6 (`CardinalLighting.DEFAULT`; in the Nether, up and down are both 0.9) *(code)*.
 - **`UV2` reaches the vertex programs that have it in their vertex format:** `terrain`, `block`, `entity`, `item`, `particle`, `text`, `rendertype_leash`… ([core-shaders.md](reference/core-shaders.md)). To use it in the fragment shader, pass it through a varying.
 
 Use it for light-dependent effects that vanilla's lightmap can't express, like emissive parts that only glow in the dark, or a custom day/night curve, using `GameTime` for the time of day.
@@ -213,3 +214,13 @@ The distances in air and the ends in water were read in game, the rest comes fro
 - **Do the same in Sodium's terrain shader** for Sodium players ([Sodium](sodium.md)).
 
 [water-reflections](../examples/water-reflections/) uses this for waves, screen-space reflections, refraction and Fresnel.
+
+## Relight terrain in a post effect
+
+A post effect only sees albedo × light. With the light levels it can still change the light, by a factor:
+
+- **Write the light levels in the alpha of opaque terrain.** Solid and cutout terrain don't blend, so `terrain.fsh` can write `UV2` there, as a small code. Keep the code away from the values that translucent things leave in front of the clear color: clouds reach at most 0.8.
+- **Divide out what vanilla did, multiply in what you want.** Vanilla's sky light is uniform but for the fixed shade per face ([above](#read-light-levels)). Your own can follow the sun, with a normal from the depth's derivatives. Normalize it so that a face pointing up keeps vanilla's brightness, and mix the factor with 1 by the share of sky light in the pixel: block light is then left alone.
+- **Without the data that drives it, nothing changes:** where there is no [data bus](#give-post-effects-the-camera-a-data-bus) (Nether, underwater), the vanilla image stays as it is.
+
+[sun-lighting](../examples/sun-lighting/) does this, with light colors from the [scattered sky](../examples/scattered-sky/) and bloom.

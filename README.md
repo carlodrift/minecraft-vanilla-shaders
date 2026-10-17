@@ -18,7 +18,7 @@ Every statement here is either checked against the game's code, reproduced by an
   - [Core shader programs](docs/reference/core-shaders.md): for each program, its pipelines, defines, available uniforms (with the `#ifdef` that guards each one) and vertex inputs.
   - [Uniforms](docs/reference/uniforms.md): every uniform block (with its std140 layout) and sampler.
   - [Render pipelines](docs/reference/pipelines.md): all 192 of them.
-- [Examples](examples/): complete packs with screenshots (terrain wave, depth outlines, emissive entities, emissive glow, atmosphere, thick outlines, text effects, GUI theme, world anchor, procedural sprite, data bus, scattered sky, water reflections).
+- [Examples](examples/): complete packs with screenshots (terrain wave, depth outlines, emissive entities, emissive glow, atmosphere, thick outlines, text effects, GUI theme, world anchor, procedural sprite, data bus, scattered sky, water reflections, sun lighting).
 - [Experiments](experiments/) and their [results](experiments/RESULTS.md), in game on OpenGL and Vulkan.
 - [Tools](tools/): `mcshaders check` validates a pack the way the game does, without launching it.
 

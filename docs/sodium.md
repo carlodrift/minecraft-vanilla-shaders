@@ -38,6 +38,7 @@ Start from the files of the Sodium version you target (they are in its jar) and 
 
 - **There is no game time.** `u_CurrentTime` is the time in milliseconds since the region was created, so it differs from one region to the next.
 - **There is no camera position.** But regions are 8 × 4 × 8 chunk sections (128 × 64 × 128 blocks), aligned on the world grid. So in `block_layer_opaque.vsh`, `_vert_position + _get_draw_translation(_draw_id)` is the world position modulo (128, 64, 128).
+- **The light levels are the game's:** `_vert_tex_light_coord` is `UV2 / 256` *(code, and [sun-lighting](../examples/sun-lighting/) in game)*.
 - **The projection is the game's**, so tests like `u_ProjectionMatrix[2][3] != 0.0` (perspective) work as with `ProjMat`.
 
 ## Making a pack work with Sodium
@@ -73,7 +74,7 @@ With `--sodium`, `mcshaders check` builds Sodium's terrain pipelines with Sodium
 
 | Example | Under Sodium |
 |---|---|
-| [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/), [water-reflections](../examples/water-reflections/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone, and water isn't marked |
+| [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/), [water-reflections](../examples/water-reflections/), [sun-lighting](../examples/sun-lighting/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone, and water isn't marked |
 | [terrain-wave](../examples/terrain-wave/) | No wave: `core/terrain` is not used |
 | [atmosphere](../examples/atmosphere/) | The sky is the same; the terrain keeps the vanilla fog |
 | [depth-outlines](../examples/depth-outlines/), [emissive-entities](../examples/emissive-entities/), [emissive-glow](../examples/emissive-glow/), [gui-theme](../examples/gui-theme/), [procedural-sprite](../examples/procedural-sprite/), [text-effects](../examples/text-effects/), [thick-outlines](../examples/thick-outlines/), [world-anchor](../examples/world-anchor/) | Same |

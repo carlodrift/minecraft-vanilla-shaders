@@ -1,0 +1,535 @@
+{
+  "title": "Sun lighting: terrain relit by the sun, the moon and the sky from light levels written in alpha, and bloom",
+  "expect": "pass",
+  "scene": {
+    "seed": 20261017,
+    "commands": [
+      "gamerule advance_time false",
+      "time set 11600",
+      "weather clear",
+      "tp @s -750 120 -234",
+      "execute positioned -750 0 -234 positioned over motion_blocking run fill ~-3 ~ ~6 ~3 ~4 ~8 minecraft:stone_bricks",
+      "execute positioned -750 0 -234 positioned over motion_blocking run fill ~-1 ~-1 ~4 ~1 ~-1 ~5 minecraft:lava",
+      "execute positioned -750 0 -234 positioned over motion_blocking run setblock ~-3 ~5 ~6 minecraft:glowstone",
+      "execute positioned -750 0 -234 positioned over motion_blocking run setblock ~-5 ~ ~4 minecraft:oak_log",
+      "execute positioned -750 0 -234 positioned over motion_blocking run tp @s ~-12 ~3 ~7 -90 15"
+    ],
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect"
+    ]
+  },
+  "files": [
+    {
+      "path": "assets/sun/shaders/post/atmosphere.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <sun:bus_read.glsl>\n#include <sun:atmosphere.glsl>\n#include <sun:fog.glsl>\n#include <sun:water.glsl>\n#include <sun:light_code.glsl>\n#include <sun:lighting.glsl>\n\n// The atmosphere: a scattered sky in place of the vanilla one, with the vanilla moon and stars on top,\n// and the distance fog of the world and the clouds turned to that sky instead of the flat fog color.\n// Opaque terrain is relit first (sun:lighting.glsl), from the light levels in its alpha.\n// Water pixels are tagged in alpha for the water pass: 0.5 for a horizontal surface, 0.25 for a side.\nuniform sampler2D InSampler;\nuniform sampler2D DepthSampler;\nuniform sampler2D LightSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    ivec2 pixel = ivec2(texCoord * vec2(textureSize(InSampler, 0)));\n    vec4 original = texelFetch(InSampler, pixel, 0);\n\n    // Water markers (sun:water.glsl): a marker pixel takes the vanilla water of its neighbours, and both\n    // the marker and the pixel to its right are water.\n    float waterData = 0.0;\n    if (sun_is_water_marker(original, pixel.x)) {\n        waterData = original.b;\n        vec4 right = texelFetch(InSampler, pixel + ivec2(1, 0), 0);\n        vec4 left = texelFetch(InSampler, pixel - ivec2(1, 0), 0);\n        bool leftIsWater = sun_is_water_marker(texelFetch(InSampler, pixel - ivec2(2, 0), 0), pixel.x - 2);\n        original = leftIsWater ? 0.5 * (left + right) : right;\n    } else if ((pixel.x & 1) == 1) {\n        vec4 left = texelFetch(InSampler, pixel - ivec2(1, 0), 0);\n        if (sun_is_water_marker(left, pixel.x - 1)) {\n            waterData = left.b;\n        }\n    }\n\n    vec3 color = original.rgb;\n    SunBus bus = sun_read_bus(InSampler);\n    bool inAir = bus.present && sun_in_air(bus);\n    float depth = texture(DepthSampler, texCoord).r;\n    bool sky = depth <= 0.0;   // reversed depth: nothing drawn here\n    vec3 position = bus.viewToWorld * sun_view_position(bus, texCoord, sky ? 0.5 : depth);\n    vec3 faceNormal = normalize(cross(dFdx(position), dFdy(position)));   // derivatives: before any branch\n\n    if (inAir) {\n        float exposure = sun_unpack_float(texelFetch(LightSampler, ivec2(0, 0), 0));\n        vec3 dir = normalize(position);\n\n        vec3 transmittance;\n        vec3 skyLinear = sun_sky(dir, bus.sunDirection, bus.rainBrightness, sun_altitude(float(CameraBlockPos.y) - CameraOffset.y), transmittance);\n        vec3 discLinear = sun_sun_disc(dir, bus.sunDirection, transmittance, bus.rainBrightness);\n        vec3 skyColor = sun_tonemap(skyLinear * exposure);\n        vec3 skyWithSun = sun_tonemap((skyLinear + discLinear) * exposure);\n\n        if (sky) {\n            // The frame was cleared to the fog color: whatever is above it is the moon and the stars.\n            color = skyWithSun + max(original.rgb - bus.fogColor, 0.0);\n        } else {\n            // What the alpha says (sun:light_code.glsl): translucent in front of the clear color, opaque terrain\n            // with its light levels, or anything else opaque. Water over the void has the alpha of the water\n            // texture, 180/255; over anything else, the blend makes it meaningless.\n            float a = original.a;\n            vec2 levels;\n            bool terrain = sun_decode_light(a, levels) && waterData == 0.0;\n            bool overClear = waterData > 0.0 ? a < 0.72 : a < 204.5 / 255.0;\n            float alpha = overClear ? a : 1.0;\n            float cameraY = float(CameraBlockPos.y) - CameraOffset.y;\n            if (overClear && waterData == 0.0 && position.y + cameraY > SUN_CLOUD_BOTTOM) {\n                // Clouds: their alpha is their coverage, faded with distance, and the rest is the clear color\n                // showing through. Replace that part with the sky.\n                color = original.rgb + (1.0 - alpha) * (skyWithSun - bus.fogColor);\n            } else {\n                // Terrain, water, entities: vanilla mixed the fog color in by `fog`, and where the surface is\n                // translucent with nothing behind it (far water), the clear color shows through by 1 - alpha:\n                //     original = alpha * mix(surface, fogColor, fog) + (1 - alpha) * fogColor\n                // Take the fog color back out and mix the sky in by `amount` instead, at least as much: more haze\n                // with distance (aerial perspective), and a softer fade at the edge of the loaded world.\n                float fog = sun_vanilla_fog(bus, position);\n                float amount = sun_fog_amount(bus, position, fog);\n                vec3 surface = original.rgb - (1.0 - alpha) * bus.fogColor - alpha * fog * bus.fogColor;\n                if (terrain) {\n                    surface *= sun_relight(faceNormal, levels, bus.sunDirection, bus.rainBrightness,\n                                          texelFetch(LightSampler, ivec2(1, 0), 0).rgb, texelFetch(LightSampler, ivec2(2, 0), 0).rgb);\n                }\n                float keep = (1.0 - amount) / max(1.0 - fog, 1e-4);\n                color = surface * keep + alpha * amount * skyColor + (1.0 - alpha) * skyWithSun;\n            }\n        }\n    }\n\n    // Paint the bus column over with its neighbour.\n    if (pixel.x == 0) {\n        color = texelFetch(InSampler, ivec2(1, pixel.y), 0).rgb;\n    }\n    float tag = !inAir || waterData == 0.0 ? 1.0 : waterData > 0.75 ? 0.5 : 0.25;\n    fragColor = vec4(clamp(color, 0.0, 1.0), tag);\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/bloom_extract.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <sun:light_code.glsl>\n\n// Bloom, step 1: the bright parts of the image, into a small target. A pixel glows if it is very bright,\n// or if it looks like a light source: bright, saturated (lava, flames, glowstone\u2026), and at full block light,\n// read from the light levels opaque terrain writes in alpha. The saturation keeps out what light sources\n// light up: sand next to lava is just as bright, but pale.\nuniform sampler2D InSampler;     // the image, after the water pass\nuniform sampler2D MainSampler;   // minecraft:main, for its alpha\n\nlayout(std140) uniform SamplerInfo {\n    vec2 OutSize;\n    vec2 InSize;\n    vec2 MainSize;\n};\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    // Average the glowing part of the source pixels this output pixel covers (about 4 x 4).\n    vec2 footprint = InSize / OutSize;\n    ivec2 first = ivec2((texCoord - 0.5 / OutSize) * InSize);\n    vec3 sum = vec3(0.0);\n    for (int y = 0; y < 4; y++) {\n        for (int x = 0; x < 4; x++) {\n            ivec2 p = first + ivec2(vec2(x, y) * footprint / 4.0);\n            vec3 c = texelFetch(InSampler, p, 0).rgb;\n            float luminance = dot(c, vec3(0.2126, 0.7152, 0.0722));\n            float glow = smoothstep(0.95, 1.0, luminance);   // white things in sunlight only just\n            vec2 levels;\n            float saturation = (max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b))) / max(max(c.r, max(c.g, c.b)), 1e-3);\n            if (sun_decode_light(texelFetch(MainSampler, p, 0).a, levels) && levels.x > 0.9) {\n                glow = max(glow, 1.5 * smoothstep(0.45, 0.8, luminance) * smoothstep(0.35, 0.6, saturation));\n            }\n            sum += c * glow;\n        }\n    }\n    fragColor = vec4(sum / 16.0, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/blur.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// A 9-tap Gaussian blur along one direction (BlurConfig, from the post effect's JSON), with a bilinear\n// input: each tap reads two texels at once.\nuniform sampler2D InSampler;\n\nlayout(std140) uniform SamplerInfo {\n    vec2 OutSize;\n    vec2 InSize;\n};\n\nlayout(std140) uniform BlurConfig {\n    vec2 Direction;\n};\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    const float offsets[3] = float[](0.0, 1.3846153846, 3.2307692308);\n    const float weights[3] = float[](0.2270270270, 0.3162162162, 0.0702702703);\n    vec2 step = Direction / InSize;\n    vec3 sum = texture(InSampler, texCoord).rgb * weights[0];\n    for (int i = 1; i < 3; i++) {\n        sum += texture(InSampler, texCoord + step * offsets[i]).rgb * weights[i];\n        sum += texture(InSampler, texCoord - step * offsets[i]).rgb * weights[i];\n    }\n    fragColor = vec4(sum, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/composite.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// The final image: the bloom (two sizes of glow) added on top.\nuniform sampler2D InSampler;\nuniform sampler2D BloomNearSampler;   // 480 x 270, a tight glow\nuniform sampler2D BloomFarSampler;    // 240 x 135, a wide one\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nconst float SUN_BLOOM_STRENGTH = 0.6;\n\nvoid main() {\n    vec3 color = texture(InSampler, texCoord).rgb;\n    vec3 bloom = texture(BloomNearSampler, texCoord).rgb + texture(BloomFarSampler, texCoord).rgb;\n    // Screen blend: the glow brightens without clipping as hard as an addition.\n    color = 1.0 - (1.0 - color) * (1.0 - bloom * SUN_BLOOM_STRENGTH * 2.0);\n    fragColor = vec4(color, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/downsample.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Half the size: with a bilinear input, one sample at the center of each 2 x 2 block averages it.\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = vec4(texture(InSampler, texCoord).rgb, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes, shipped with the pack (vanilla renamed its own in 26.4).\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/light.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <sun:bus_read.glsl>\n#include <sun:atmosphere.glsl>\n\n// The scene's light, into a 4 x 1 target, once per frame:\n//  x = 0: exposure for the sky (a float in 4 bytes): the average sky luminance over a few directions sets\n//         how bright the sky is drawn, like a camera's automatic exposure. Bounded, so the night stays dark.\n//  x = 1: the color of the sky's ambient light, normalized (its largest channel is 1).\n//  x = 2: the color of the direct light reaching the ground, normalized: the sun through the atmosphere by\n//         day (orange at sunset), the moon by night.\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvec3 sun_normalized(vec3 c) {\n    return c / max(max(c.r, max(c.g, c.b)), 1e-6);\n}\n\nvoid main() {\n    int x = int(gl_FragCoord.x);\n    SunBus bus = sun_read_bus(InSampler);\n    if (!bus.present) {\n        fragColor = x == 0 ? sun_pack_float(1.0) : vec4(1.0);\n        return;\n    }\n    float altitude = sun_altitude(float(CameraBlockPos.y) - CameraOffset.y);\n    if (x == 2) {\n        bool day = bus.sunDirection.y > 0.0;\n        vec3 l = day ? bus.sunDirection : -bus.sunDirection;\n        vec3 t = sun_transmittance_to_light(vec3(0.0, SUN_PLANET_RADIUS + altitude, 0.0), normalize(vec3(l.x, max(l.y, 0.01), l.z)));\n        fragColor = vec4(sun_normalized(day ? t : t * SUN_MOON_RADIANCE), 1.0);\n        return;\n    }\n    vec3 sum = vec3(0.0);\n    vec3 unused;\n    sum += sun_sky(vec3(0.0, 1.0, 0.0), bus.sunDirection, bus.rainBrightness, altitude, unused);\n    for (int i = 0; i < 4; i++) {\n        float a = float(i) * 0.5 * SUN_PI;\n        sum += sun_sky(normalize(vec3(cos(a), 0.25, sin(a))), bus.sunDirection, bus.rainBrightness, altitude, unused);\n        sum += sun_sky(normalize(vec3(cos(a), 1.0, sin(a))), bus.sunDirection, bus.rainBrightness, altitude, unused);\n    }\n    if (x == 1) {\n        fragColor = vec4(sun_normalized(sum), 1.0);\n        return;\n    }\n    float luminance = dot(sum / 9.0, vec3(0.2126, 0.7152, 0.0722));\n    fragColor = sun_pack_float(clamp(SUN_EXPOSURE_KEY / max(luminance, 1e-6), SUN_EXPOSURE_MIN, SUN_EXPOSURE_MAX));\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/post/water.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <sun:bus_read.glsl>\n#include <sun:atmosphere.glsl>\n#include <sun:fog.glsl>\n\n// Water: the surface the atmosphere pass tagged is redrawn with waves, reflections and refraction.\n//  - Waves: a sum of directional waves gives the surface's slope at each point (the geometry stays flat).\n//  - Reflection: a ray marched in screen space against the depth buffer, else the sky in that direction.\n//  - Refraction: the vanilla water (what is underneath, tinted), shifted by the waves.\n//  - Fresnel: grazing angles reflect more.\nuniform sampler2D InSampler;        // the atmosphere pass's output; alpha tags water (0.5 top, 0.25 side)\nuniform sampler2D MainSampler;      // minecraft:main, for the data bus\nuniform sampler2D DepthSampler;\nuniform sampler2D LightSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\n#define SUN_SSR_STEPS 40\n#define SUN_WAVE_COUNT 6\nconst vec3 SUN_WATER_ABSORPTION = vec3(0.30, 0.12, 0.08);\n\n// Height of the surface (blocks), and its gradient, at world position p (x, z) and time t (seconds).\n// Deep-water waves: angular frequency sqrt(g k), rounded to a whole number of periods per 1200 s, the\n// period of GameTime, so that the waves don't jump when it wraps.\nvec3 sun_waves(vec2 p, float t) {\n    const vec2 directions[SUN_WAVE_COUNT] = vec2[](vec2(1.0, 0.3), vec2(-0.4, 1.0), vec2(0.8, -0.7),\n                                                  vec2(-1.0, -0.2), vec2(0.2, -1.0), vec2(0.9, 0.9));\n    const float wavelengths[SUN_WAVE_COUNT] = float[](7.0, 4.3, 2.6, 1.6, 1.0, 0.6);\n    vec3 sum = vec3(0.0);\n    for (int i = 0; i < SUN_WAVE_COUNT; i++) {\n        vec2 d = normalize(directions[i]);\n        float k = 2.0 * SUN_PI / wavelengths[i];\n        float omega = round(sqrt(9.81 * k) * 1200.0 / (2.0 * SUN_PI)) * 2.0 * SUN_PI / 1200.0;\n        float amplitude = 0.02 * wavelengths[i];\n        float phase = k * dot(d, p) - omega * t;\n        sum += amplitude * vec3(sin(phase), k * cos(phase) * d);\n    }\n    return sum;\n}\n\nfloat sun_fresnel(float cosTheta) {\n    return 0.02 + 0.98 * pow(1.0 - clamp(cosTheta, 0.0, 1.0), 5.0);\n}\n\n// March the reflected ray in view space; on a hit, the color there and how much to trust it.\nvec4 sun_screen_space_reflection(SunBus bus, vec3 origin, vec3 direction) {\n    float stepLength = 0.3 + 0.01 * length(origin);\n    vec3 previous = origin;\n    vec3 position = origin;\n    for (int i = 0; i < SUN_SSR_STEPS; i++) {\n        position += direction * stepLength;\n        vec4 clip = bus.proj * vec4(position, 1.0);\n        if (clip.w <= 0.0) {\n            break;\n        }\n        vec2 uv = clip.xy / clip.w * 0.5 + 0.5;\n        if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) {\n            break;\n        }\n        float depth = texture(DepthSampler, uv).r;\n        if (depth > 0.0) {\n            float behind = sun_view_position(bus, uv, depth).z - position.z;   // > 0: the ray went behind the scene\n            if (behind > 0.0 && behind < stepLength * 3.0 + 0.5) {\n                // Refine between the last two points.\n                vec3 a = previous;\n                vec3 b = position;\n                for (int j = 0; j < 5; j++) {\n                    vec3 m = 0.5 * (a + b);\n                    vec4 c = bus.proj * vec4(m, 1.0);\n                    vec2 muv = c.xy / c.w * 0.5 + 0.5;\n                    float md = texture(DepthSampler, muv).r;\n                    if (md > 0.0 && sun_view_position(bus, muv, md).z > m.z) {\n                        b = m;\n                        uv = muv;\n                    } else {\n                        a = m;\n                    }\n                }\n                vec2 edge = smoothstep(vec2(0.0), vec2(0.08), min(uv, 1.0 - uv));\n                float trust = edge.x * edge.y * (1.0 - float(i) / float(SUN_SSR_STEPS));\n                return vec4(texture(InSampler, uv).rgb, trust);\n            }\n        }\n        previous = position;\n        stepLength *= 1.12;\n    }\n    return vec4(0.0);\n}\n\nvoid main() {\n    vec4 color = texture(InSampler, texCoord);\n    SunBus bus = sun_read_bus(MainSampler);\n    float depth = texture(DepthSampler, texCoord).r;\n    vec3 viewPosition = sun_view_position(bus, texCoord, max(depth, 1e-6));\n    vec3 position = bus.viewToWorld * viewPosition;\n    vec3 faceNormal = normalize(cross(dFdx(position), dFdy(position)));   // derivatives: before any branch\n    fragColor = vec4(color.rgb, 1.0);\n    if (color.a > 0.9 || !bus.present) {\n        return;   // not water, or the atmosphere pass was inactive\n    }\n    bool top = color.a > 0.375;\n    float exposure = sun_unpack_float(texelFetch(LightSampler, ivec2(0, 0), 0));\n    vec3 cameraPosition = vec3(CameraBlockPos) - CameraOffset;\n    vec3 view = normalize(position);\n    float dist = length(position);\n\n    // Surface normal: waves on horizontal surfaces, fading with distance where they would only shimmer.\n    if (dot(faceNormal, view) > 0.0) {\n        faceNormal = -faceNormal;\n    }\n    vec3 normal = faceNormal;\n    if (top) {\n        vec3 wave = sun_waves((position + cameraPosition).xz, GameTime * 1200.0);\n        float strength = 1.0 / (1.0 + dist / 48.0);\n        normal = normalize(vec3(-wave.y * strength, 1.0, -wave.z * strength));\n        if (faceNormal.y < 0.0) {\n            normal.y = -normal.y;   // seen from below\n        }\n    }\n\n    // Reflection: the screen first, the sky where the ray leaves it.\n    vec3 reflected = reflect(view, normal);\n    if (top && reflected.y * normal.y < 0.0) {\n        reflected.y = -reflected.y;   // a steep wave can't reflect into the water\n    }\n    float altitude = sun_altitude(cameraPosition.y);\n    vec3 transmittance;\n    vec3 skyLinear = sun_sky(reflected, bus.sunDirection, bus.rainBrightness, altitude, transmittance);\n    // The sun's glint: its disc, and a wider lobe for the small waves the normal can't show.\n    float glint = pow(max(dot(reflected, bus.sunDirection), 0.0), 600.0) * 2.0;\n    skyLinear += sun_sun_disc(reflected, bus.sunDirection, transmittance, bus.rainBrightness)\n               + SUN_SUN_RADIANCE * transmittance * glint * bus.rainBrightness;\n    vec3 reflection = sun_tonemap(skyLinear * exposure);\n    vec3 viewNormal = mat3(transpose(bus.viewToWorld)) * normal;\n    vec4 hit = sun_screen_space_reflection(bus, viewPosition + viewNormal * 0.05, mat3(transpose(bus.viewToWorld)) * reflected);\n    reflection = mix(reflection, hit.rgb, hit.a);\n\n    // Distance fog on the reflection, as on everything else (the refraction already has it).\n    vec3 unused;\n    vec3 skyAlongView = sun_tonemap(sun_sky(view, bus.sunDirection, bus.rainBrightness, altitude, unused) * exposure);\n    float fogAmount = sun_fog_amount(bus, position, sun_vanilla_fog(bus, position));\n    reflection = mix(reflection, skyAlongView, fogAmount);\n\n    // Refraction: the vanilla water, shifted by the waves, if the shifted pixel is still water.\n    vec2 shifted = texCoord + (viewNormal.xy - (mat3(transpose(bus.viewToWorld)) * faceNormal).xy) * 0.03;\n    vec4 under = texture(InSampler, shifted);\n    vec3 refraction = under.a < 0.9 ? under.rgb : color.rgb;\n    // Absorption: the seabed's depth is unknown (water writes its own depth), but at grazing angles light\n    // crosses more water, so the refraction darkens toward blue-green with the angle. Not the part that is\n    // already fog.\n    float path = 1.0 / max(dot(-view, faceNormal), 0.15);\n    refraction = mix(refraction * exp(-SUN_WATER_ABSORPTION * path), refraction, fogAmount);\n\n    float fresnel = sun_fresnel(dot(-view, normal));\n    fragColor = vec4(mix(refraction, reflection, fresnel), 1.0);\n}\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/atmosphere.glsl",
+      "content": "#ifndef SUN_ATMOSPHERE_GLSL\n#define SUN_ATMOSPHERE_GLSL\n\n// Sky from single scattering in an Earth-like atmosphere: Rayleigh scattering (air molecules, the blue\n// sky), Mie scattering (aerosols, the glow around the sun) and ozone absorption (the deep blue of\n// twilight). Ray-marched per pixel, in meters, with the planet's center below the camera.\n// Coefficients: Bruneton & Neyret 2008, Hillaire 2020.\n\n#define SUN_VIEW_STEPS 16\n#define SUN_LIGHT_STEPS 4\n\nconst float SUN_PI = 3.14159265;\nconst float SUN_PLANET_RADIUS = 6360e3;\nconst float SUN_ATMOSPHERE_RADIUS = 6460e3;\nconst vec3 SUN_RAYLEIGH_SCATTERING = vec3(5.802e-6, 13.558e-6, 33.1e-6);\nconst float SUN_MIE_SCATTERING = 3.996e-6;\nconst float SUN_MIE_EXTINCTION = 4.440e-6;\nconst float SUN_MIE_G = 0.8;\nconst vec3 SUN_OZONE_ABSORPTION = vec3(0.650e-6, 1.881e-6, 0.085e-6);\n\nconst vec3 SUN_SUN_RADIANCE = vec3(20.0);\nconst vec3 SUN_MOON_RADIANCE = vec3(0.020, 0.024, 0.032);   // dimmer and slightly blue: night vision\nconst vec3 SUN_NIGHT_GLOW = vec3(0.0006, 0.0008, 0.0016);   // airglow and starlight, so night is never black\n// Automatic exposure (post/exposure): exposure = key / average sky luminance, within these bounds.\nconst float SUN_EXPOSURE_KEY = 0.28;\nconst float SUN_EXPOSURE_MIN = 0.05;\nconst float SUN_EXPOSURE_MAX = 30.0;\n// Distance, in blocks, over which the haze of the air covers about 63% of what is behind it.\nconst float SUN_HAZE_DISTANCE = 900.0;\n\n// Translucent pixels above this height are clouds (the overworld's cloud_height is 192.33).\nconst float SUN_CLOUD_BOTTOM = 190.0;\n\nconst float SUN_SUN_COS_RADIUS = 0.99985;                    // about 1 degree: bigger than the real sun, reads better\n\n// Density of air, aerosols and ozone at height h, relative to sea level.\nvec3 sun_density(float h) {\n    return vec3(exp(-h / 8000.0), exp(-h / 1200.0), max(0.0, 1.0 - abs(h - 25000.0) / 15000.0));\n}\n\nvec3 sun_extinction(vec3 opticalDepth) {\n    return SUN_RAYLEIGH_SCATTERING * opticalDepth.x + SUN_MIE_EXTINCTION * opticalDepth.y + SUN_OZONE_ABSORPTION * opticalDepth.z;\n}\n\n// Distance from o (inside the sphere) to where the ray leaves the sphere of radius r centered on the origin.\nfloat sun_sphere_exit(vec3 o, vec3 d, float r) {\n    float b = dot(o, d);\n    float c = dot(o, o) - r * r;\n    return -b + sqrt(max(b * b - c, 0.0));\n}\n\n// Distance to where the ray enters the sphere from outside, or -1.\nfloat sun_sphere_entry(vec3 o, vec3 d, float r) {\n    float b = dot(o, d);\n    float c = dot(o, o) - r * r;\n    float h = b * b - c;\n    if (h < 0.0) {\n        return -1.0;\n    }\n    return -b - sqrt(h);\n}\n\n// Fraction of light that reaches p from direction l, through the rest of the atmosphere.\nvec3 sun_transmittance_to_light(vec3 p, vec3 l) {\n    if (sun_sphere_entry(p, l, SUN_PLANET_RADIUS) > 0.0) {\n        return vec3(0.0);   // behind the planet\n    }\n    float dt = sun_sphere_exit(p, l, SUN_ATMOSPHERE_RADIUS) / float(SUN_LIGHT_STEPS);\n    vec3 depth = vec3(0.0);\n    for (int i = 0; i < SUN_LIGHT_STEPS; i++) {\n        depth += sun_density(length(p + l * ((float(i) + 0.5) * dt)) - SUN_PLANET_RADIUS) * dt;\n    }\n    return exp(-sun_extinction(depth));\n}\n\n// Light scattered toward the camera along direction d, from a light in direction l with radiance 1.\n// transmittance: how much of what is behind the atmosphere along d gets through (for the sun disc).\nvec3 sun_scattering(vec3 d, vec3 l, float altitude, out vec3 transmittance) {\n    vec3 o = vec3(0.0, SUN_PLANET_RADIUS + altitude, 0.0);\n    float rayLength = sun_sphere_exit(o, d, SUN_ATMOSPHERE_RADIUS);\n    float mu = dot(d, l);\n    float phaseRayleigh = 3.0 / (16.0 * SUN_PI) * (1.0 + mu * mu);\n    float g2 = SUN_MIE_G * SUN_MIE_G;\n    float phaseMie = 3.0 / (8.0 * SUN_PI) * (1.0 - g2) * (1.0 + mu * mu)\n                   / ((2.0 + g2) * pow(1.0 + g2 - 2.0 * SUN_MIE_G * mu, 1.5));\n    vec3 depth = vec3(0.0);\n    vec3 sum = vec3(0.0);\n    // Steps grow quadratically: dense air near the camera gets most of them.\n    for (int i = 0; i < SUN_VIEW_STEPS; i++) {\n        float t0 = rayLength * pow(float(i) / float(SUN_VIEW_STEPS), 2.0);\n        float t1 = rayLength * pow(float(i + 1) / float(SUN_VIEW_STEPS), 2.0);\n        float dt = t1 - t0;\n        vec3 p = o + d * (0.5 * (t0 + t1));\n        vec3 density = sun_density(length(p) - SUN_PLANET_RADIUS);\n        vec3 toCamera = exp(-sun_extinction(depth + density * (0.5 * dt)));\n        vec3 scatter = SUN_RAYLEIGH_SCATTERING * density.x * phaseRayleigh + SUN_MIE_SCATTERING * density.y * phaseMie;\n        sum += toCamera * sun_transmittance_to_light(p, l) * scatter * dt;\n        depth += density * dt;\n    }\n    transmittance = exp(-sun_extinction(depth));\n    return sum;\n}\n\n// Linear radiance of the sky in world direction dir, without the sun disc. The ground below the horizon\n// is not modeled: directions below it look at the horizon, darkened.\nvec3 sun_sky(vec3 dir, vec3 sunDirection, float rainBrightness, float altitude, out vec3 transmittance) {\n    vec3 d = normalize(vec3(dir.x, max(dir.y, 0.0), dir.z));\n    vec3 color = SUN_NIGHT_GLOW;\n    transmittance = vec3(1.0);\n    if (sunDirection.y > -0.3) {\n        color += sun_scattering(d, sunDirection, altitude, transmittance) * SUN_SUN_RADIANCE;\n    }\n    if (-sunDirection.y > -0.3) {\n        vec3 unused;\n        color += sun_scattering(d, -sunDirection, altitude, unused) * SUN_MOON_RADIANCE;\n    }\n    color *= mix(1.0, 0.25, smoothstep(0.0, -0.3, dir.y));\n    // Rain: a grey, darker overcast sky.\n    float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));\n    return mix(color, vec3(luminance * 0.45), (1.0 - rainBrightness) * 0.9);\n}\n\n// Linear radiance of the sun disc in direction dir, seen through the atmosphere.\nvec3 sun_sun_disc(vec3 dir, vec3 sunDirection, vec3 transmittance, float rainBrightness) {\n    float c = dot(dir, sunDirection);\n    if (c < SUN_SUN_COS_RADIUS - 0.0001 || dir.y < 0.0) {\n        return vec3(0.0);\n    }\n    float edge = smoothstep(SUN_SUN_COS_RADIUS - 0.0001, SUN_SUN_COS_RADIUS + 0.00002, c);\n    // Limb darkening: the edge of the disc is dimmer than its center.\n    float r = sqrt(clamp((1.0 - c) / (1.0 - SUN_SUN_COS_RADIUS), 0.0, 1.0));\n    float limb = 0.4 + 0.6 * sqrt(1.0 - r * r);\n    return SUN_SUN_RADIANCE * 40.0 * transmittance * edge * limb * rainBrightness * rainBrightness;\n}\n\n// Height of the camera above the sea, in meters, from its block height: the overworld sea is at y = 63.\nfloat sun_altitude(float cameraY) {\n    return clamp(200.0 + (cameraY - 63.0) * 2.0, 20.0, 4000.0);\n}\n\n// ACES filmic curve (Narkowicz 2015), then sRGB-like gamma.\nvec3 sun_tonemap(vec3 linear) {\n    vec3 x = linear;\n    vec3 mapped = clamp(x * (2.51 * x + 0.03) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);\n    return pow(mapped, vec3(1.0 / 2.2));\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/bus.glsl",
+      "content": "#ifndef SUN_BUS_GLSL\n#define SUN_BUS_GLSL\n\n// Data bus.\n//\n// Column x = 0 of the screen carries values from core shaders to the post effects. Every program that\n// draws the world discards its fragments in that column (SUN_PROTECT_BUS), and the writers relocate\n// their geometry onto a strip of it. The post effects read the values, then paint the column over.\n//\n// Rows, numbered from NDC y = -1 (the bottom of the screen):\n#define SUN_ROW_MARKER 0      // magenta: the bus was written this frame\n#define SUN_ROW_PROJ 1        // ProjMat, 16 floats, column-major\n#define SUN_ROW_VIEW 17       // view rotation (the sky's ModelViewMat), 16 floats, column-major\n#define SUN_ROW_SKY 33        // sky color (ColorModulator of the sky disc), 3 channels\n#define SUN_ROW_FOG 34        // FogColor\n#define SUN_ROW_FOG_PARAMS 35 // 6 floats: FogEnvironmentalStart, FogEnvironmentalEnd, FogRenderDistanceStart,\n                             // FogRenderDistanceEnd, FogSkyEnd, FogCloudsEnd\n#define SUN_SKY_ROWS 41       // rows written by the sky\n#define SUN_ROW_SUN 41        // view-space sun direction (3 components), then the rain brightness mapped to [-1, 1]:\n#define SUN_SUN_ROWS 4        // 24-bit fixed point each\n// The sun is drawn with additive blending (color = src * alpha + dst), after the sky: the sky clears the\n// sun's rows to black first, so the sum is exactly what the sun writes.\n#define SUN_SKY_STRIP_ROWS 45 // rows covered by the sky's strip: its own values, then the cleared sun rows\n\n// Discard fragments that would land on the bus column. Orthographic renders (the GUI, and the GUI item\n// atlas, which core/item draws into) are left alone: they happen elsewhere or after the post effects.\n// Needs ProjMat (#include <minecraft:projection.glsl>).\n#define SUN_PROTECT_BUS if (gl_FragCoord.x < 1.0 && ProjMat[2][3] != 0.0) { discard; }\n// For full-screen copies onto the world (blit_screen), which have no ProjMat.\n#define SUN_PROTECT_BUS_ALWAYS if (gl_FragCoord.x < 1.0) { discard; }\n\n// A float as 4 bytes (RGBA). Only for writers without blending: the alpha channel is part of the value.\nvec4 sun_pack_float(float v) {\n    uint b = floatBitsToUint(v);\n    return vec4(float((b >> 24u) & 255u), float((b >> 16u) & 255u), float((b >> 8u) & 255u), float(b & 255u)) / 255.0;\n}\n\nfloat sun_unpack_float(vec4 c) {\n    uvec4 b = uvec4(round(c * 255.0));\n    return uintBitsToFloat((b.x << 24u) | (b.y << 16u) | (b.z << 8u) | b.w);\n}\n\n// A value in [-1, 1] as 24-bit fixed point in RGB, alpha 1: safe for writers with alpha blending.\nvec4 sun_pack_signed(float v) {\n    uint q = uint(round(clamp(v * 0.5 + 0.5, 0.0, 1.0) * 16777215.0));\n    return vec4(float((q >> 16u) & 255u), float((q >> 8u) & 255u), float(q & 255u), 255.0) / 255.0;\n}\n\nfloat sun_unpack_signed(vec4 c) {\n    uvec3 b = uvec3(round(c.rgb * 255.0));\n    return float((b.x << 16u) | (b.y << 8u) | b.z) / 16777215.0 * 2.0 - 1.0;\n}\n\n// Clip-space position of a corner of the strip covering bus rows [firstRow, firstRow + rows).\n// corner is (0 or 1, 0 or 1). Corners (0,0), (1,0), (1,1), (0,1) in that order are front-facing.\nvec4 sun_strip_corner(vec2 corner, int firstRow, int rows, vec2 screenSize) {\n    vec2 pixel = vec2(corner.x, float(firstRow) + corner.y * float(rows));\n    return vec4(-1.0 + 2.0 * pixel / screenSize, 0.0, 1.0);\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/bus_read.glsl",
+      "content": "#ifndef SUN_BUS_READ_GLSL\n#define SUN_BUS_READ_GLSL\n\n#include <sun:bus.glsl>\n\n// Reading the data bus in a post effect, from an input bound to minecraft:main.\n\nstruct SunBus {\n    bool present;\n    mat4 proj;\n    mat4 invProj;\n    mat3 viewToWorld;     // camera-relative world axes from view space (the inverse of the view rotation)\n    bool zZeroToOne;      // depth range of the backend: [0, 1] (Vulkan) or [-1, 1] (OpenGL without clip control)\n    vec3 skyColor;\n    vec3 fogColor;        // also the color the frame was cleared to\n    float fogEnvironmentalStart;\n    float fogEnvironmentalEnd;\n    float fogRenderDistanceStart;\n    float fogRenderDistanceEnd;\n    float fogSkyEnd;\n    float fogCloudsEnd;\n    vec3 sunDirection;    // world space\n    float rainBrightness; // 1: clear, 0: full rain\n};\n\nvec4 sun_bus_texel(sampler2D bus, int row, bool fromBottom) {\n    int height = textureSize(bus, 0).y;\n    return texelFetch(bus, ivec2(0, fromBottom ? row : height - 1 - row), 0);\n}\n\nbool sun_is_marker(vec4 c) {\n    return all(lessThan(abs(c.rgb - vec3(1.0, 0.0, 1.0)), vec3(0.01)));\n}\n\nSunBus sun_read_bus(sampler2D bus) {\n    SunBus b;\n    // Texel row 0 is the bottom of the screen on both backends; the top row is checked too, just in case.\n    bool fromBottom = sun_is_marker(texelFetch(bus, ivec2(0, 0), 0));\n    b.present = fromBottom || sun_is_marker(texelFetch(bus, ivec2(0, textureSize(bus, 0).y - 1), 0));\n    if (!b.present) {\n        return b;\n    }\n    mat4 view;\n    for (int i = 0; i < 16; i++) {\n        b.proj[i / 4][i % 4] = sun_unpack_float(sun_bus_texel(bus, SUN_ROW_PROJ + i, fromBottom));\n        view[i / 4][i % 4] = sun_unpack_float(sun_bus_texel(bus, SUN_ROW_VIEW + i, fromBottom));\n    }\n    b.invProj = inverse(b.proj);\n    b.viewToWorld = transpose(mat3(view));\n    // Reversed depth (near 1, far 0) with JOML's perspective: proj[2][2] = near / (far - near) for a [0, 1]\n    // depth range, (far + near) / (far - near) for [-1, 1].\n    b.zZeroToOne = b.proj[2][2] < 0.5;\n    b.skyColor = sun_bus_texel(bus, SUN_ROW_SKY, fromBottom).rgb;\n    b.fogColor = sun_bus_texel(bus, SUN_ROW_FOG, fromBottom).rgb;\n    float fog[6];\n    for (int i = 0; i < 6; i++) {\n        fog[i] = sun_unpack_float(sun_bus_texel(bus, SUN_ROW_FOG_PARAMS + i, fromBottom));\n    }\n    b.fogEnvironmentalStart = fog[0];\n    b.fogEnvironmentalEnd = fog[1];\n    b.fogRenderDistanceStart = fog[2];\n    b.fogRenderDistanceEnd = fog[3];\n    b.fogSkyEnd = fog[4];\n    b.fogCloudsEnd = fog[5];\n    vec3 sunView = vec3(sun_unpack_signed(sun_bus_texel(bus, SUN_ROW_SUN, fromBottom)),\n                        sun_unpack_signed(sun_bus_texel(bus, SUN_ROW_SUN + 1, fromBottom)),\n                        sun_unpack_signed(sun_bus_texel(bus, SUN_ROW_SUN + 2, fromBottom)));\n    b.sunDirection = normalize(b.viewToWorld * sunView);\n    b.rainBrightness = sun_unpack_signed(sun_bus_texel(bus, SUN_ROW_SUN + 3, fromBottom)) * 0.5 + 0.5;\n    return b;\n}\n\n// Camera-relative position, in view space, of the point at this screen position and depth.\nvec3 sun_view_position(SunBus b, vec2 texCoord, float depth) {\n    float z = b.zZeroToOne ? depth : depth * 2.0 - 1.0;\n    vec4 p = b.invProj * vec4(texCoord * 2.0 - 1.0, z, 1.0);\n    return p.xyz / p.w;\n}\n\n// Whether the camera is in plain air, from the fog the game set up (FogRenderer and the fog environments).\n// In air, the sky fog ends at the render distance (capped at 512 blocks), before the environmental fog does.\n// In water and under darkness, it ends with the environmental fog; under blindness, at 0.8 times it.\nbool sun_in_air(SunBus b) {\n    return abs(b.fogSkyEnd - min(b.fogRenderDistanceEnd, 512.0)) < 1.0 && b.fogSkyEnd < b.fogEnvironmentalEnd - 1.0;\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/fog.glsl",
+      "content": "#ifndef SUN_FOG_GLSL\n#define SUN_FOG_GLSL\n\n#include <sun:bus_read.glsl>\n#include <sun:atmosphere.glsl>\n\n// The fog, recomputed in post effects from a pixel's camera-relative position and the fog distances of\n// the bus, and the stronger fog the pack uses instead.\n\nfloat sun_linear_fog(float distance, float start, float end) {\n    return clamp((distance - start) / max(end - start, 1e-3), 0.0, 1.0);\n}\n\n// How much of the fog color vanilla mixed in at this position (fog.glsl, for terrain and entities).\nfloat sun_vanilla_fog(SunBus bus, vec3 position) {\n    float spherical = length(position);\n    float cylindrical = max(length(position.xz), abs(position.y));\n    return max(sun_linear_fog(spherical, bus.fogEnvironmentalStart, bus.fogEnvironmentalEnd),\n               sun_linear_fog(cylindrical, bus.fogRenderDistanceStart, bus.fogRenderDistanceEnd));\n}\n\n// How much of the sky the pack mixes in instead, at least vanilla's: a haze that grows with distance\n// (aerial perspective), and a softer fade at the edge of the loaded world.\nfloat sun_fog_amount(SunBus bus, vec3 position, float vanillaFog) {\n    float cylindrical = max(length(position.xz), abs(position.y));\n    float edge = smoothstep(0.5, 0.95, cylindrical / bus.fogRenderDistanceEnd);\n    float haze = 1.0 - exp(-length(position) / SUN_HAZE_DISTANCE);\n    return 1.0 - (1.0 - max(vanillaFog, edge)) * (1.0 - haze);\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/light_code.glsl",
+      "content": "#ifndef SUN_LIGHT_CODE_GLSL\n#define SUN_LIGHT_CODE_GLSL\n\n// Light levels in the alpha of opaque terrain (solid and cutout blocks), for the post effects.\n//\n// The alpha of minecraft:main then has three ranges:\n//   0 to 204:   translucent things in front of the clear color: clouds (at most 0.8), far water, glass;\n//   205 to 252: opaque terrain, with 8 sky light levels x 6 block light levels;\n//   255:        anything else that is opaque (entities, block entities\u2026), left as it is.\n\n// levels: (block, sky), each 0 to 1 (light level / 15).\nfloat sun_encode_light(vec2 levels) {\n    float sky = round(clamp(levels.y, 0.0, 1.0) * 7.0);\n    float block = round(clamp(levels.x, 0.0, 1.0) * 5.0);\n    return (205.0 + sky * 6.0 + block) / 255.0;\n}\n\nbool sun_decode_light(float alpha, out vec2 levels) {\n    float v = round(alpha * 255.0) - 205.0;\n    levels = vec2(mod(v, 6.0) / 5.0, floor(v / 6.0) / 7.0);\n    return v >= 0.0 && v <= 47.0;\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/lighting.glsl",
+      "content": "#ifndef SUN_LIGHTING_GLSL\n#define SUN_LIGHTING_GLSL\n\n// Relighting opaque terrain. The vanilla image already holds albedo x light, and only the light levels are\n// known, so the pack changes the light by a factor instead of computing it from scratch:\n//\n//   factor = (light from the sky the pack wants) / (light from the sky vanilla gave)\n//\n// mixed with 1 by the share of sky light in the pixel (block light is left alone). Vanilla's sky light is\n// uniform but for a fixed shade per face (CardinalLighting.DEFAULT: up 1, down 0.5, north and south 0.8,\n// east and west 0.6). The pack's is an ambient sky light, brighter on faces that see more sky, plus a direct\n// light from the sun (the moon by night) along the face's normal. Both are normalized so that a face\n// pointing up keeps vanilla's brightness: the overall level of day and night stays vanilla's, only the\n// direction and the color change.\n\nconst float SUN_DIRECT_SHARE = 0.45;   // share of the direct light on a face that faces it, by day\nconst float SUN_MOON_SHARE = 0.3;      // the same, by night\nconst float SUN_AMBIENT_TINT = 0.3;    // how much of the sky's color the ambient light keeps (0: white)\nconst float SUN_DIRECT_TINT = 0.7;     // the same for the direct light (orange at sunset)\n\n// Vanilla's light curve for a level from 0 to 1 (the lightmap's brightness, before gamma).\nfloat sun_light_curve(float level) {\n    return level / (4.0 - 3.0 * level);\n}\n\nvec3 sun_relight(vec3 faceNormal, vec2 levels, vec3 sunDirection, float rainBrightness, vec3 ambientColor, vec3 directColor) {\n    // The face's axis: the normal from depth derivatives is exact on flat faces, noisy on edges.\n    // Surfaces that face no axis are plants (two diagonal quads, which vanilla doesn't shade) or block\n    // edges: they keep vanilla's brightness, and only take the light's color.\n    vec3 m = abs(faceNormal);\n    vec3 n;\n    float vanillaShade;\n    if (max(m.x, max(m.y, m.z)) < 0.9) {\n        n = vec3(0.0, 1.0, 0.0);\n        vanillaShade = 1.0;\n    } else if (m.y >= m.x && m.y >= m.z) {\n        n = vec3(0.0, sign(faceNormal.y), 0.0);\n        vanillaShade = faceNormal.y > 0.0 ? 1.0 : 0.5;\n    } else if (m.z >= m.x) {\n        n = vec3(0.0, 0.0, sign(faceNormal.z));\n        vanillaShade = 0.8;\n    } else {\n        n = vec3(sign(faceNormal.x), 0.0, 0.0);\n        vanillaShade = 0.6;\n    }\n\n    // Light colors with a luminance of 1, partly desaturated: a fully blue sky light turns sand blue.\n    const vec3 luma = vec3(0.2126, 0.7152, 0.0722);\n    ambientColor = mix(vec3(1.0), ambientColor / max(dot(ambientColor, luma), 1e-3), SUN_AMBIENT_TINT);\n    directColor = mix(vec3(1.0), directColor / max(dot(directColor, luma), 1e-3), SUN_DIRECT_TINT);\n\n    bool day = sunDirection.y > 0.0;\n    vec3 l = day ? sunDirection : -sunDirection;\n    float direct = (day ? SUN_DIRECT_SHARE : SUN_MOON_SHARE) * smoothstep(0.0, 0.15, l.y) * rainBrightness * rainBrightness;\n    vec3 ambient = ambientColor * (1.0 - direct);\n    vec3 light = ambient * (0.8 + 0.2 * n.y) + directColor * direct * max(dot(n, l), 0.0);   // sides see less sky\n    vec3 up = ambient + directColor * direct * l.y;\n    vec3 skyFactor = light / max(dot(up, luma), 1e-3) / vanillaShade;\n    skyFactor = clamp(skyFactor, vec3(0.3), vec3(1.6));\n\n    // Share of the sky in the pixel's light. Vanilla dims sky light at night, not block light.\n    float daylight = mix(0.25, 1.0, smoothstep(-0.2, 0.2, sunDirection.y));\n    float sky = sun_light_curve(levels.y) * daylight;\n    float share = sky / max(sky + sun_light_curve(levels.x), 1e-3);\n    return mix(vec3(1.0), skyFactor, share);\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/sun/shaders/include/water.glsl",
+      "content": "#ifndef SUN_WATER_GLSL\n#define SUN_WATER_GLSL\n\n// Water markers. The terrain shaders (vanilla and Sodium) recognize water fragments, and on every even\n// screen column write a marker instead of the water color, with alpha 1 so that blending keeps it exact.\n// Odd columns keep the vanilla water, blended over what is underneath: the post effects take the\n// refraction color from them, and redraw the surface.\n//\n// Water textures (water_still, water_flow, water_overlay) have a uniform alpha of 180/255. The slime block\n// shares it, but water is tinted by the biome and slime is not.\n#define SUN_WATER_ALPHA 180.0\n\nbool sun_is_water(vec4 textureColor, vec4 tint) {\n    return abs(textureColor.a * 255.0 - SUN_WATER_ALPHA) < 0.5\n        && max(tint.r, max(tint.g, tint.b)) - min(tint.r, min(tint.g, tint.b)) > 0.05;\n}\n\n// The marker of column x: two bytes that depend on x, so that a scene color matches by chance with a\n// probability of 1 in 65536 per pixel, and only where it is also at the right place. Only x is used:\n// gl_FragCoord.y doesn't count from the same edge on every backend. The third byte carries data.\nvec4 sun_water_marker(int x, float data) {\n    return vec4(float((x * 73 + 11) & 255) / 255.0, float((x * 197 + 89) & 255) / 255.0, data, 1.0);\n}\n\nbool sun_is_water_marker(vec4 c, int x) {\n    vec4 m = sun_water_marker(x, 0.0);\n    return (x & 1) == 0 && abs(c.r - m.r) < 0.5 / 255.0 && abs(c.g - m.g) < 0.5 / 255.0;\n}\n\n// The data byte: 1 for a horizontal surface (the top of water, or its bottom seen from below), 0.5 for a side.\nfloat sun_water_data(vec3 cameraRelativePosition) {\n    vec3 n = normalize(cross(dFdx(cameraRelativePosition), dFdy(cameraRelativePosition)));\n    return abs(n.y) > 0.7 ? 1.0 : 0.5;\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"targets\": {\n    \"light\": { \"width\": 4, \"height\": 1 },\n    \"swap\": {},\n    \"swap2\": {},\n    \"bloom_near\": { \"width\": 480, \"height\": 270 },\n    \"bloom_near_swap\": { \"width\": 480, \"height\": 270 },\n    \"bloom_far\": { \"width\": 240, \"height\": 135 },\n    \"bloom_far_swap\": { \"width\": 240, \"height\": 135 }\n  },\n  \"passes\": [\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/light\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"minecraft:main\" } ],\n      \"output\": \"light\"\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/atmosphere\",\n      \"inputs\": [\n        { \"sampler_name\": \"In\", \"target\": \"minecraft:main\" },\n        { \"sampler_name\": \"Depth\", \"target\": \"minecraft:main\", \"use_depth_buffer\": true },\n        { \"sampler_name\": \"Light\", \"target\": \"light\" }\n      ],\n      \"output\": \"swap\"\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/water\",\n      \"inputs\": [\n        { \"sampler_name\": \"In\", \"target\": \"swap\" },\n        { \"sampler_name\": \"Main\", \"target\": \"minecraft:main\" },\n        { \"sampler_name\": \"Depth\", \"target\": \"minecraft:main\", \"use_depth_buffer\": true },\n        { \"sampler_name\": \"Light\", \"target\": \"light\" }\n      ],\n      \"output\": \"swap2\"\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/bloom_extract\",\n      \"inputs\": [\n        { \"sampler_name\": \"In\", \"target\": \"swap2\" },\n        { \"sampler_name\": \"Main\", \"target\": \"minecraft:main\" }\n      ],\n      \"output\": \"bloom_near\"\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/downsample\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"bloom_near\", \"bilinear\": true } ],\n      \"output\": \"bloom_far\"\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/blur\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"bloom_near\", \"bilinear\": true } ],\n      \"output\": \"bloom_near_swap\",\n      \"uniforms\": { \"BlurConfig\": [ { \"type\": \"vec2\", \"value\": [1.0, 0.0] } ] }\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/blur\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"bloom_near_swap\", \"bilinear\": true } ],\n      \"output\": \"bloom_near\",\n      \"uniforms\": { \"BlurConfig\": [ { \"type\": \"vec2\", \"value\": [0.0, 1.0] } ] }\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/blur\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"bloom_far\", \"bilinear\": true } ],\n      \"output\": \"bloom_far_swap\",\n      \"uniforms\": { \"BlurConfig\": [ { \"type\": \"vec2\", \"value\": [1.0, 0.0] } ] }\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/blur\",\n      \"inputs\": [ { \"sampler_name\": \"In\", \"target\": \"bloom_far_swap\", \"bilinear\": true } ],\n      \"output\": \"bloom_far\",\n      \"uniforms\": { \"BlurConfig\": [ { \"type\": \"vec2\", \"value\": [0.0, 1.0] } ] }\n    },\n    {\n      \"vertex_shader\": \"sun:post/fullscreen\",\n      \"fragment_shader\": \"sun:post/composite\",\n      \"inputs\": [\n        { \"sampler_name\": \"In\", \"target\": \"swap2\" },\n        { \"sampler_name\": \"BloomNear\", \"target\": \"bloom_near\", \"bilinear\": true },\n        { \"sampler_name\": \"BloomFar\", \"target\": \"bloom_far\", \"bilinear\": true }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/block.fsh",
+      "vanilla": "assets/minecraft/shaders/core/block.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n",
+          "replace": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n    if (ALPHA_CUTOUT > 0.4) {\n        color.a = 1.0;\n    }\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_color.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.vsh",
+      "edits": [
+        {
+          "find": "void main() {\n    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);\n",
+          "replace": "// The glow is a fixed fan of 18 vertices (SkyRenderer): the center at (0, 100, 0), then a ring at\n// (120 sin a, 120 cos a, -40 cos a). Debug shapes, the other users of this program, don't match it.\nbool isSunriseFan() {\n    if (ProjMat[2][3] == 0.0 || gl_VertexIndex >= 18) {\n        return false;\n    }\n    if (gl_VertexIndex == 0) {\n        return distance(Position, vec3(0.0, 100.0, 0.0)) < 0.01;\n    }\n    return abs(length(Position.xy) - 120.0) < 0.01 && abs(Position.z + Position.y / 3.0) < 0.01;\n}\n\nvoid main() {\n    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);\n    if (isSunriseFan()) {\n        gl_Position = vec4(2.0, 2.0, 0.0, 1.0);   // outside the screen: nothing drawn\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_tex.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_tex.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:dynamictransforms.glsl>\n",
+          "replace": "#include <minecraft:dynamictransforms.glsl>\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 0) in vec2 texCoord0;\n",
+          "replace": "layout(location = 0) in vec2 texCoord0;\nlayout(location = 1) flat in int isSun;\nlayout(location = 2) in float busRow;\nlayout(location = 3) flat in vec4 sunData;\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // The celestial pipeline blends additively: RGB fixed point, alpha 1, on rows the sky cleared to black.\n    if (isSun == 1) {\n        int k = int(floor(busRow)) - SUN_ROW_SUN;\n        fragColor = sun_pack_signed(sunData[clamp(k, 0, 3)]);\n        return;\n    }\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_tex.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_tex.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:projection.glsl>\n",
+          "replace": "#include <minecraft:projection.glsl>\n#include <minecraft:globals.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 0) out vec2 texCoord0;\n",
+          "replace": "layout(location = 0) out vec2 texCoord0;\nlayout(location = 1) flat out int isSun;\nlayout(location = 2) out float busRow;\nlayout(location = 3) flat out vec4 sunData;\n"
+        },
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n\n    // The sun and the moon both use this program. The sun quad is scaled by 30, the moon's by 20.\n    isSun = abs(length(ModelViewMat[0].xyz) - 30.0) < 1.0 ? 1 : 0;\n    busRow = 0.0;\n    // Direction of the sun's center, in view space (the quad is centered on its local origin), and the rain\n    // brightness, which the game passes as the alpha of ColorModulator (1: clear, 0: full rain).\n    sunData = vec4(normalize((ModelViewMat * vec4(0.0, 0.0, 0.0, 1.0)).xyz), ColorModulator.a * 2.0 - 1.0);\n    if (isSun == 1) {\n        int k = gl_VertexIndex % 4;\n        vec2 corner = vec2(k == 1 || k == 2 ? 1.0 : 0.0, k == 2 || k == 3 ? 1.0 : 0.0);\n        gl_Position = sun_strip_corner(corner, SUN_ROW_SUN, SUN_SUN_ROWS, ScreenSize);\n        busRow = float(SUN_ROW_SUN) + corner.y * float(SUN_SUN_ROWS);\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/sky.fsh",
+      "vanilla": "assets/minecraft/shaders/core/sky.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:dynamictransforms.glsl>\n",
+          "replace": "#include <minecraft:dynamictransforms.glsl>\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 1) in float cylindricalVertexDistance;\n",
+          "replace": "layout(location = 1) in float cylindricalVertexDistance;\nlayout(location = 2) in float busRow;\n"
+        },
+        {
+          "find": "    fragColor = apply_fog(ColorModulator, sphericalVertexDistance, cylindricalVertexDistance, 0.0, FogSkyEnd, FogSkyEnd, FogSkyEnd, FogColor);\n",
+          "replace": "    int row = int(floor(busRow));\n    if (row == SUN_ROW_MARKER) {\n        fragColor = vec4(1.0, 0.0, 1.0, 1.0);\n    } else if (row < SUN_ROW_VIEW) {\n        int k = row - SUN_ROW_PROJ;\n        fragColor = sun_pack_float(ProjMat[k / 4][k % 4]);\n    } else if (row < SUN_ROW_SKY) {\n        int k = row - SUN_ROW_VIEW;\n        fragColor = sun_pack_float(ModelViewMat[k / 4][k % 4]);\n    } else if (row == SUN_ROW_SKY) {\n        fragColor = vec4(ColorModulator.rgb, 1.0);\n    } else if (row == SUN_ROW_FOG) {\n        fragColor = vec4(FogColor.rgb, 1.0);\n    } else if (row < SUN_SKY_ROWS) {\n        int k = row - SUN_ROW_FOG_PARAMS;\n        float fogParams[6] = float[6](FogEnvironmentalStart, FogEnvironmentalEnd, FogRenderDistanceStart,\n                                      FogRenderDistanceEnd, FogSkyEnd, FogCloudsEnd);\n        fragColor = sun_pack_float(fogParams[k]);\n    } else {\n        fragColor = vec4(0.0, 0.0, 0.0, 1.0);   // the sun's rows, cleared for its additive blending\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/sky.vsh",
+      "vanilla": "assets/minecraft/shaders/core/sky.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:projection.glsl>\n",
+          "replace": "#include <minecraft:projection.glsl>\n#include <minecraft:globals.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "layout(location = 1) out float cylindricalVertexDistance;\n",
+          "replace": "layout(location = 1) out float cylindricalVertexDistance;\n// The bus row each fragment writes.\nlayout(location = 2) out float busRow;\n"
+        },
+        {
+          "find": "    cylindricalVertexDistance = fog_cylindrical_distance(Position);\n",
+          "replace": "    cylindricalVertexDistance = fog_cylindrical_distance(Position);\n\n    // Two discs use this program: the sky disc, drawn with the camera rotation alone, and the dark disc below the\n    // horizon, translated down by 12 blocks. Only the sky disc writes the bus; the post effects draw the lower sky.\n    busRow = 0.0;\n    if (dot(ModelViewMat[3].xyz, ModelViewMat[3].xyz) > 1.0) {\n        gl_Position = vec4(2.0, 2.0, 0.0, 1.0);   // every vertex outside the screen: nothing drawn\n        return;\n    }\n    // The 10 vertices are a triangle fan around vertex 0: vertices 0, 1, 2, 3 make the strip's two\n    // triangles, the others collapse onto vertex 3.\n    int i = gl_VertexIndex;\n    vec2 corner = i == 0 ? vec2(0.0, 0.0) : i == 1 ? vec2(1.0, 0.0) : i == 2 ? vec2(1.0, 1.0) : vec2(0.0, 1.0);\n    gl_Position = sun_strip_corner(corner, 0, SUN_SKY_STRIP_ROWS, ScreenSize);\n    busRow = corner.y * float(SUN_SKY_STRIP_ROWS);\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <sun:water.glsl>\n#include <sun:light_code.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) in float chunkVisibility;\n",
+          "replace": "layout(location = 4) in float chunkVisibility;\nlayout(location = 5) in vec3 sunPosition;\nlayout(location = 6) in vec4 sunTint;\nlayout(location = 7) in vec2 sunLight;\n"
+        },
+        {
+          "find": "    vec4 color = (UseRgss == 1 ? sampleRGSS(Sampler0, texCoord0, 1.0f / TextureSize) : sampleNearest(Sampler0, texCoord0, 1.0f / TextureSize)) * vertexColor;\n",
+          "replace": "    float waterData = sun_water_data(sunPosition);   // derivatives: before any branch\n    vec4 textureColor = UseRgss == 1 ? sampleRGSS(Sampler0, texCoord0, 1.0f / TextureSize) : sampleNearest(Sampler0, texCoord0, 1.0f / TextureSize);\n    #if !defined(OIT_ALPHA_ONLY) && !defined(OIT_ACCUMULATE)\n    if ((int(gl_FragCoord.x) & 1) == 0 && sun_is_water(textureColor, sunTint)) {\n        fragColor = sun_water_marker(int(gl_FragCoord.x), waterData);\n        return;\n    }\n    #endif\n    vec4 color = textureColor * vertexColor;\n"
+        },
+        {
+          "find": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n",
+          "replace": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n    if (ALPHA_CUTOUT > 0.4) {\n        color.a = sun_encode_light(sunLight);\n    }\n"
+        },
+        {
+          "find": "    #ifdef OIT_ALPHA_ONLY\n    executeAlphaOnlyPhase(gl_FragCoord.z, color.a);\n",
+          "replace": "    #ifndef ALPHA_CUTOUT\n    color.a = sun_encode_light(sunLight);   // solid terrain\n    #endif\n\n    #ifdef OIT_ALPHA_ONLY\n    executeAlphaOnlyPhase(gl_FragCoord.z, color.a);\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "layout(location = 4) out float chunkVisibility;\n",
+          "replace": "layout(location = 4) out float chunkVisibility;\nlayout(location = 5) out vec3 sunPosition;\nlayout(location = 6) out vec4 sunTint;\nlayout(location = 7) out vec2 sunLight;\n"
+        },
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n    sunPosition = pos;\n    sunTint = Color;\n    sunLight = vec2(UV2) / 240.0;   // (block, sky) light levels, 0 to 1\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",
+      "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <sun:bus.glsl>\n#include <sun:water.glsl>\n#include <sun:light_code.glsl>\n"
+        },
+        {
+          "find": "layout(location = 3) in float fadeFactor;\n",
+          "replace": "layout(location = 3) in float fadeFactor;\nlayout(location = 4) in vec3 sunPosition;\nlayout(location = 5) in vec4 sunTint;\nlayout(location = 6) in vec2 sunLight;\n"
+        },
+        {
+          "find": "void main() {\n    vec4 color = u_UseRGSS ? sampleRGSS(u_BlockTex, v_TexCoord, u_TexelSize) : sampleNearest(u_BlockTex, v_TexCoord, u_TexelSize);\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS_ALWAYS   // terrain is never drawn with an orthographic projection\n    float waterData = sun_water_data(sunPosition);   // derivatives: before any branch\n    vec4 color = u_UseRGSS ? sampleRGSS(u_BlockTex, v_TexCoord, u_TexelSize) : sampleNearest(u_BlockTex, v_TexCoord, u_TexelSize);\n    #if !defined(OIT_ALPHA_ONLY) && !defined(OIT_ACCUMULATE)\n    if ((int(gl_FragCoord.x) & 1) == 0 && sun_is_water(color, sunTint)) {\n        fragColor = sun_water_marker(int(gl_FragCoord.x), waterData);\n        return;\n    }\n    #endif\n"
+        },
+        {
+          "find": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n",
+          "replace": "    if (color.a < ALPHA_CUTOUT) {\n        discard;\n    }\n    if (ALPHA_CUTOUT > 0.4) {\n        color.a = sun_encode_light(sunLight);\n    }\n"
+        },
+        {
+          "find": "    #ifdef OIT_ALPHA_ONLY\n    executeAlphaOnlyPhase(gl_FragCoord.z, color.a);\n",
+          "replace": "    #ifndef ALPHA_CUTOUT\n    color.a = sun_encode_light(sunLight);   // solid terrain\n    #endif\n\n    #ifdef OIT_ALPHA_ONLY\n    executeAlphaOnlyPhase(gl_FragCoord.z, color.a);\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/sodium/shaders/blocks/block_layer_opaque.vsh",
+      "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.vsh",
+      "edits": [
+        {
+          "find": "layout(location = 1) out vec2 v_TexCoord;\n",
+          "replace": "layout(location = 1) out vec2 v_TexCoord;\nlayout(location = 4) out vec3 sunPosition;\nlayout(location = 5) out vec4 sunTint;\nlayout(location = 6) out vec2 sunLight;\n"
+        },
+        {
+          "find": "    // Transform the vertex position into model-view-projection space\n",
+          "replace": "    sunPosition = position;\n    sunTint = _vert_color;\n    sunLight = _vert_tex_light_coord * (256.0 / 240.0);   // (block, sky) light levels, 0 to 1\n\n    // Transform the vertex position into model-view-projection space\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/entity.fsh",
+      "vanilla": "assets/minecraft/shaders/core/entity.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/item.fsh",
+      "vanilla": "assets/minecraft/shaders/core/item.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/particle.fsh",
+      "vanilla": "assets/minecraft/shaders/core/particle.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/text.fsh",
+      "vanilla": "assets/minecraft/shaders/core/text.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/clouds.fsh",
+      "vanilla": "assets/minecraft/shaders/core/clouds.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/world_border.fsh",
+      "vanilla": "assets/minecraft/shaders/core/world_border.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_beacon_beam.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_beacon_beam.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_lightning.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_lightning.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_lines.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_lines.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_leash.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_leash.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_end_portal.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_end_portal.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_crumbling.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_crumbling.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/rendertype_entity_shadow.fsh",
+      "vanilla": "assets/minecraft/shaders/core/rendertype_entity_shadow.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/glint.fsh",
+      "vanilla": "assets/minecraft/shaders/core/glint.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/position_color.fsh",
+      "vanilla": "assets/minecraft/shaders/core/position_color.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/stars.fsh",
+      "vanilla": "assets/minecraft/shaders/core/stars.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/oit_composite.fsh",
+      "vanilla": "assets/minecraft/shaders/core/oit_composite.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <minecraft:projection.glsl>\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/blit_screen.fsh",
+      "vanilla": "assets/minecraft/shaders/core/blit_screen.fsh",
+      "edits": [
+        {
+          "find": "#extension GL_ARB_separate_shader_objects : require\n",
+          "replace": "#extension GL_ARB_separate_shader_objects : require\n#include <sun:bus.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    SUN_PROTECT_BUS_ALWAYS\n"
+        }
+      ]
+    }
+  ],
+  "mcmeta": {
+    "sodium": {
+      "ignored_shaders": [
+        "terrain.fsh"
+      ]
+    }
+  }
+}
