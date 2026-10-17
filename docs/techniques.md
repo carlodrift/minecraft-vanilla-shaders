@@ -123,6 +123,17 @@ Use it for light-dependent effects that vanilla's lightmap can't express, like e
 - **`CameraOffset` and `CameraBlockPos` give the camera position:** `CameraBlockPos` is the block the camera is in, and `CameraOffset` is `CameraBlockPos - camera position`, between -1 and 0 on each axis *(code)*.
 - **Post-effect uniforms from the JSON are constants**, so they can't drive an animation ([Post effects](post-effects.md)).
 
+## Camera, world position and field of view
+
+| What | How | Evidence |
+|---|---|---|
+| Camera position (world) | `vec3(CameraBlockPos) - CameraOffset` (`Globals`) | *(code)* |
+| World position, entities and items | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
+| World position, terrain | `Position + vec3(ChunkPosition)` | [terrain-wave](../examples/terrain-wave/) |
+| Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option | [exp 73](../experiments/73-fov-from-projection/) |
+
+In `entity.vsh`, the `PER_FACE_LIGHTING` variants (`entity_cutout` and others: mobs, for example) output `vertexPerFaceColorFront` and `vertexPerFaceColorBack` instead of `vertexColor`. An effect on the vertex color has to change both outputs, or it won't show on most mobs.
+
 ## Read depth in a post effect
 
 Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The hand is not in that depth while a post effect is active ([How a frame is drawn](rendering.md)).

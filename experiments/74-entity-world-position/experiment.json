@@ -1,0 +1,26 @@
+{
+  "title": "Entity vertices are camera-relative: world position = `Position + CameraBlockPos - CameraOffset` (only the pig at x > 3 turns blue)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/entity.vsh",
+      "vanilla": "assets/minecraft/shaders/core/entity.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:projection.glsl>\n",
+          "replace": "#include <minecraft:projection.glsl>\n#include <minecraft:globals.glsl>\n"
+        },
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n    // World position: Position is relative to the camera, which is at CameraBlockPos - CameraOffset.\n    vec3 worldPos = Position + vec3(CameraBlockPos) - CameraOffset;\n    if (worldPos.x > 3.0) {\n        #ifdef PER_FACE_LIGHTING\n        vertexPerFaceColorBack.rgb *= vec3(0.3, 0.5, 1.0);\n        vertexPerFaceColorFront.rgb *= vec3(0.3, 0.5, 1.0);\n        #else\n        vertexColor.rgb *= vec3(0.3, 0.5, 1.0);\n        #endif\n    }\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "summon pig 1 4 3 {NoAI:1b,Rotation:[180f,0f]}",
+      "summon pig 5 4 3 {NoAI:1b,Rotation:[180f,0f]}"
+    ]
+  }
+}

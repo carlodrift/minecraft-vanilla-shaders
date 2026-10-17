@@ -1,0 +1,23 @@
+{
+  "title": "The vertical FOV is `2 * atan(1 / ProjMat[1][1])`: 70\u00b0 with the default option, terrain turns green",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <minecraft:projection.glsl>\n"
+        },
+        {
+          "find": "    #ifdef ALPHA_CUTOUT\n",
+          "replace": "    #ifndef OIT_ALPHA_ONLY\n    // Vertical field of view, in degrees, from the projection matrix: green if 70 (the default), red otherwise.\n    float fov = degrees(2.0 * atan(1.0 / ProjMat[1][1]));\n    color.rgb *= abs(fov - 70.0) < 0.5 ? vec3(0.4, 1.0, 0.4) : vec3(1.0, 0.3, 0.3);\n    #endif\n    #ifdef ALPHA_CUTOUT\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": []
+  }
+}

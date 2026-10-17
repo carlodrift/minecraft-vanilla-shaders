@@ -698,5 +698,33 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "73-fov-from-projection": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "The vertical FOV is `2 * atan(1 / ProjMat[1][1])`: 70\u00b0 with the default option, terrain turns green",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "74-entity-world-position": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "Entity vertices are camera-relative: world position = `Position + CameraBlockPos - CameraOffset` (only the pig at x > 3 turns blue)",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }
