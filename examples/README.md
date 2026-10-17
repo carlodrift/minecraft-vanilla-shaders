@@ -11,6 +11,7 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 | [text-effects](text-effects/) | Data from commands: an exact text color selects a rainbow or wave effect in `core/text.vsh`, in the world and in the GUI |
 | [gui-theme](gui-theme/) | Core fragment shader: recolor the neutral greys of GUI textures, GUI only (orthographic test) |
 | [world-anchor](world-anchor/) | Core + post: an `item_display` sends its screen position to a post effect through control pixels |
+| [procedural-sprite](procedural-sprite/) | Custom item model whose texture encodes its coordinates; `core/item.fsh` draws a procedural glowing orb |
 | [thick-outlines](thick-outlines/) | Post effect: replace `minecraft:entity_outline` for thick, crisp, tinted outlines on glowing entities |
 | [emissive-glow](emissive-glow/) | Core + post: emissive pixels tag the main target's alpha, and a post effect blooms only them |
 

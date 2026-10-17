@@ -8,6 +8,7 @@ A shader can't know which object it is drawing, but it can read the texture. Pac
 
 - **Marker alpha:** for example 254 instead of 255. It's invisible in an opaque texture, and easy to test: `abs(texel.a * 255.0 - 254.0) < 0.5`. See [emissive-entities](../examples/emissive-entities/).
 - **Exact colors:** compare the texel's color with a list of colors, with a small tolerance.
+- **Coordinates:** a texel can carry its own position in the sprite (green = x, blue = y), so the shader can draw a procedural shape across it. See [procedural-sprite](../examples/procedural-sprite/).
 
 Read the texel without mipmapping, with `textureLod(Sampler0, uv, 0.0)`, so neighbouring texels don't change the value. This works for entities and items (examples above).
 

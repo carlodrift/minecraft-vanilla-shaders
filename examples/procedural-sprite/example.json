@@ -1,0 +1,45 @@
+{
+  "title": "Procedural sprite: a custom item model whose texture encodes its coordinates, drawn by the shader",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/glow/items/orb.json",
+      "content": "{\n  \"model\": {\n    \"type\": \"minecraft:model\",\n    \"model\": \"glow:item/orb\"\n  }\n}\n"
+    },
+    {
+      "path": "assets/glow/models/item/orb.json",
+      "content": "{\n  \"parent\": \"minecraft:item/generated\",\n  \"textures\": {\n    \"layer0\": \"glow:item/orb\"\n  }\n}\n"
+    },
+    {
+      "path": "assets/glow/textures/item/orb.png",
+      "png": {
+        "width": 64,
+        "height": 64,
+        "pattern": "coords",
+        "red": 254
+      }
+    },
+    {
+      "path": "assets/minecraft/shaders/core/item.fsh",
+      "vanilla": "assets/minecraft/shaders/core/item.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:oit.glsl>\n",
+          "replace": "#include <minecraft:oit.glsl>\n#include <minecraft:globals.glsl>\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // Procedural sprite: a texel whose red is 254 carries its own coordinates in green and blue\n    // (0..63, see the orb texture), so the shader knows where it is in the sprite and draws a disk.\n    vec4 tex = textureLod(Sampler0, texCoord0, 0.0);\n    if (abs(tex.r * 255.0 - 254.0) < 0.5 && tex.a > 0.99) {\n        vec2 local = tex.gb * 255.0 / 63.0;            // 0..1 across the sprite\n        float d = length(local - 0.5) * 2.0;           // 0 at the center, 1 at the rim\n        if (d > 1.0) {\n            discard;\n        }\n        #ifdef OIT_ALPHA_ONLY\n        executeAlphaOnlyPhase(gl_FragCoord.z, 1.0);\n        return;\n        #else\n        // Pulse twice a second: a whole number of periods per GameTime wrap (24000 ticks).\n        float pulse = 0.85 + 0.15 * sin(GameTime * 6.2831853 * 24000.0 / 10.0);\n        float ring = smoothstep(0.05, 0.0, abs(d - 0.8 * pulse));\n        vec3 core = mix(vec3(1.0, 0.97, 0.75), vec3(1.0, 0.45, 0.1), d);\n        fragColor = vec4(core + ring * vec3(1.0, 0.8, 0.3), 1.0);   // fullbright: no lightmap\n        return;\n        #endif\n    }\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "hud": true,
+    "commands": [
+      "time set 18000",
+      "summon item_display 3 5.4 3 {item:{id:\"minecraft:stick\",count:1,components:{\"minecraft:item_model\":\"glow:orb\"}},billboard:\"center\",transformation:{scale:[1.5f,1.5f,1.5f],translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f]}}",
+      "item replace entity @s hotbar.0 with minecraft:stick[minecraft:item_model=\"glow:orb\"]"
+    ]
+  }
+}
