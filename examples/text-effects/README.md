@@ -2,7 +2,7 @@
 
 ![Rainbow and wavy text, in the world and in a title](screenshot.jpg)
 
-Commands or a datapack pick an effect just by the color of a text: `#FE0101` is a scrolling rainbow, `#FE0102` a wave. Any other color stays plain. It works for every text: `text_display`, `/title`, chat, signs, name tags.
+Commands or a datapack pick an effect just by the color of a text: `#FE0101` is a scrolling rainbow, `#FE0102` a wave. Any other color stays plain. Verified with `text_display`, `/title` titles and subtitles. Other text drawn by `core/text` should behave the same as long as the game draws it in the color you set. Sign text is darkened unless it is glowing, so it would not match.
 
 ```mcfunction
 title @a title {text:"Wavy title",color:"#FE0102"}
