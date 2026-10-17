@@ -90,6 +90,7 @@ def set_options(path, pack_name, backend, data_version, extra=()):
         "tutorialStep": "none",
         "joinedFirstServer": "true",
         "pauseOnLostFocus": "false",
+        "soundCategory_master": "0.0",   # test runs are silent
         # Reset on every launch so a previous --option does not leak into the next run. A named
         # graphics preset re-applies its own values on load: use graphicsPreset="custom" to change them.
         "graphicsPreset": '"fancy"',

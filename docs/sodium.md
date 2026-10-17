@@ -42,7 +42,7 @@ Start from the files of the Sodium version you target (they are in its jar) and 
 
 ## Making a pack work with Sodium
 
-1. **Make the same change in `core/terrain` and in Sodium's shader**, and ship both. Without Sodium, the `assets/sodium/` files are simply not used. [data-bus](../examples/data-bus/) and [scattered-sky](../examples/scattered-sky/) do this, and render the same with and without Sodium (observed).
+1. **Make the same change in `core/terrain` and in Sodium's shader**, and ship both. To pass a vertex value to the fragment shader, add an output to `block_layer_opaque.vsh` (its free locations start at 4), as [water-reflections](../examples/water-reflections/) does with the vertex color. Without Sodium, the `assets/sodium/` files are simply not used. [data-bus](../examples/data-bus/) and [scattered-sky](../examples/scattered-sky/) do this, and render the same with and without Sodium (observed).
 2. **Test against the Sodium version you ship for.** A Sodium shader that doesn't compile crashes the game when a world opens, because Sodium compiles its pipelines then (observed). A broken core shader, by contrast, only gets the packs removed.
 3. **Silence Sodium's warning.** Sodium shows a red "incompatible" message for any pack with a file named `terrain.vsh` or `terrain.fsh` (or the old `rendertype_solid`, `rendertype_cutout`, `rendertype_cutout_mipped`, `rendertype_translucent`, `rendertype_tripwire` files), and a "may be incompatible" one for `fog.glsl` or `light.glsl` *(code, and seen in game)*. A pack that supports Sodium lists those files in its `pack.mcmeta`:
 
@@ -73,7 +73,7 @@ With `--sodium`, `mcshaders check` builds Sodium's terrain pipelines with Sodium
 
 | Example | Under Sodium |
 |---|---|
-| [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone |
+| [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/), [water-reflections](../examples/water-reflections/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone, and water isn't marked |
 | [terrain-wave](../examples/terrain-wave/) | No wave: `core/terrain` is not used |
 | [atmosphere](../examples/atmosphere/) | The sky is the same; the terrain keeps the vanilla fog |
 | [depth-outlines](../examples/depth-outlines/), [emissive-entities](../examples/emissive-entities/), [emissive-glow](../examples/emissive-glow/), [gui-theme](../examples/gui-theme/), [procedural-sprite](../examples/procedural-sprite/), [text-effects](../examples/text-effects/), [thick-outlines](../examples/thick-outlines/), [world-anchor](../examples/world-anchor/) | Same |

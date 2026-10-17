@@ -15,6 +15,7 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 | [thick-outlines](thick-outlines/) | Post effect: replace `minecraft:entity_outline` for thick, crisp, tinted outlines on glowing entities |
 | [emissive-glow](emissive-glow/) | Core + post: emissive pixels tag the main target's alpha, and a post effect blooms only them |
 | [scattered-sky](scattered-sky/) | Core + post: a physically based sky drawn by a post effect, with vanilla's fog turned toward it, exposure and tonemapping |
+| [water-reflections](water-reflections/) | Core + post: the terrain shaders mark water through translucent blending, and a post effect draws waves, screen-space reflections, refraction and Fresnel |
 | [data-bus](data-bus/) | Core + post: a reserved screen column carries the projection, the view rotation, the sky and fog colors and the sun direction to a post effect |
 
 With the Sodium mod, the examples that change terrain shaders behave differently: see [Sodium](../docs/sodium.md#the-examples-under-sodium).

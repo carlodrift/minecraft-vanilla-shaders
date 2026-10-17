@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water)
 
 ## Mark texels in a texture
 
@@ -201,3 +201,15 @@ From `position`, vanilla's fog is `max(linear(length(position), FogEnvironmental
 | Blindness, darkness | short, from the effect | same | 0.8 or 1 × environmental end | same as the sky |
 
 The distances in air and the ends in water were read in game, the rest comes from the code (`FogRenderer` and the fog environments). So a post effect can tell air from water: in air, `FogSkyEnd` is the render distance (up to 512) and is less than `FogEnvironmentalEnd`. [scattered-sky](../examples/scattered-sky/) uses this to replace the fog color with a sky only in air.
+
+## Mark translucent surfaces for a post effect: water
+
+[Tagging pixels](#tag-pixels-for-a-post-effect) through alpha only works from pipelines without blending. Water is translucent, but a translucent fragment that writes **alpha 1** replaces the pixel exactly (`SRC_ALPHA, ONE_MINUS_SRC_ALPHA`). So the fragment shader can write a marker instead of the water, on part of the pixels:
+
+- **Recognize water** in `core/terrain`: water textures have a uniform alpha of 180/255, and water is tinted by the biome. The slime block also has alpha 180, but it is white. Pass the raw `Color` from `terrain.vsh` to tell them apart.
+- **Write a marker on every other column**, and let the other columns blend as usual: the post effect gets both the marker and what is underneath. A marker that depends on the column (two bytes, for example) almost never matches a scene color by chance.
+- **Use `gl_FragCoord.x` only.** Whether `gl_FragCoord.y` counts from the same edge on both backends was not tested here.
+- **The depth buffer holds the water surface**: translucent terrain writes its depth ([pipelines.json](../reference/26.3/pipelines.json)).
+- **Do the same in Sodium's terrain shader** for Sodium players ([Sodium](sodium.md)).
+
+[water-reflections](../examples/water-reflections/) uses this for waves, screen-space reflections, refraction and Fresnel.
