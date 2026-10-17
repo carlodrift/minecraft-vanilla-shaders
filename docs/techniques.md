@@ -146,7 +146,7 @@ bool netherLighting = Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0;
 
 - **In the Nether, a pig tinted by this test turns red. The same shader leaves it unchanged in the Overworld** ([exp 75](../experiments/75-nether-lighting/), [exp 76](../experiments/76-overworld-lighting/)).
 - **Exclude the GUI:** entities shown in the GUI are lit from below too, hence the orthographic test.
-- **This detects Nether-style lighting, not the Nether itself.** The game picks the lighting from the dimension type *(code)*. The End and the Overworld share the same lighting, so this test can't tell them apart.
+- **This detects Nether-style lighting, not the Nether itself.** The game picks the lighting from the dimension type's cardinal light type (`dimensionType().cardinalLightType()`) *(code)*. A custom dimension with that type is detected too. The End and the Overworld share the default lighting, so this test can't tell them apart.
 
 ## Read depth in a post effect
 
