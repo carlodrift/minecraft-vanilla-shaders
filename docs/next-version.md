@@ -35,3 +35,5 @@ MC_VERSION=26.4-snapshot-4 tools/mcshaders pipelines           # pipelines, comp
 ```
 
 `tools/mcshaders` works with both versions: it adapts to the classes that moved package in 26.4.
+
+Every week, the [snapshot watch workflow](../.github/workflows/snapshot.yml) runs `tools/snapshot_report.py` on the latest snapshot and opens an issue for each new one.

@@ -92,6 +92,14 @@ python3 tools/vanilla.py diff 26.2 26.3 [-u]                   # what changed be
 
 Used by [Porting to 26.3](../docs/porting.md).
 
+## `snapshot_report.py`
+
+```sh
+python3 tools/snapshot_report.py 26.3 26.4-snapshot-4 > report.md
+```
+
+A Markdown report of what a newer version changes for shader packs: resource pack format, vanilla files, pipelines, the uniforms and defines of each program, and whether every experiment and example still gets its expected verdict with `check`. The [snapshot watch workflow](../.github/workflows/snapshot.yml) runs it every week on the latest snapshot and opens an issue for each new one.
+
 ## `experiments.py`
 
 ```sh

@@ -1,6 +1,7 @@
 """Download a vanilla client (jar and libraries, no assets) from Mojang, for tools/mcshaders without the launcher.
 
     MINECRAFT_DIR=build/minecraft python3 tools/fetch.py 26.3
+    MINECRAFT_DIR=build/minecraft python3 tools/fetch.py latest-snapshot   # prints the version it fetched
 
 Files go to $MINECRAFT_DIR in the launcher's layout (versions/, libraries/), with their SHA-1 checked.
 Enough for `mcshaders check` and `mcshaders pipelines`; launching the game also needs the assets, which
@@ -51,6 +52,8 @@ def main():
     if not mc:
         raise SystemExit("Set MINECRAFT_DIR to the directory to download into (not your launcher's).")
     manifest = json.loads(get(MANIFEST))
+    if version == "latest-snapshot":
+        version = manifest["latest"]["snapshot"]
     entry = next((v for v in manifest["versions"] if v["id"] == version), None)
     if entry is None:
         raise SystemExit(f"Unknown version {version}")
@@ -68,7 +71,8 @@ def main():
             jobs.append((artifact["url"], artifact["sha1"], os.path.join(mc, "libraries", artifact["path"])))
     with concurrent.futures.ThreadPoolExecutor(8) as pool:
         list(pool.map(lambda job: save(*job), jobs))
-    print(f"{version}: client and {len(jobs) - 1} libraries in {mc}")
+    print(f"{version}: client and {len(jobs) - 1} libraries in {mc}", file=sys.stderr)
+    print(version)
 
 
 if __name__ == "__main__":
