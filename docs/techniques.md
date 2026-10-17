@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect)
 
 ## Mark texels in a texture
 
@@ -144,6 +144,7 @@ Replace the post effect `assets/minecraft/post_effect/entity_outline.json`. It r
 A post effect only sees the final image. To let it treat some pixels differently, the core shader that draws them writes a **tag in the alpha channel of `minecraft:main`**.
 
 - **After the world is drawn, alpha is 1 almost everywhere:** terrain, sky, entities, water and glass alike. It is 0 only where nothing was drawn, such as the band at the horizon of a flat world ([exp 58](../experiments/58-main-alpha/)). A value like 0.5 is therefore free.
+- **Except far away and in front of the sky.** Cutout blocks (leaves, grass, seagrass) write the alpha of their texture, and far away their mipmaps blur it below 1. Translucent surfaces with nothing behind them, such as clouds and far water, leave the clear alpha (0) partly showing ([scattered-sky](../examples/scattered-sky/)). Check the tag with a tolerance, or make cutout write alpha 1.
 - **Only tag from pipelines without blending.** Solid and cutout pipelines (`entity_solid`, `entity_cutout`, `item_cutout`, `solid_terrain`, `cutout_terrain`…) store the alpha as written. Translucent ones blend it. The blend state of every pipeline is in [pipelines.json](../reference/26.3/pipelines.json) (`color_targets`).
 - **The post effect tests the tag**, for example `abs(color.a - 0.5) < 0.1`. It should write alpha 1 when it is done.
 
@@ -173,3 +174,30 @@ The sky and the sun have no depth test and no depth write, and are drawn first (
 ## Read depth in a post effect
 
 Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The hand is not in that depth while a post effect is active ([How a frame is drawn](rendering.md)).
+
+## Reconstruct positions in a post effect
+
+With the projection and the view rotation from a [data bus](#give-post-effects-the-camera-a-data-bus), a post effect can turn the depth of a pixel back into a position:
+
+```glsl
+// Vulkan stores depth in [0, 1], OpenGL on macOS in [-1, 1]: the projection is built for the device's range.
+// JOML's reversed perspective has proj[2][2] = near / (far - near) for [0, 1], (far + near) / (far - near) for [-1, 1].
+bool zeroToOne = proj[2][2] < 0.5;
+float z = zeroToOne ? depth : depth * 2.0 - 1.0;
+vec4 p = inverse(proj) * vec4(texCoord * 2.0 - 1.0, z, 1.0);
+vec3 viewPos = p.xyz / p.w;
+vec3 position = transpose(mat3(view)) * viewPos;   // world axes, relative to the camera
+```
+
+Both ranges were observed: `proj[2][2]` reads below 0.5 on Vulkan and above on OpenGL ([scattered-sky](../examples/scattered-sky/)). On sky pixels (depth 0), any `z` gives the right direction.
+
+From `position`, vanilla's fog is `max(linear(length(position), FogEnvironmentalStart, FogEnvironmentalEnd), linear(max(length(position.xz), abs(position.y)), FogRenderDistanceStart, FogRenderDistanceEnd))`, as in `fog.glsl`. The distances depend on where the camera is:
+
+| Camera | Environmental | Render distance | `FogSkyEnd` | `FogCloudsEnd` |
+|---|---|---|---|---|
+| Air, clear (16 chunks) | 0 to 1024 | 233 to 256 | 256 | 1024 (the cloud range option) |
+| Air, rain | start down by up to 160, end down to 768 | same | same | same |
+| Water | -8 to 96 (shorter with poor water vision) | same | 96 | 96 |
+| Blindness, darkness | short, from the effect | same | 0.8 or 1 × environmental end | same as the sky |
+
+The distances in air and the ends in water were read in game, the rest comes from the code (`FogRenderer` and the fog environments). So a post effect can tell air from water: in air, `FogSkyEnd` is the render distance (up to 512) and is less than `FogEnvironmentalEnd`. [scattered-sky](../examples/scattered-sky/) uses this to replace the fog color with a sky only in air.

@@ -37,6 +37,7 @@ What it took, observed on both backends:
 - **The sun is drawn with additive blending** (`src * alpha + dst`). At first, its rows read as garbage: they held whatever the sky had left there. The sky now clears them to black, so the sum is exactly what the sun writes. Encode with alpha 1 for this writer, never 4 bytes.
 - **The sky's `ModelViewMat` is a pure rotation:** its determinant is 1. The camera position is in `Globals`.
 - **`ProjMat` includes the dynamic FOV effects.** Flying in spectator mode, the FOV check fails. Standing in creative mode, it reads exactly 70°.
+- **Below y = 63, the `sky` program also draws a dark disc** under the horizon, translated 12 blocks down. Moved onto the bus like the sky disc, it rewrote the same rows after it, with a black sky color (observed underground in a normal world). `sky.vsh` drops it: its `ModelViewMat` has a translation, the sky disc's doesn't.
 - **In a post effect, texel row 0 of `minecraft:main` is the bottom of the screen** (NDC y = -1). The example still looks for the marker in both the bottom and the top row.
 
 ## Limits

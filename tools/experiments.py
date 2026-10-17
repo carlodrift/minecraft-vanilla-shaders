@@ -22,6 +22,8 @@ Each experiment is a directory with an experiment.json:
       "scene": {                       # optional: in game, join a test world and take a screenshot
         "commands": ["posteffect add @s mylib:gray"],
         "hud": true,                   # keep the HUD in the screenshot
+        "seed": 20261017,              # a normal world with this seed instead of the flat one, the camera in
+                                       # spectator mode on the surface near 0 0 (commands then move it)
         "options": {"improvedTransparency": "true"},   # options.txt entries
         "quick": ["tp @s ~ ~ ~ ~5 ~"],  # run 50 ms apart right before the screenshot
         "inventory": true,             # open the inventory screen for the screenshot
@@ -122,6 +124,14 @@ hud off
 wait 3
 """
 
+SEEDED_SCENE = """world shader-test {seed}
+wait 3
+command gamemode spectator
+command spreadplayers 0 0 0 1 false @s
+wait 2
+hud off
+"""
+
 
 def run_game(exp, exp_dir, pack, backend, gamedir, env):
     """Load the pack in the game. With a "scene", join a test world, run its commands and take a screenshot."""
@@ -132,12 +142,12 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env):
     if scene is not None:
         script = os.path.join(gamedir, "script.txt")
         with open(script, "w") as f:
-            f.write(SCENE)
+            f.write(SCENE if "seed" not in scene else SEEDED_SCENE.format(seed=scene["seed"]))
             if scene.get("hud"):
                 f.write("hud on\n")
             for command in scene.get("commands", []):
                 f.write(f"command {command}\nwait 1\n")
-            f.write("wait 2\n")
+            f.write("wait 2\n" if "seed" not in scene else "wait 12\n")   # a normal world has more to load
             # "quick" commands run 50 ms apart right before the screenshot, e.g. to move the camera.
             for command in scene.get("quick", []):
                 f.write(f"command {command}\nwait 0.05\n")

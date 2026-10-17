@@ -19,7 +19,8 @@ import java.util.concurrent.CompletableFuture;
  * Java agent that drives the game from a script, for tests: no mod, nothing installed in the game.
  *
  * Script (one action per line, # for comments):
- *   world <name>          create a fresh flat creative test world (replacing any previous one) and join it
+ *   world <name> [seed]   create a fresh creative world (replacing any previous one) and join it: a flat test
+ *                         world, or a normal world with this seed
  *   wait <seconds>
  *   command <command>     run a command as the player, without the leading slash
  *   hud off|on            hide or show the HUD (like F1)
@@ -77,7 +78,10 @@ public class ShaderTestAgent {
         return Minecraft.getInstance();
     }
 
-    static void openWorld(Minecraft mc, String name) throws Exception {
+    static void openWorld(Minecraft mc, String arg) throws Exception {
+        String[] words = arg.split("\\s+");
+        String name = words[0];
+        Long seed = words.length > 1 ? Long.valueOf(words[1]) : null;
         // Always a fresh world: reproducible, and reopening a test world stops on an
         // "experimental settings" confirmation screen.
         Path save = mc.gameDirectory.toPath().resolve("saves").resolve(name);
@@ -91,8 +95,13 @@ public class ShaderTestAgent {
         onGameThread(mc, () -> {
             LevelSettings settings = new LevelSettings(name, GameType.CREATIVE,
                 new LevelSettings.DifficultySettings(Difficulty.PEACEFUL, false, false), true, WorldDataConfiguration.DEFAULT);
-            mc.createWorldOpenFlows().createFreshLevel(name, settings, WorldOptions.testWorldWithRandomSeed(),
-                WorldPresets::createTestWorldDimensions, new TitleScreen());
+            if (seed == null) {
+                mc.createWorldOpenFlows().createFreshLevel(name, settings, WorldOptions.testWorldWithRandomSeed(),
+                    WorldPresets::createTestWorldDimensions, new TitleScreen());
+            } else {
+                mc.createWorldOpenFlows().createFreshLevel(name, settings, new WorldOptions(seed, false, false),
+                    WorldPresets::createNormalWorldDimensions, new TitleScreen());
+            }
         });
         while (mc.player == null || mc.level == null || mc.gui.screen() != null) {
             Thread.sleep(250);
