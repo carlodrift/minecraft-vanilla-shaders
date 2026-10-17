@@ -600,5 +600,33 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "66-data-text-color": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "A datapack can pass data through a text's color: `text.vsh` reads the exact color (#FE0102) from `Color`",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "67-data-item-tint": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "A datapack can pass data through an item's tint: `item.vsh` reads the exact `dyed_color` (#FE0102) from `Color`",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }

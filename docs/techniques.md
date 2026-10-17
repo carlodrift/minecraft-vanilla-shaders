@@ -13,6 +13,22 @@ Read the texel without mipmapping, with `textureLod(Sampler0, uv, 0.0)`, so neig
 
 **Terrain is different.** Its `Sampler0` uses linear filtering, and vanilla's `sampleNearest()` (`texture_sampling.glsl`) still blends neighbouring texels near texel edges, for anti-aliasing *(code)*. To read one exact texel, use `texelFetch(Sampler0, ivec2(uv * vec2(TextureSize)), 0)`, where `TextureSize` comes from the `TerrainUniform` block. This follows from the code; no experiment covers it yet.
 
+## Pass data from a datapack
+
+Commands can set colors that reach a shader unchanged, in the `Color` vertex input. A shader that compares the raw `Color` with an exact value can react to it, and the other 24 bits of the color can carry data.
+
+- **Text color:** a `text_display`, `/title` or any text with `"color": "#FE0102"` reaches `core/text.vsh` in `Color` (exp 66).
+- **Item tint:** an item tinted with `dyed_color` (here a `leather_horse_armor` in an `item_display`) reaches `core/item.vsh` in `Color` (exp 67).
+
+```glsl
+// In the vertex shader, before Color is multiplied by lighting.
+if (all(lessThan(abs(Color.rgb * 255.0 - vec3(254.0, 1.0, 2.0)), vec3(0.5)))) {
+    // this vertex carries the marker #FE0102
+}
+```
+
+In both experiments, a control in `#FE0103` is left untouched. Compare in the vertex shader, on the raw `Color`: the fragment shader only sees it after lighting and the lightmap.
+
 ## Tell the GUI from the world
 
 The same program draws an item in the world, in hand and in the hotbar. GUI drawing uses an orthographic projection, the world a perspective one:
