@@ -1,0 +1,63 @@
+{
+  "title": "World anchor: an item_display sends its screen position to a post effect through control pixels",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/item.vsh",
+      "vanilla": "assets/minecraft/shaders/core/item.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:sample_lightmap.glsl>\n",
+          "replace": "#include <minecraft:sample_lightmap.glsl>\n#include <minecraft:globals.glsl>\n"
+        },
+        {
+          "find": "layout(location = 5) out vec2 texCoord0;\n",
+          "replace": "layout(location = 5) out vec2 texCoord0;\n// World anchor (see main).\nlayout(location = 7) flat out int markerKind;\nlayout(location = 8) flat out vec4 markerData;\n"
+        },
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n    // World anchor: an item tinted exactly #FE0102 sends its screen position to the post effect.\n    markerKind = 0;\n    markerData = vec4(0.0);\n    if (all(lessThan(abs(Color.rgb * 255.0 - vec3(254.0, 1.0, 2.0)), vec3(0.5)))) {\n        // Screen position of this vertex, 0..1, in the same orientation as gl_Position.\n        vec2 screen = clamp(gl_Position.xy / gl_Position.w * 0.5 + 0.5, 0.0, 1.0);\n        // 16 bits per axis, as two 8-bit channels each.\n        vec2 value = round(screen * 65535.0);\n        vec2 hi = floor(value / 256.0);\n        markerData = vec4(hi.x, value.x - hi.x * 256.0, hi.y, value.y - hi.y * 256.0) / 255.0;\n        markerKind = 1;\n        // Move the vertex onto a 3x1-pixel strip in the corner at NDC (-1, -1), in front of everything\n        // (reversed depth: NDC z close to 1 is near).\n        // Corners in this order keep the quad front-facing: the pipeline culls back faces.\n        int corner = gl_VertexIndex % 4;\n        vec2 cornerPos = vec2(corner == 1 || corner == 2 ? 3.0 : 0.0, corner == 2 || corner == 3 ? 1.0 : 0.0);\n        gl_Position = vec4(-1.0 + 2.0 * cornerPos / ScreenSize, 0.999, 1.0);\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/item.fsh",
+      "vanilla": "assets/minecraft/shaders/core/item.fsh",
+      "edits": [
+        {
+          "find": "layout(location = 5) in vec2 texCoord0;\n",
+          "replace": "layout(location = 5) in vec2 texCoord0;\n// World anchor (see item.vsh).\nlayout(location = 7) flat in int markerKind;\nlayout(location = 8) flat in vec4 markerData;\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // World anchor: write the marker strip instead of the item (see item.vsh).\n    if (markerKind == 1) {\n        #ifdef OIT_ALPHA_ONLY\n        discard;\n        #else\n        int x = int(gl_FragCoord.x);\n        fragColor = x == 0 ? vec4(1.0, 0.0, 1.0, 1.0)                          // marker\n                  : x == 1 ? vec4(markerData.xy, 0.0, 1.0)                      // x: high, low byte\n                           : vec4(markerData.zw, 0.0, 1.0);                     // y: high, low byte\n        return;\n        #endif\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/anchor/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes: the same as vanilla core/screenquad (26.3) and\n// core/screentriangle (26.4), shipped with the pack so it does not depend on either.\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
+    },
+    {
+      "path": "assets/anchor/shaders/post/ring.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\nuniform sampler2D InSampler;\n\nlayout(std140) uniform SamplerInfo {\n    vec2 OutSize;\n    vec2 InSize;\n};\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nbool isMarker(ivec2 p) {\n    vec3 c = texelFetch(InSampler, p, 0).rgb;\n    return all(lessThan(abs(c - vec3(1.0, 0.0, 1.0)), vec3(0.01)));\n}\n\nfloat decode(vec2 bytes) {\n    vec2 b = round(bytes * 255.0);\n    return (b.x * 256.0 + b.y) / 65535.0;\n}\n\nvoid main() {\n    ivec2 size = ivec2(InSize);\n    ivec2 pixel = ivec2(texCoord * InSize);\n    vec3 color = texture(InSampler, texCoord).rgb;\n\n    // The strip is in the bottom row or the top row, depending on how gl_Position maps to this texture.\n    int row = isMarker(ivec2(0, 0)) ? 0 : isMarker(ivec2(0, size.y - 1)) ? size.y - 1 : -1;\n    if (row >= 0) {\n        // Hide the strip: copy the row next to it.\n        if (pixel.y == row && pixel.x < 3) {\n            color = texelFetch(InSampler, ivec2(pixel.x, row == 0 ? 1 : row - 1), 0).rgb;\n        }\n        vec2 anchor = vec2(decode(texelFetch(InSampler, ivec2(1, row), 0).rg), decode(texelFetch(InSampler, ivec2(2, row), 0).rg));\n        if (row != 0) {\n            anchor.y = 1.0 - anchor.y;   // the strip landed in the top row: flip to texCoord's orientation\n        }\n        // A ring 40 pixels across around the anchor.\n        float d = length((texCoord - anchor) * InSize);\n        float ring = smoothstep(3.0, 1.0, abs(d - 40.0));\n        color = mix(color, vec3(1.0, 0.6, 0.1), ring);\n    }\n    fragColor = vec4(color, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/anchor/shaders/post/copy.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = vec4(texture(InSampler, texCoord).rgb, 1.0);\n}\n"
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"targets\": {\n    \"swap\": {}\n  },\n  \"passes\": [\n    {\n      \"vertex_shader\": \"anchor:post/fullscreen\",\n      \"fragment_shader\": \"anchor:post/ring\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"minecraft:main\"\n        }\n      ],\n      \"output\": \"swap\"\n    },\n    {\n      \"vertex_shader\": \"anchor:post/fullscreen\",\n      \"fragment_shader\": \"anchor:post/copy\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"swap\"\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    }
+  ],
+  "scene": {
+    "commands": [
+      "summon item_display 3 6.6 5 {item:{id:\"minecraft:leather_horse_armor\",count:1,components:{\"minecraft:dyed_color\":16646402}},billboard:\"center\",transformation:{scale:[0.05f,0.05f,0.05f],translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f]}}"
+    ],
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect"
+    ]
+  }
+}

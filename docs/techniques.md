@@ -71,6 +71,16 @@ A post effect only sees the final image. To let it treat some pixels differently
 
 Example: [emissive-glow](../examples/emissive-glow/) tags emissive texels and blooms only them.
 
+## Send a value or a position to a post effect
+
+Tagging pixels ([above](#tag-pixels-for-a-post-effect)) tells a post effect *which* pixels matter. To send a **value**, such as the screen position of a point in the world, a core shader writes it into **control pixels**, at a fixed place on the screen:
+
+- **In the vertex shader,** recognize the source, for example an item tinted with a marker color ([exp 67](../experiments/67-data-item-tint/)). Compute the value, pass it in a `flat` varying, and move the vertex onto a small strip in a corner.
+- **In the fragment shader,** write a marker and the value, as bytes with alpha 1.
+- **In the post effect,** find the marker with `texelFetch`, decode the value, then paint over the strip.
+
+[world-anchor](../examples/world-anchor/) does this end to end, and lists what had to be found out along the way. NDC (-1, -1) is the bottom-left corner on both backends. The moved quad must stay front-facing, since back faces are culled. And the vertex a `flat` varying comes from differs between OpenGL and Vulkan.
+
 ## Change something everywhere: replace a vanilla include
 
 A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanilla include for every program that includes it. For example, a modified `fog.glsl` changes the fog of terrain, entities, items, particles, sky and clouds at once. See [atmosphere](../examples/atmosphere/).
