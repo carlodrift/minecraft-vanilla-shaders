@@ -642,5 +642,19 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "69-light-levels": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-17",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 90.5",
+    "opengl_message": "",
+    "title": "`UV2` holds the light levels \u00d7 16: block light in x, sky light in y, independent of the time of day",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }

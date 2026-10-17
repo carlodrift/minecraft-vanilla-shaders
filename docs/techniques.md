@@ -82,6 +82,21 @@ A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanil
 
 Replace the post effect `assets/minecraft/post_effect/entity_outline.json`. It reads the silhouettes of glowing entities from the `minecraft:entity_outline` target (team color in RGB, coverage in alpha), and must write the outline back into that target, alpha included. The game then composites it onto the world. See [thick-outlines](../examples/thick-outlines/).
 
+## Read light levels
+
+The vertex input `UV2` (`ivec2`) holds the two light levels of the vertex, multiplied by 16 *(code: `sample_lightmap.glsl` reads `UV2 / 256`)*:
+
+```glsl
+float blockLight = float(UV2.x) / 16.0;   // 0..15: torches, glowstone, lava...
+float skyLight   = float(UV2.y) / 16.0;   // 0..15: light from the sky
+```
+
+- **The levels don't depend on the time of day.** In [exp 69](../experiments/69-light-levels/), `terrain.vsh` shows block light in red and sky light in green. At midnight, open ground is still full green (sky light 15), and only the area around glowstone gets red. Day and night are applied afterwards, by the lightmap texture (`Sampler2`) that `sample_lightmap()` reads.
+- **With smooth lighting, the values are interpolated** between levels, so compare with thresholds rather than exact levels.
+- **`UV2` reaches the vertex programs that have it in their vertex format:** `terrain`, `block`, `entity`, `item`, `particle`, `text`, `rendertype_leash`… ([core-shaders.md](reference/core-shaders.md)). To use it in the fragment shader, pass it through a varying.
+
+Use it for light-dependent effects that vanilla's lightmap can't express, like emissive parts that only glow in the dark, or a custom day/night curve, using `GameTime` for the time of day.
+
 ## Animate
 
 - **Use `GameTime` from `Globals`**, available to almost every core program (see [core-shaders.md](reference/core-shaders.md)) and to every post pass. It is `((game ticks % 24000) + partial tick) / 24000`: it goes from 0 to 1 every 24000 ticks (20 minutes), then **wraps back to 0** *(code)*. For a seamless loop, use a whole number of periods: `sin(GameTime * 6.2831853 * N)` repeats N times per wrap, that is every 24000 / N ticks. See [terrain-wave](../examples/terrain-wave/).

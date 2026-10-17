@@ -1,0 +1,25 @@
+{
+  "title": "`UV2` holds the light levels \u00d7 16: block light in x, sky light in y, independent of the time of day",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "    texCoord0 = UV0;\n",
+          "replace": "    texCoord0 = UV0;\n    #ifndef OIT_ALPHA_ONLY\n    // Show the light levels: red = block light, green = sky light (UV2 is 0..240, light level x 16).\n    vec2 light = vec2(UV2) / 240.0;\n    vertexColor = vec4(light.x, light.y, 0.0, 1.0);\n    #endif\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "time set 18000",
+      "fill 6 4 6 10 7 10 minecraft:stone hollow",
+      "fill 6 4 6 10 6 6 minecraft:air",
+      "gamemode spectator",
+      "tp @s 3 8 -1 0 30"
+    ]
+  }
+}
