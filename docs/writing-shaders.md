@@ -107,6 +107,15 @@ layout(location = 1) in vec4 Color;
 - **The base type must match the format.** Float and normalized formats need `float`/`vec*`, signed integer formats `int`/`ivec*`, unsigned ones `uint`/`uvec*` (exp 31).
 - **You may read fewer components than the format provides**, for example `vec3` from an RGBA color (exp 32), but not more. *(code)*
 
+## Quads and moving vertices
+
+Most of the game's geometry is quads: 4 vertices each, drawn as two triangles.
+
+- **`gl_VertexIndex / 4` is the index of the quad**, and `gl_VertexIndex % 4` the corner within it. [text-effects](../examples/text-effects/) uses it to animate each glyph separately.
+- **Back faces are culled** in most pipelines (`"cull": true` in [pipelines.json](../reference/26.3/pipelines.json)). A vertex shader that moves vertices must keep the triangles **counter-clockwise on screen** (NDC, `y` up). In [world-anchor](../examples/world-anchor/), corners placed at (0, 0), (1, 0), (1, 1), (0, 1) for `gl_VertexIndex % 4` = 0, 1, 2, 3 are drawn on both backends, while the reverse order disappears.
+- **NDC (-1, -1) is the bottom-left corner of the screen** on both backends, in the world and in the GUI ([exp 72](../experiments/72-gui-bottom/)).
+- **A `flat` varying takes its value from a different vertex of the triangle on OpenGL and on Vulkan.** Give all vertices of a primitive the same value if it matters.
+
 ## Uniforms and samplers
 
 - **Plain uniforms are gone.** `uniform float x;` fails with `non-opaque uniforms outside a block` (exp 40). Only samplers can be declared alone.

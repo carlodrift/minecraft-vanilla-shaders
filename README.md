@@ -7,6 +7,7 @@ Every statement here is either checked against the game's code, reproduced by an
 ## Contents
 
 - [Writing shaders for 26.3](docs/writing-shaders.md): how the game loads shaders, and the rules a shader must follow to load.
+- [Working on a shader pack](docs/workflow.md): the edit, check, reload loop, and where to find errors.
 - [Post effects](docs/post-effects.md): `end_of_frame`, `/posteffect`, the JSON format, samplers, uniforms and depth.
 - [How a frame is drawn](docs/rendering.md): the drawing order, and what each core program draws, with screenshots.
 - [Techniques](docs/techniques.md): texture markers, telling GUI from world, isolating GUI elements, translucency with Improved Transparency, tagging pixels for post effects, passing data from datapacks, light levels, sending positions to post effects, restyling glowing outlines, replacing includes, animating, depth, displacement.
