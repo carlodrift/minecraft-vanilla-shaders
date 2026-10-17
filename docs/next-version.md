@@ -7,7 +7,7 @@ Last checked: **26.4-snapshot-4** (resource pack format **100**).
 ## Still true
 
 - **The compiler options and include resolution are unchanged** *(code)*: shaderc, Vulkan 1.2 target, `#include` by identifier, `layout(location)`, `GL_ARB_separate_shader_objects`.
-- **Every rule of [Writing shaders](writing-shaders.md) still holds:** all 43 experiments and 5 examples give their expected verdict with `tools/mcshaders check` against snapshot 4. They have not been loaded in game on 26.4 yet.
+- **Every rule of [Writing shaders](writing-shaders.md) still holds:** all 54 experiments and 10 examples give their expected verdict with `tools/mcshaders check` against snapshot 4. They have not been loaded in game on 26.4 yet.
 
 ## What breaks packs
 

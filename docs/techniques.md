@@ -2,6 +2,13 @@
 
 Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the experiment or example that shows it working.
 
+## Contents
+
+- **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
+- **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
+- **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Read depth in a post effect](#read-depth-in-a-post-effect)
+
 ## Mark texels in a texture
 
 A shader can't know which object it is drawing, but it can read the texture. Packs therefore mark special texels with a value nobody would paint by accident.
@@ -18,8 +25,8 @@ Read the texel without mipmapping, with `textureLod(Sampler0, uv, 0.0)`, so neig
 
 Commands can set colors that reach a shader unchanged, in the `Color` vertex input. A shader that compares the raw `Color` with an exact value can react to it, and the other 24 bits of the color can carry data.
 
-- **Text color:** a `text_display`, `/title` or any text with `"color": "#FE0102"` reaches `core/text.vsh` in `Color` (exp 66).
-- **Item tint:** an item tinted with `dyed_color` (here a `leather_horse_armor` in an `item_display`) reaches `core/item.vsh` in `Color` (exp 67).
+- **Text color:** a `text_display`, `/title` or any text with `"color": "#FE0102"` reaches `core/text.vsh` in `Color` ([exp 66](../experiments/66-data-text-color/)).
+- **Item tint:** an item tinted with `dyed_color` (here a `leather_horse_armor` in an `item_display`) reaches `core/item.vsh` in `Color` ([exp 67](../experiments/67-data-item-tint/)).
 
 ```glsl
 // In the vertex shader, before Color is multiplied by lighting.
@@ -52,56 +59,29 @@ So **to select GUI elements by where they are, work in `position_tex_color.vsh`*
 
 Positions in normalized coordinates don't depend on the window size, but the size of GUI elements does, since it follows the GUI scale.
 
-## Change the color of translucent things (Improved Transparency)
+## Detect the Nether
 
-With the **Improved Transparency** graphics option, translucent terrain, entities, particles and clouds go through order-independent transparency (OIT). The same program then runs in three passes, selected by defines (see [How a frame is drawn](rendering.md)):
-- `OIT_DEPTH_BOUNDS` and `OIT_TRANSMITTANCE`, together `OIT_ALPHA_ONLY`: only the alpha counts, and there is no `fragColor`;
-- `OIT_ACCUMULATE`: the color is weighted by `sampleColorForAccumulation()` inside vanilla's `calculateFinalColor()`.
+The light directions of the `Lighting` block (`Light0_Direction`, `Light1_Direction`) depend on the dimension *(code)*. With Nether lighting, the second light points down:
 
-**Change `color` before `calculateFinalColor()`, never `fragColor` after it.**
+```glsl
+#include <minecraft:light.glsl>   // Lighting: available to item, and to entity variants that use lighting
+bool netherLighting = Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0;
+```
 
-| | Improved Transparency off | Improved Transparency on |
+- **In the Nether, a pig tinted by this test turns red. The same shader leaves it unchanged in the Overworld** ([exp 75](../experiments/75-nether-lighting/), [exp 76](../experiments/76-overworld-lighting/)).
+- **Exclude the GUI:** entities shown in the GUI are lit from below too, hence the orthographic test.
+- **This detects Nether-style lighting, not the Nether itself.** The game picks the lighting from the dimension type's cardinal light type (`dimensionType().cardinalLightType()`) *(code)*. A custom dimension with that type is detected too. The End and the Overworld share the default lighting, so this test can't tell them apart.
+
+## Camera, world position and field of view
+
+| What | How | Evidence |
 |---|---|---|
-| Red tint applied to `color` before `calculateFinalColor()` | ![](../experiments/60-tint-translucent-before/vulkan.png) exp 60 | ![](../experiments/61-tint-translucent-before-oit/vulkan.png) exp 61 |
-| `fragColor` overwritten after `calculateFinalColor()` | ![](../experiments/62-overwrite-translucent-after/vulkan.png) exp 62 | ![](../experiments/63-overwrite-translucent-after-oit/vulkan.png) exp 63 |
+| Camera position (world) | `vec3(CameraBlockPos) - CameraOffset` (`Globals`) | *(code)* |
+| World position, entities | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
+| World position, terrain | `Position + vec3(ChunkPosition)` | [terrain-wave](../examples/terrain-wave/) |
+| Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option | [exp 73](../experiments/73-fov-from-projection/) |
 
-- **Changed before**, the tint looks the same with the option on or off.
-- **Overwritten after**, the color skips the OIT weighting. The water and glass come out brighter and more opaque with the option on.
-
-If you change alpha, change it in the `OIT_ALPHA_ONLY` path too, so the transmittance passes see the same alpha as the color pass *(code)*.
-
-The option is off by default. To turn it on from `options.txt`, also set `graphicsPreset:"custom"`: a named preset ("fancy"…) re-applies its own values when the options load. `tools/launch.py --option` handles this.
-
-## Tag pixels for a post effect
-
-A post effect only sees the final image. To let it treat some pixels differently, the core shader that draws them writes a **tag in the alpha channel of `minecraft:main`**.
-
-- **After the world is drawn, alpha is 1 almost everywhere:** terrain, sky, entities, water and glass alike. It is 0 only where nothing was drawn, such as the band at the horizon of a flat world ([exp 58](../experiments/58-main-alpha/)). A value like 0.5 is therefore free.
-- **Only tag from pipelines without blending.** Solid and cutout pipelines (`entity_solid`, `entity_cutout`, `item_cutout`, `solid_terrain`, `cutout_terrain`…) store the alpha as written. Translucent ones blend it. The blend state of every pipeline is in [pipelines.json](../reference/26.3/pipelines.json) (`color_targets`).
-- **The post effect tests the tag**, for example `abs(color.a - 0.5) < 0.1`. It should write alpha 1 when it is done.
-
-Example: [emissive-glow](../examples/emissive-glow/) tags emissive texels and blooms only them.
-
-## Send a value or a position to a post effect
-
-Tagging pixels ([above](#tag-pixels-for-a-post-effect)) tells a post effect *which* pixels matter. To send a **value**, such as the screen position of a point in the world, a core shader writes it into **control pixels**, at a fixed place on the screen:
-
-- **In the vertex shader,** recognize the source, for example an item tinted with a marker color ([exp 67](../experiments/67-data-item-tint/)). Compute the value, pass it in a `flat` varying, and move the vertex onto a small strip in a corner.
-- **In the fragment shader,** write a marker and the value, as bytes with alpha 1.
-- **In the post effect,** find the marker with `texelFetch`, decode the value, then paint over the strip.
-
-[world-anchor](../examples/world-anchor/) does this end to end, and lists what had to be found out along the way. NDC (-1, -1) is the bottom-left corner on both backends. The moved quad must stay front-facing, since back faces are culled. And the vertex a `flat` varying comes from differs between OpenGL and Vulkan.
-
-## Change something everywhere: replace a vanilla include
-
-A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanilla include for every program that includes it. For example, a modified `fog.glsl` changes the fog of terrain, entities, items, particles, sky and clouds at once. See [atmosphere](../examples/atmosphere/).
-
-- **Keep every block and function the vanilla file declares**, with the same signatures. Other programs call them.
-- **Run `tools/mcshaders check`:** a mistake in an include breaks every program that uses it.
-
-## Restyle glowing outlines
-
-Replace the post effect `assets/minecraft/post_effect/entity_outline.json`. It reads the silhouettes of glowing entities from the `minecraft:entity_outline` target (team color in RGB, coverage in alpha), and must write the outline back into that target, alpha included. The game then composites it onto the world. See [thick-outlines](../examples/thick-outlines/).
+In `entity.vsh`, the `PER_FACE_LIGHTING` variants (`entity_cutout` and others: mobs, for example) output `vertexPerFaceColorFront` and `vertexPerFaceColorBack` instead of `vertexColor`. An effect on the vertex color has to change both outputs, or it won't show on most mobs.
 
 ## Read light levels
 
@@ -124,34 +104,61 @@ Use it for light-dependent effects that vanilla's lightmap can't express, like e
 - **`CameraOffset` and `CameraBlockPos` give the camera position:** `CameraBlockPos` is the block the camera is in, and `CameraOffset` is `CameraBlockPos - camera position`, between -1 and 0 on each axis *(code)*.
 - **Post-effect uniforms from the JSON are constants**, so they can't drive an animation ([Post effects](post-effects.md)).
 
-## Camera, world position and field of view
+## Change the color of translucent things (Improved Transparency)
 
-| What | How | Evidence |
+With the **Improved Transparency** graphics option, translucent terrain, entities, particles and clouds go through order-independent transparency (OIT). The same program then runs in three passes, selected by defines (see [How a frame is drawn](rendering.md)):
+- `OIT_DEPTH_BOUNDS` and `OIT_TRANSMITTANCE`, together `OIT_ALPHA_ONLY`: only the alpha counts, and there is no `fragColor`;
+- `OIT_ACCUMULATE`: the color is weighted by `sampleColorForAccumulation()` inside vanilla's `calculateFinalColor()`.
+
+**Change `color` before `calculateFinalColor()`, never `fragColor` after it.**
+
+| | Improved Transparency off | Improved Transparency on |
 |---|---|---|
-| Camera position (world) | `vec3(CameraBlockPos) - CameraOffset` (`Globals`) | *(code)* |
-| World position, entities | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
-| World position, terrain | `Position + vec3(ChunkPosition)` | [terrain-wave](../examples/terrain-wave/) |
-| Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option | [exp 73](../experiments/73-fov-from-projection/) |
+| Red tint applied to `color` before `calculateFinalColor()` | ![](../experiments/60-tint-translucent-before/vulkan.png) exp 60 | ![](../experiments/61-tint-translucent-before-oit/vulkan.png) exp 61 |
+| `fragColor` overwritten after `calculateFinalColor()` | ![](../experiments/62-overwrite-translucent-after/vulkan.png) exp 62 | ![](../experiments/63-overwrite-translucent-after-oit/vulkan.png) exp 63 |
 
-In `entity.vsh`, the `PER_FACE_LIGHTING` variants (`entity_cutout` and others: mobs, for example) output `vertexPerFaceColorFront` and `vertexPerFaceColorBack` instead of `vertexColor`. An effect on the vertex color has to change both outputs, or it won't show on most mobs.
+- **Changed before**, the tint looks the same with the option on or off.
+- **Overwritten after**, the color skips the OIT weighting. The water and glass come out brighter and more opaque with the option on.
 
-## Detect the Nether
+If you change alpha, change it in the `OIT_ALPHA_ONLY` path too, so the transmittance passes see the same alpha as the color pass *(code)*.
 
-The light directions of the `Lighting` block (`Light0_Direction`, `Light1_Direction`) depend on the dimension *(code)*. With Nether lighting, the second light points down:
+The option is off by default. To turn it on from `options.txt`, also set `graphicsPreset:"custom"`: a named preset ("fancy"…) re-applies its own values when the options load. `tools/launch.py --option` handles this.
 
-```glsl
-#include <minecraft:light.glsl>   // Lighting: available to item, and to entity variants that use lighting
-bool netherLighting = Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0;
-```
+## Change something everywhere: replace a vanilla include
 
-- **In the Nether, a pig tinted by this test turns red. The same shader leaves it unchanged in the Overworld** ([exp 75](../experiments/75-nether-lighting/), [exp 76](../experiments/76-overworld-lighting/)).
-- **Exclude the GUI:** entities shown in the GUI are lit from below too, hence the orthographic test.
-- **This detects Nether-style lighting, not the Nether itself.** The game picks the lighting from the dimension type's cardinal light type (`dimensionType().cardinalLightType()`) *(code)*. A custom dimension with that type is detected too. The End and the Overworld share the default lighting, so this test can't tell them apart.
+A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanilla include for every program that includes it. For example, a modified `fog.glsl` changes the fog of terrain, entities, items, particles, sky and clouds at once. See [atmosphere](../examples/atmosphere/).
 
-## Read depth in a post effect
-
-Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The hand is not in that depth while a post effect is active ([How a frame is drawn](rendering.md)).
+- **Keep every block and function the vanilla file declares**, with the same signatures. Other programs call them.
+- **Run `tools/mcshaders check`:** a mistake in an include breaks every program that uses it.
 
 ## Displace geometry
 
 A vertex shader can move vertices freely. Only the rendering changes: collisions are unaffected, and terrain lighting, which is baked into the vertex color, does not follow the new shape. For terrain, rebuild the world position as `Position + vec3(ChunkPosition)`. See [terrain-wave](../examples/terrain-wave/).
+
+## Restyle glowing outlines
+
+Replace the post effect `assets/minecraft/post_effect/entity_outline.json`. It reads the silhouettes of glowing entities from the `minecraft:entity_outline` target (team color in RGB, coverage in alpha), and must write the outline back into that target, alpha included. The game then composites it onto the world. See [thick-outlines](../examples/thick-outlines/).
+
+## Tag pixels for a post effect
+
+A post effect only sees the final image. To let it treat some pixels differently, the core shader that draws them writes a **tag in the alpha channel of `minecraft:main`**.
+
+- **After the world is drawn, alpha is 1 almost everywhere:** terrain, sky, entities, water and glass alike. It is 0 only where nothing was drawn, such as the band at the horizon of a flat world ([exp 58](../experiments/58-main-alpha/)). A value like 0.5 is therefore free.
+- **Only tag from pipelines without blending.** Solid and cutout pipelines (`entity_solid`, `entity_cutout`, `item_cutout`, `solid_terrain`, `cutout_terrain`…) store the alpha as written. Translucent ones blend it. The blend state of every pipeline is in [pipelines.json](../reference/26.3/pipelines.json) (`color_targets`).
+- **The post effect tests the tag**, for example `abs(color.a - 0.5) < 0.1`. It should write alpha 1 when it is done.
+
+Example: [emissive-glow](../examples/emissive-glow/) tags emissive texels and blooms only them.
+
+## Send a value or a position to a post effect
+
+Tagging pixels ([above](#tag-pixels-for-a-post-effect)) tells a post effect *which* pixels matter. To send a **value**, such as the screen position of a point in the world, a core shader writes it into **control pixels**, at a fixed place on the screen:
+
+- **In the vertex shader,** recognize the source, for example an item tinted with a marker color ([exp 67](../experiments/67-data-item-tint/)). Compute the value, pass it in a `flat` varying, and move the vertex onto a small strip in a corner.
+- **In the fragment shader,** write a marker and the value, as bytes with alpha 1.
+- **In the post effect,** find the marker with `texelFetch`, decode the value, then paint over the strip.
+
+[world-anchor](../examples/world-anchor/) does this end to end, and lists what had to be found out along the way. NDC (-1, -1) is the bottom-left corner on both backends. The moved quad must stay front-facing, since back faces are culled. And the vertex a `flat` varying comes from differs between OpenGL and Vulkan.
+
+## Read depth in a post effect
+
+Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The hand is not in that depth while a post effect is active ([How a frame is drawn](rendering.md)).
