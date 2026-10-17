@@ -1,0 +1,43 @@
+{
+  "title": "On terrain, `texelFetch` with `TextureSize` reads one exact texel (a marked quarter of red wool)",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "    #ifdef ALPHA_CUTOUT\n",
+          "replace": "    #ifndef OIT_ALPHA_ONLY\n    // Exact texel of the atlas, without filtering: compare it with the marker color #FE0102.\n    vec3 texel = texelFetch(Sampler0, ivec2(texCoord0 * vec2(TextureSize)), 0).rgb;\n    if (all(lessThan(abs(texel * 255.0 - vec3(254.0, 1.0, 2.0)), vec3(0.5)))) {\n        color = vec4(1.0, 0.0, 1.0, color.a);\n    }\n    #endif\n    #ifdef ALPHA_CUTOUT\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/textures/block/red_wool.png",
+      "vanilla_image": "assets/minecraft/textures/block/red_wool.png",
+      "mark": {
+        "region": [
+          0,
+          0,
+          8,
+          8
+        ],
+        "max_brightness": 765,
+        "alpha": 255,
+        "color": [
+          254,
+          1,
+          2
+        ]
+      }
+    }
+  ],
+  "scene": {
+    "commands": [
+      "setblock 2 4 4 minecraft:red_wool",
+      "setblock 3 4 4 minecraft:red_wool",
+      "gamemode spectator",
+      "tp @s 2.5 5.5 1.5 0 25"
+    ]
+  }
+}

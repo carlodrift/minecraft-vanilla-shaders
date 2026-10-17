@@ -11,7 +11,7 @@ A shader can't know which object it is drawing, but it can read the texture. Pac
 
 Read the texel without mipmapping, with `textureLod(Sampler0, uv, 0.0)`, so neighbouring texels don't change the value. This works for entities and items (examples above).
 
-**Terrain is different.** Its `Sampler0` uses linear filtering, and vanilla's `sampleNearest()` (`texture_sampling.glsl`) still blends neighbouring texels near texel edges, for anti-aliasing *(code)*. To read one exact texel, use `texelFetch(Sampler0, ivec2(uv * vec2(TextureSize)), 0)`, where `TextureSize` comes from the `TerrainUniform` block. This follows from the code; no experiment covers it yet.
+**Terrain is different.** Its `Sampler0` uses linear filtering, and vanilla's `sampleNearest()` (`texture_sampling.glsl`) still blends neighbouring texels near texel edges, for anti-aliasing *(code)*. To read one exact texel, use `texelFetch(Sampler0, ivec2(uv * vec2(TextureSize)), 0)`, where `TextureSize` comes from the `TerrainUniform` block. In [exp 68](../experiments/68-terrain-texelfetch/), a quarter of the red wool texture recolored #FE0102 turns magenta with sharp edges, on every face.
 
 ## Pass data from a datapack
 
