@@ -36,7 +36,7 @@ Magenta shows what the program drew in the test scene. Each image links to the v
 |---|---|---|---|
 | `terrain` | All chunk geometry: ground, water, glass, leaves, fences, **signs**, beacon block | `solid_terrain`, `cutout_terrain`, `translucent_terrain`… | [![](images/programs/terrain-world.jpg)](images/programs/terrain-hud.jpg) |
 | `entity` | Mobs, armor stands, **chests** (block entities) | 37 pipelines: `entity_*`, `armor_*`, `banner_pattern`, `eyes`, `energy_swirl`… | [![](images/programs/entity-world.jpg)](images/programs/entity-hud.jpg) |
-| `item` | Dropped items, the held item, items in the hotbar and toasts | `item_cutout`, `item_translucent`, `item_translucent_glint` | [![](images/programs/item-world.jpg)](images/programs/item-hud.jpg) |
+| `item` | Dropped items, the held item, items in the hotbar and toasts (GUI items are drawn into an icon atlas, then copied to the screen by `position_tex_color`, see [Techniques](techniques.md#isolate-an-element-of-the-gui)) | `item_cutout`, `item_translucent`, `item_translucent_glint` | [![](images/programs/item-world.jpg)](images/programs/item-hud.jpg) |
 | `block` | Blocks drawn outside chunks: falling blocks, blocks moved by pistons | `solid_block`, `cutout_block`, `translucent_block` | [![](images/programs/block-world.jpg)](images/programs/block-hud.jpg) |
 | `particle` | Particles; also rain and snow | `opaque_particle`, `translucent_particle`, `weather` | [![](images/programs/particle-world.jpg)](images/programs/particle-hud.jpg) |
 | `sky` | The upper sky | `sky` | [![](images/programs/sky-world.jpg)](images/programs/sky-hud.jpg) |

@@ -41,6 +41,16 @@ bool inGui = ProjMat[2][3] == 0.0;
 
 In [exp 59](../experiments/59-gui-or-world/), `core/item.fsh` turns magenta only when `inGui` is true. The hotbar icons turn magenta, while the dropped sword and the one held in hand are unchanged, on both backends. [gui-theme](../examples/gui-theme/) uses the same test to recolor the GUI textures only.
 
+## Isolate an element of the GUI
+
+**Item icons in the GUI are drawn twice** *(the game has a `GuiItemAtlas` class)*:
+1. **`core/item` draws them into an atlas** of item icons. There, `gl_Position` is a position **in the atlas**, not on the screen ([exp 71](../experiments/71-gui-item-atlas/): a left-to-right rainbow in `item.vsh` colors the hotbar icons in no particular order).
+2. **`core/position_tex_color` copies them to the screen**, together with every other GUI texture: hotbar, hearts, toasts, containers. There, `gl_Position` is the real screen position ([exp 70](../experiments/70-gui-position/): the same rainbow follows the hotbar slots, icons included).
+
+So **to select GUI elements by where they are, work in `position_tex_color.vsh`**, in normalized device coordinates. `x` goes from -1 on the left to 1 on the right, and `y` from **-1 at the bottom** to 1 at the top, on both backends. In [exp 72](../experiments/72-gui-bottom/), `gl_Position.y / gl_Position.w < -0.6` tints exactly the hotbar area. To select by *what* they are, use the texture: texel markers ([above](#mark-texels-in-a-texture)) work on GUI sprites too.
+
+Positions in normalized coordinates don't depend on the window size, but the size of GUI elements does, since it follows the GUI scale.
+
 ## Change the color of translucent things (Improved Transparency)
 
 With the **Improved Transparency** graphics option, translucent terrain, entities, particles and clouds go through order-independent transparency (OIT). The same program then runs in three passes, selected by defines (see [How a frame is drawn](rendering.md)):

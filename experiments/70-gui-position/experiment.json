@@ -1,0 +1,31 @@
+{
+  "title": "In `position_tex_color.vsh`, GUI elements have their screen position: a left-to-right rainbow follows the hotbar slots",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/minecraft/shaders/core/position_tex_color.vsh",
+      "vanilla": "assets/minecraft/shaders/core/position_tex_color.vsh",
+      "edits": [
+        {
+          "find": "    vertexColor = Color;\n",
+          "replace": "    vertexColor = Color;\n    // GUI only (orthographic): tint by horizontal screen position, red on the left to violet on the right.\n    if (ProjMat[2][3] == 0.0) {\n        float h = gl_Position.x / gl_Position.w * 0.5 + 0.5;\n        vertexColor.rgb *= clamp(abs(fract(h + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);\n    }\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "hud": true,
+    "commands": [
+      "gamemode survival",
+      "item replace entity @s hotbar.0 with minecraft:diamond_sword",
+      "item replace entity @s hotbar.1 with minecraft:apple",
+      "item replace entity @s hotbar.2 with minecraft:oak_planks",
+      "item replace entity @s hotbar.3 with minecraft:torch",
+      "item replace entity @s hotbar.4 with minecraft:bucket",
+      "item replace entity @s hotbar.5 with minecraft:snowball",
+      "item replace entity @s hotbar.6 with minecraft:bread",
+      "item replace entity @s hotbar.7 with minecraft:stick",
+      "item replace entity @s hotbar.8 with minecraft:white_wool"
+    ]
+  }
+}

@@ -26,4 +26,5 @@ Numbering:
 | 3x | vertex inputs |
 | 4x | uniforms and samplers |
 | 5x | post effects (in a test world, with screenshots) |
-| 6x | Improved Transparency (OIT), post-effect textures and targets, data from datapacks |
+| 6x | Improved Transparency (OIT), post-effect textures and targets, data from datapacks, light levels |
+| 7x | GUI: positions and the item icon atlas |

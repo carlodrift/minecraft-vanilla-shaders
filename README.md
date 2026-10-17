@@ -9,7 +9,7 @@ Every statement here is either checked against the game's code, reproduced by an
 - [Writing shaders for 26.3](docs/writing-shaders.md): how the game loads shaders, and the rules a shader must follow to load.
 - [Post effects](docs/post-effects.md): `end_of_frame`, `/posteffect`, the JSON format, samplers, uniforms and depth.
 - [How a frame is drawn](docs/rendering.md): the drawing order, and what each core program draws, with screenshots.
-- [Techniques](docs/techniques.md): texture markers, telling GUI from world, translucency with Improved Transparency, tagging pixels for post effects, passing data from datapacks, light levels, sending positions to post effects, restyling glowing outlines, replacing includes, animating, depth, displacement.
+- [Techniques](docs/techniques.md): texture markers, telling GUI from world, isolating GUI elements, translucency with Improved Transparency, tagging pixels for post effects, passing data from datapacks, light levels, sending positions to post effects, restyling glowing outlines, replacing includes, animating, depth, displacement.
 - [Porting to 26.3](docs/porting.md): method, checklist, and what changed version by version since 1.21.8.
 - [What changes in 26.4](docs/next-version.md): what the 26.4 snapshots break or add, tracked ahead of the release.
 - Reference, generated from the game:
