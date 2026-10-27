@@ -1,7 +1,6 @@
 import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.vertex.VertexFormat;
-import net.minecraft.client.renderer.RenderPipelines;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,14 +13,13 @@ import java.util.TreeSet;
 public class DumpPipelines {
     public static void main(String[] args) {
         net.minecraft.SharedConstants.tryDetectVersion();
-        List<RenderPipeline> all = new ArrayList<>();
-        all.addAll(RenderPipelines.requiredPipelines());
-        all.addAll(RenderPipelines.optionalPipelines());
-        all.sort(Comparator.comparing(p -> p.getLocation().toString()));
-        for (RenderPipeline p : all) {
+        List<GamePipelines.Entry> all = new ArrayList<>(GamePipelines.all());
+        all.sort(Comparator.comparing(e -> e.pipeline().getLocation().toString()));
+        for (GamePipelines.Entry entry : all) {
+            RenderPipeline p = entry.pipeline();
             StringBuilder sb = new StringBuilder("{");
             sb.append("\"location\":").append(q(p.getLocation().toString()));
-            sb.append(",\"optional\":").append(RenderPipelines.optionalPipelines().contains(p));
+            sb.append(",\"optional\":").append(entry.optional());
             p.getShaders().forEach((type, id) -> sb.append(",\"").append(type.name().toLowerCase()).append("\":").append(q(id.toString())));
             Map<String, String> values = new TreeMap<>(p.getShaderDefines().values());
             sb.append(",\"defines\":{");

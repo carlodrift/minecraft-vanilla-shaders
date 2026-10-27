@@ -12,7 +12,6 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostChainConfig;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.shaderc.Shaderc;
@@ -93,8 +92,7 @@ public class Check {
             System.exit(2);
         }
 
-        List<RenderPipeline> pipelines = new ArrayList<>(RenderPipelines.requiredPipelines());
-        pipelines.addAll(RenderPipelines.optionalPipelines());
+        List<RenderPipeline> pipelines = new ArrayList<>(GamePipelines.all().stream().map(GamePipelines.Entry::pipeline).toList());
         pipelines.addAll(postPipelines());
         if (sodium) {
             pipelines.addAll(sodiumPipelines());
@@ -220,7 +218,7 @@ public class Check {
                 for (String block : pass.uniforms().keySet()) {
                     uniforms.withUniform(block, UniformType.UNIFORM_BUFFER);
                 }
-                result.add(RenderPipeline.builder(RenderPipelines.POST_PROCESSING_SNIPPET)
+                result.add(GamePipelines.postPassBuilder()
                     .withFragmentShader(pass.fragmentShaderId())
                     .withVertexShader(pass.vertexShaderId())
                     .withBindGroupLayout(uniforms.build())
@@ -252,19 +250,21 @@ public class Check {
                 f.set(renderer, field.equals("vertexType") ? vertexType : vertexType.getClass().getMethod("getVertexFormat").invoke(vertexType));
             }
             Class<?> passClass = Class.forName(base + "terrain.TerrainRenderPass");
+            // The OIT classes only exist in the versions Sodium targets (26.3): reflection keeps this file
+            // compiling against later versions, which removed OitPipelineSet.
+            Class<?> stageClass = Class.forName("net.minecraft.client.renderer.oit.OitStage");
+            Object[] stages = stageClass.getEnumConstants();
             var create = rendererClass.getDeclaredMethod("createShader", String.class, passClass);
-            var createOit = rendererClass.getDeclaredMethod("createOITShader", String.class, passClass,
-                net.minecraft.client.renderer.oit.OitStage.class);
+            var createOit = rendererClass.getDeclaredMethod("createOITShader", String.class, passClass, stageClass);
             create.setAccessible(true);
             createOit.setAccessible(true);
             List<RenderPipeline> result = new ArrayList<>();
             for (Object pass : (Object[]) Class.forName(base + "terrain.DefaultTerrainRenderPasses").getField("ALL").get(null)) {
                 result.add((RenderPipeline) create.invoke(renderer, "blocks/block_layer_opaque", pass));
-                net.minecraft.client.renderer.oit.OitPipelineSet oit =
-                    (net.minecraft.client.renderer.oit.OitPipelineSet) createOit.invoke(renderer, "blocks/block_layer_opaque", pass,
-                        net.minecraft.client.renderer.oit.OitStage.values()[0]);   // builds the set for every stage
-                for (net.minecraft.client.renderer.oit.OitStage stage : net.minecraft.client.renderer.oit.OitStage.values()) {
-                    result.add(oit.getPipeline(stage));
+                Object oit = createOit.invoke(renderer, "blocks/block_layer_opaque", pass, stages[0]);   // the set for every stage
+                var getPipeline = oit.getClass().getMethod("getPipeline", stageClass);
+                for (Object stage : stages) {
+                    result.add((RenderPipeline) getPipeline.invoke(oit, stage));
                 }
             }
             return result;

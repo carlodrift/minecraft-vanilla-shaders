@@ -33,16 +33,23 @@ set -- "${args[@]+"${args[@]}"}"
 work="$(mktemp -d)"
 cd "$work"
 
-# The sources are written against 26.3. From 26.4 some classes moved package: adapt the imports.
+# The sources are written against 26.3. Later versions moved some classes: adapt the imports to where each
+# class is in this version's jar.
 src="$here/src"
 jar="${cp##*:}"
-if unzip -l "$jar" com/mojang/blaze3d/pipeline/RenderPipeline.class >/dev/null 2>&1; then
+moves=()
+if unzip -l "$jar" com/mojang/blaze3d/pipeline/RenderPipeline.class >/dev/null 2>&1; then   # 26.4-snapshot-4
+  moves+=(-e 's/com\.mojang\.renderpearl\.api\.pipeline\.RenderPipeline;/com.mojang.blaze3d.pipeline.RenderPipeline;/'
+          -e 's/com\.mojang\.renderpearl\.api\.vertex\./com.mojang.blaze3d.vertex./'
+          -e 's/com\.mojang\.renderpearl\.backend\.api\.SpvModule;/com.mojang.renderpearl.api.pipeline.SpvModule;/')
+fi
+if unzip -l "$jar" net/minecraft/client/renderer/pipeline/RenderPipelines.class >/dev/null 2>&1; then   # 26.4-snapshot-5
+  moves+=(-e 's/net\.minecraft\.client\.renderer\.RenderPipelines;/net.minecraft.client.renderer.pipeline.RenderPipelines;/')
+fi
+if [ ${#moves[@]} -gt 0 ]; then
   mkdir -p "$work/src"
   for f in "$here"/src/*.java; do
-    sed -e 's/com\.mojang\.renderpearl\.api\.pipeline\.RenderPipeline;/com.mojang.blaze3d.pipeline.RenderPipeline;/' \
-        -e 's/com\.mojang\.renderpearl\.api\.vertex\./com.mojang.blaze3d.vertex./' \
-        -e 's/com\.mojang\.renderpearl\.backend\.api\.SpvModule;/com.mojang.renderpearl.api.pipeline.SpvModule;/' \
-        "$f" > "$work/src/$(basename "$f")"
+    sed "${moves[@]}" "$f" > "$work/src/$(basename "$f")"
   done
   src="$work/src"
 fi
