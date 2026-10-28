@@ -607,6 +607,7 @@
   "mcmeta": {
     "sodium": {
       "ignored_shaders": [
+        "terrain.vsh",
         "terrain.fsh"
       ]
     }

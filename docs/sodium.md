@@ -50,9 +50,11 @@ Start from the files of the Sodium version you target (they are in its jar) and 
    ```json
    {
      "pack": { "description": "…", "min_format": 97, "max_format": 97 },
-     "sodium": { "ignored_shaders": ["terrain.fsh"] }
+     "sodium": { "ignored_shaders": ["terrain.vsh", "terrain.fsh"] }
    }
    ```
+
+   List every such file the pack replaces, by its file name: one left out keeps the message. A pack that had added waving plants to `terrain.vsh`, but still listed only `terrain.fsh`, got the red message again, naming `shaders/core/terrain.vsh` in the log (observed).
 
 4. **Mind the license.** Sodium is under the [PolyForm Shield 1.0.0](https://github.com/CaffeineMC/sodium/blob/dev/LICENSE.md) license. It allows distributing modified copies, with the license terms and not as part of a product that competes with Sodium. The examples here store only their edits, and the tools add the license to the pack they build.
 

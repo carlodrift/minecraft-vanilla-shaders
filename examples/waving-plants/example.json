@@ -54,5 +54,12 @@
       "execute positioned -750 0 -234 positioned over motion_blocking run fill ~4 ~1 ~4 ~4 ~3 ~4 minecraft:sugar_cane",
       "execute positioned -750 0 -234 positioned over motion_blocking run tp @s ~0 ~2.5 ~-2 0 20"
     ]
+  },
+  "mcmeta": {
+    "sodium": {
+      "ignored_shaders": [
+        "terrain.vsh"
+      ]
+    }
   }
 }
