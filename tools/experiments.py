@@ -20,7 +20,8 @@ Each experiment is a directory with an experiment.json:
         {"path": "assets/minecraft/textures/entity/creeper/creeper.png",     # or a vanilla PNG whose dark
          "vanilla_image": "assets/minecraft/textures/entity/creeper/creeper.png",  # pixels in a region get
          "mark": {"region": [8, 8, 16, 16], "max_brightness": 150, "alpha": 254,   # a marker alpha
-                  "color": [120, 255, 140]}}                                       # (and optionally a color)
+                  "color": [120, 255, 140]}},                                      # (and optionally a color)
+        {"script": "examples/minimap/map_faces.py"}   # or files written by a script: generate(jar, pack)
       ],
       "scene": {                       # optional: in game, join a test world and take a screenshot
         "commands": ["posteffect add @s mylib:gray"],
@@ -41,6 +42,7 @@ Results are written to experiments/RESULTS.md.
 import argparse
 import datetime
 import glob
+import importlib.util
 import json
 import os
 import re
@@ -114,6 +116,14 @@ def build(exp, name, jar, out_dir, pack_format):
             os.makedirs(os.path.dirname(target), exist_ok=True)
             with open(target, "wb") as f:
                 f.write(pngutil.write(png["width"], png["height"], rows))
+            continue
+        elif "script" in spec:
+            # Files generated from the game's jar by a script of this repository, which defines
+            # generate(jar, pack) and writes them into the pack (e.g. many vanilla models, each edited).
+            loader = importlib.util.spec_from_file_location("pack_script", os.path.join(ROOT, spec["script"]))
+            module = importlib.util.module_from_spec(loader)
+            loader.loader.exec_module(module)
+            module.generate(jar, pack)
             continue
         elif "vanilla_image" in spec:
             # Copy a vanilla PNG, marking the dark pixels of a region with an alpha (and a color) (see "mark").

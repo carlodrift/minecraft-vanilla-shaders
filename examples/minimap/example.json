@@ -1,0 +1,167 @@
+{
+  "title": "Minimap: block models get a hidden top face that terrain draws into a top-down capture, kept by a post effect in a persistent memory and shown as a round map",
+  "expect": "pass",
+  "files": [
+    {
+      "script": "examples/minimap/map_faces.py"
+    },
+    {
+      "path": "assets/minimap/shaders/include/marks.glsl",
+      "content": "#ifndef MINIMAP_MARKS_GLSL\n#define MINIMAP_MARKS_GLSL\n\n// Recognizing map faces. Needs nothing else, so Sodium's terrain shader can include it too.\n\n// The heights of map faces, in 1/64 of a block (quarter model pixels): bit n set for n / 64.\n// The same as MARKS in map_faces.py.\nconst uint MAP_MARKS_LOW = 0x2a002aa8u;    // n = 0..31\nconst uint MAP_MARKS_HIGH = 0x2aa800a8u;   // n = 32..63\n\n// Whether a model coordinate (in blocks) is at one of the map-face heights.\nbool isMark(float coordinate) {\n    float q = fract(coordinate) * 64.0;\n    float n = round(q);\n    if (abs(q - n) > 0.01) {\n        return false;\n    }\n    uint bit = uint(n);\n    return bit < 32u ? ((MAP_MARKS_LOW >> bit) & 1u) != 0u : ((MAP_MARKS_HIGH >> (bit - 32u)) & 1u) != 0u;\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/minimap/shaders/include/minimap.glsl",
+      "content": "#ifndef MINIMAP_GLSL\n#define MINIMAP_GLSL\n\n#include <minimap:marks.glsl>\n\n// Shared by core/terrain (the capture) and the post effect (the memory and the map). Needs Globals.\n//\n// Every block model has a map face: a copy of its top face, inside the model, at a height no vanilla\n// model uses (map_faces.py). terrain.vsh draws these faces into the capture square, one pixel per\n// block, north up, around the camera's block. The post effect copies the capture into a memory where\n// each texel is a block, then draws the round map from the memory over the capture square.\n\nconst int MAP_BLOCKS = 128;       // blocks across the capture square\nconst int MAP_MEMORY = 256;       // blocks across the memory (a power of two); its row 256 keeps the heading\nconst int MAP_RADIUS = 64;        // radius of the round map, in blocks\nconst int MAP_SCALE = 2;          // screen pixels per block on the map\nconst int MAP_MARGIN = 16;        // pixels between the map and the corner of the screen\nconst float MAP_TAG = 0.5;        // alpha of map texels in minecraft:main\nconst float MAP_HEADING_TAG = 0.25;   // alpha of the capture pixel that carries the heading\n\n// Center of the round map, in pixels from the bottom-left corner of the screen.\nivec2 mapCenter() {\n    return ivec2(ScreenSize) - ivec2(MAP_MARGIN + MAP_RADIUS * MAP_SCALE);\n}\n\n// The capture square sits in the middle of the round map, which covers it.\nivec2 captureOrigin() {\n    return mapCenter() - ivec2(MAP_BLOCKS / 2);\n}\n\n// Pixel of the capture that holds the block at (x, z) from the camera's block.\nivec2 capturePixel(ivec2 rel) {\n    return captureOrigin() + ivec2(MAP_BLOCKS / 2 + rel.x, MAP_BLOCKS / 2 - 1 - rel.y);\n}\n\n// Texel of the memory that holds a block, from its world x and z: the memory wraps around.\nivec2 memoryTexel(ivec2 world) {\n    return world & (MAP_MEMORY - 1);\n}\n\n// Alpha of a memory texel: the 256-block region the block belongs to (0: never seen). A texel that\n// wraps onto a block of another region is forgotten instead of showing the wrong place.\nfloat memoryRegion(ivec2 world) {\n    ivec2 region = (world >> 8) & 7;\n    return float(1 + region.x + 8 * region.y) / 255.0;\n}\n\n// The heading, in turns clockwise from north, as 24 bits in RGB.\nvec3 packHeading(float turns) {\n    uint v = uint(fract(turns) * 16777216.0);\n    return vec3(float(v >> 16u), float((v >> 8u) & 255u), float(v & 255u)) / 255.0;\n}\n\nfloat unpackHeading(vec3 rgb) {\n    uvec3 b = uvec3(round(rgb * 255.0));\n    return float((b.r << 16u) | (b.g << 8u) | b.b) / 16777216.0;\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <minimap:minimap.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) out float chunkVisibility;\n",
+          "replace": "layout(location = 4) out float chunkVisibility;\nlayout(location = 5) out vec4 screenClip;\nlayout(location = 6) out float mapFace;\nlayout(location = 7) out float mapSkyLight;\n"
+        },
+        {
+          "find": "    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);\n",
+          "replace": "    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);\n    screenClip = gl_Position;\n    mapFace = 0.0;\n    mapSkyLight = 0.0;\n    if (isMark(Position.x) || isMark(Position.z)) {\n        // A map face turned on its side by the blockstate (logs, pistons...): not drawn.\n        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n    } else if (isMark(Position.y)) {\n        // A map face: into the capture square. Its corners, from the camera's block, are whole numbers\n        // in x and z, so each block covers exactly one pixel. North up; higher blocks in front (depth is\n        // reversed). A map face turned upside down faces away here, and is culled.\n        vec3 rel = Position + vec3(ChunkPosition - CameraBlockPos);\n        vec2 pixel = vec2(captureOrigin()) + vec2(float(MAP_BLOCKS / 2) + rel.x, float(MAP_BLOCKS / 2) - rel.z);\n        gl_Position = vec4(pixel / ScreenSize * 2.0 - 1.0, 0.5 + 0.4 * clamp(rel.y / 512.0, -1.0, 1.0), 1.0);\n        screenClip = gl_Position;\n        mapFace = 1.0;\n        mapSkyLight = float(UV2.y) / 16.0;\n        sphericalVertexDistance = 0.0;\n        cylindricalVertexDistance = 0.0;\n        vertexColor = Color;\n        texCoord0 = UV0;\n        chunkVisibility = 1.0;\n        return;\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <minimap:minimap.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) in float chunkVisibility;\n",
+          "replace": "layout(location = 4) in float chunkVisibility;\nlayout(location = 5) in vec4 screenClip;\nlayout(location = 6) in float mapFace;\nlayout(location = 7) in float mapSkyLight;\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // The capture square only takes map faces, and map faces stay in it.\n    vec2 pixel = (screenClip.xy / screenClip.w * 0.5 + 0.5) * ScreenSize;\n    vec2 origin = vec2(captureOrigin());\n    bool inCapture = all(greaterThanEqual(pixel, origin)) && all(lessThan(pixel, origin + float(MAP_BLOCKS)));\n    if (inCapture != (mapFace > 0.5)) {\n        discard;\n    }\n    if (mapFace > 0.5) {\n        #ifdef ALPHA_CUTOUT\n        if (ALPHA_CUTOUT < 0.3) {\n            discard;   // translucent terrain (ice, stained glass): blending would change the tag\n        }\n        #endif\n        #ifndef OIT_ALPHA_ONLY\n        // The average color of the sprite (mip level 4 of a 16x16 sprite), with the tint and the ambient\n        // occlusion, which shades the steps of the terrain.\n        vec4 texel = textureLod(Sampler0, texCoord0, 4.0);\n        if (texel.a < 0.25) {\n            discard;   // mostly empty sprites (glass): the map shows what is below\n        }\n        vec3 color = texel.rgb * vertexColor.rgb;\n        // Water has no map face. The top face of a column under water gets one level of sky light less\n        // per block of water: tint it by that depth.\n        float depth = 15.0 - mapSkyLight;\n        if (depth > 0.5) {\n            color = mix(color, vec3(0.17, 0.32, 0.66), clamp(0.55 + depth * 0.03, 0.0, 0.9));\n        }\n        fragColor = vec4(color, MAP_TAG);\n        if (ivec2(pixel) == capturePixel(ivec2(0))) {\n            // The camera's own column carries the heading instead: the camera's right vector, from the\n            // view rotation, turned a quarter turn, in turns clockwise from north.\n            vec3 right = vec3(ModelViewMat[0][0], ModelViewMat[1][0], ModelViewMat[2][0]);\n            fragColor = vec4(packHeading(atan(right.z, right.x) / 6.2831853), MAP_HEADING_TAG);\n        }\n        return;\n        #endif\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minimap/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes, shipped with the pack (vanilla renamed its own in 26.4).\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
+    },
+    {
+      "path": "assets/minimap/shaders/post/map_update.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <minimap:minimap.glsl>\n\n// The memory, one texel per block: take the block from this frame's capture when it is there, keep\n// what the memory had otherwise. Row MAP_MEMORY keeps the last heading.\nuniform sampler2D MainSampler;\nuniform sampler2D HistorySampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    ivec2 texel = ivec2(texCoord * vec2(MAP_MEMORY, MAP_MEMORY + 1));\n    if (texel.y == MAP_MEMORY) {\n        vec4 bus = texelFetch(MainSampler, capturePixel(ivec2(0)), 0);\n        bool fresh = texel.x == 0 && abs(bus.a - MAP_HEADING_TAG) < 0.05;\n        fragColor = fresh ? vec4(bus.rgb, 1.0) : texelFetch(HistorySampler, texel, 0);\n        return;\n    }\n    // The block this texel holds: of the blocks that wrap onto it, the one nearest to the camera.\n    ivec2 rel = ((texel - CameraBlockPos.xz + MAP_MEMORY / 2) & (MAP_MEMORY - 1)) - MAP_MEMORY / 2;\n    ivec2 world = CameraBlockPos.xz + rel;\n    float region = memoryRegion(world);\n    fragColor = texelFetch(HistorySampler, texel, 0);\n    if (abs(fragColor.a - region) > 0.5 / 255.0) {\n        fragColor = vec4(0.0);   // a block of another place, or never seen\n    }\n    if (all(greaterThanEqual(rel, ivec2(-MAP_BLOCKS / 2))) && all(lessThan(rel, ivec2(MAP_BLOCKS / 2)))) {\n        vec4 captured = texelFetch(MainSampler, capturePixel(rel), 0);\n        if (abs(captured.a - MAP_TAG) < 0.05) {\n            fragColor = vec4(captured.rgb, region);\n        }\n    }\n}\n"
+    },
+    {
+      "path": "assets/minimap/shaders/post/map_copy.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Copy with alpha: in the memory, alpha is the region of the block (0: never seen).\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = texture(InSampler, texCoord);\n}\n"
+    },
+    {
+      "path": "assets/minimap/shaders/post/map_show.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <minimap:minimap.glsl>\n\n// The round map, drawn from the memory over the capture square: centered on the camera, turned so\n// that the camera looks up, with an arrow for the camera and a red dot for north.\nuniform sampler2D MainSampler;\nuniform sampler2D MapSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\n// Inside the triangle a, b, c (counterclockwise).\nbool inTriangle(vec2 p, vec2 a, vec2 b, vec2 c) {\n    vec3 e = vec3(cross(vec3(b - a, 0.0), vec3(p - a, 0.0)).z,\n                  cross(vec3(c - b, 0.0), vec3(p - b, 0.0)).z,\n                  cross(vec3(a - c, 0.0), vec3(p - c, 0.0)).z);\n    return all(greaterThanEqual(e, vec3(0.0)));\n}\n\nvoid main() {\n    ivec2 pixel = ivec2(texCoord * ScreenSize);\n    fragColor = vec4(texelFetch(MainSampler, pixel, 0).rgb, 1.0);\n\n    // No map until a heading has arrived: terrain has not drawn the capture yet, or can't (Sodium).\n    vec4 stored = texelFetch(MapSampler, ivec2(0, MAP_MEMORY), 0);\n    if (stored.a < 0.5) {\n        return;\n    }\n\n    vec2 d = vec2(pixel) + 0.5 - vec2(mapCenter());   // from the center, y up\n    float radius = float(MAP_RADIUS * MAP_SCALE);\n    float r = length(d);\n    if (r > radius + 3.0) {\n        return;\n    }\n    if (r > radius) {\n        fragColor = vec4(0.85, 0.82, 0.74, 1.0);   // rim\n        return;\n    }\n\n    // Turn the map so that the heading points up. Map coordinates: x east, y north.\n    float heading = unpackHeading(stored.rgb) * 6.2831853;\n    vec2 forward = vec2(sin(heading), cos(heading));\n    vec2 right = vec2(cos(heading), -sin(heading));\n    vec2 offset = (d.x * right + d.y * forward) / float(MAP_SCALE);\n\n    vec3 camera = vec3(CameraBlockPos) - CameraOffset;\n    ivec2 world = ivec2(floor(camera.xz + vec2(offset.x, -offset.y)));\n    vec4 block = texelFetch(MapSampler, memoryTexel(world), 0);\n    bool known = abs(block.a - memoryRegion(world)) < 0.5 / 255.0;\n    fragColor = vec4(known ? block.rgb : vec3(0.1, 0.1, 0.11), 1.0);\n\n    // The camera: an arrow pointing up, white with a dark edge.\n    vec2 tip = vec2(0.0, 9.0), left = vec2(-6.5, -7.0), notch = vec2(0.0, -3.0), rightCorner = vec2(6.5, -7.0);\n    if (inTriangle(d, left * 1.35, notch * 1.35, tip * 1.35) || inTriangle(d, notch * 1.35, rightCorner * 1.35, tip * 1.35)) {\n        fragColor = vec4(0.12, 0.12, 0.12, 1.0);\n    }\n    if (inTriangle(d, left, notch, tip) || inTriangle(d, notch, rightCorner, tip)) {\n        fragColor = vec4(1.0);\n    }\n\n    // North: a red dot on the edge, where the map's north direction ends up on screen.\n    vec2 north = vec2(-sin(heading), cos(heading)) * (radius - 9.0);\n    if (length(d - north) < 5.5) {\n        fragColor = vec4(0.85, 0.15, 0.12, 1.0);\n    }\n}\n"
+    },
+    {
+      "path": "assets/sodium/shaders/blocks/block_layer_opaque.vsh",
+      "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.vsh",
+      "edits": [
+        {
+          "find": "#include <sodium:chunk_vertex.glsl>\n",
+          "replace": "#include <sodium:chunk_vertex.glsl>\n#include <minimap:marks.glsl>\n"
+        },
+        {
+          "find": "    _vert_init();\n",
+          "replace": "    _vert_init();\n    // Sodium's terrain shader has neither the screen size nor the camera's block, which the capture\n    // needs: map faces are only hidden, and the post effect shows no map.\n    if (isMark(_vert_position.x) || isMark(_vert_position.y) || isMark(_vert_position.z)) {\n        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);\n        return;\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"targets\": {\n    \"memory\": {\n      \"width\": 256,\n      \"height\": 257,\n      \"persistent\": true\n    },\n    \"memory_next\": {\n      \"width\": 256,\n      \"height\": 257\n    }\n  },\n  \"passes\": [\n    {\n      \"vertex_shader\": \"minimap:post/fullscreen\",\n      \"fragment_shader\": \"minimap:post/map_update\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"Main\",\n          \"target\": \"minecraft:main\"\n        },\n        {\n          \"sampler_name\": \"History\",\n          \"target\": \"memory\"\n        }\n      ],\n      \"output\": \"memory_next\"\n    },\n    {\n      \"vertex_shader\": \"minimap:post/fullscreen\",\n      \"fragment_shader\": \"minimap:post/map_copy\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"memory_next\"\n        }\n      ],\n      \"output\": \"memory\"\n    },\n    {\n      \"vertex_shader\": \"minimap:post/fullscreen\",\n      \"fragment_shader\": \"minimap:post/map_show\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"Main\",\n          \"target\": \"minecraft:main\"\n        },\n        {\n          \"sampler_name\": \"Map\",\n          \"target\": \"memory_next\"\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    }
+  ],
+  "mcmeta": {
+    "sodium": {
+      "ignored_shaders": [
+        "terrain.vsh",
+        "terrain.fsh"
+      ]
+    }
+  },
+  "scene": {
+    "seed": 20261017,
+    "commands": [
+      "tp @s ~ ~12 ~ 0 35"
+    ],
+    "quick": [
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 20 35",
+      "tp @s ~ ~ ~ 20 35",
+      "tp @s ~ ~ ~ 20 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 60 35",
+      "tp @s ~ ~ ~ 60 35",
+      "tp @s ~ ~ ~ 60 35",
+      "tp @s ~ ~ ~ 80 35",
+      "tp @s ~ ~ ~ 80 35",
+      "tp @s ~ ~ ~ 80 35",
+      "tp @s ~ ~ ~ 100 35",
+      "tp @s ~ ~ ~ 100 35",
+      "tp @s ~ ~ ~ 100 35",
+      "tp @s ~ ~ ~ 120 35",
+      "tp @s ~ ~ ~ 120 35",
+      "tp @s ~ ~ ~ 120 35",
+      "tp @s ~ ~ ~ 140 35",
+      "tp @s ~ ~ ~ 140 35",
+      "tp @s ~ ~ ~ 140 35",
+      "tp @s ~ ~ ~ 160 35",
+      "tp @s ~ ~ ~ 160 35",
+      "tp @s ~ ~ ~ 160 35",
+      "tp @s ~ ~ ~ 180 35",
+      "tp @s ~ ~ ~ 180 35",
+      "tp @s ~ ~ ~ 180 35",
+      "tp @s ~ ~ ~ 200 35",
+      "tp @s ~ ~ ~ 200 35",
+      "tp @s ~ ~ ~ 200 35",
+      "tp @s ~ ~ ~ 220 35",
+      "tp @s ~ ~ ~ 220 35",
+      "tp @s ~ ~ ~ 220 35",
+      "tp @s ~ ~ ~ 240 35",
+      "tp @s ~ ~ ~ 240 35",
+      "tp @s ~ ~ ~ 240 35",
+      "tp @s ~ ~ ~ 260 35",
+      "tp @s ~ ~ ~ 260 35",
+      "tp @s ~ ~ ~ 260 35",
+      "tp @s ~ ~ ~ 280 35",
+      "tp @s ~ ~ ~ 280 35",
+      "tp @s ~ ~ ~ 280 35",
+      "tp @s ~ ~ ~ 300 35",
+      "tp @s ~ ~ ~ 300 35",
+      "tp @s ~ ~ ~ 300 35",
+      "tp @s ~ ~ ~ 320 35",
+      "tp @s ~ ~ ~ 320 35",
+      "tp @s ~ ~ ~ 320 35",
+      "tp @s ~ ~ ~ 340 35",
+      "tp @s ~ ~ ~ 340 35",
+      "tp @s ~ ~ ~ 340 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 40 35"
+    ],
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect"
+    ]
+  }
+}

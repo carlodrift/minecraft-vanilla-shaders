@@ -5,7 +5,7 @@ Each experiment changes one thing in a vanilla shader and records whether the ga
 An experiment is a directory with an `experiment.json`. It has three fields:
 - **`title`**: the question it answers.
 - **`expect`**: `pass` or `fail`.
-- **`files`**: the pack to build. A file either starts from the installed game's vanilla file and applies `edits` (`find` / `replace`; each `find` must match exactly once), or gives its full `content`.
+- **`files`**: the pack to build. A file either starts from the installed game's vanilla file and applies `edits` (`find` / `replace`; each `find` must match exactly once), or gives its full `content`, or is written by a `script` of this repository from the game's jar (see [tools/experiments.py](../tools/experiments.py)).
 
 Building packs from the installed game keeps vanilla files out of this repository. It also flags an experiment as soon as a new version changes the vanilla file it edits, because the `find` no longer matches.
 
@@ -28,3 +28,4 @@ Numbering:
 | 5x | post effects (in a test world, with screenshots), the main target's alpha, GUI vs world |
 | 6x | Improved Transparency (OIT), post-effect textures and targets, data from datapacks, exact terrain texels, light levels |
 | 7x | GUI positions and the item icon atlas, camera / world position / FOV, Nether lighting, a top-down map from terrain and its persistent memory |
+| 8x | the minimap's capture: light levels of faces inside blocks |

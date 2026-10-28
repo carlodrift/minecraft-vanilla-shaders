@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
 
 ## Mark texels in a texture
 
@@ -234,3 +234,14 @@ With the camera from a [data bus](#give-post-effects-the-camera-a-data-bus), a p
 - **Fade the blocking out toward the end of the window.** With a hard limit, whether a ray counts as blocked depends on where its samples fall, and the shadow's edge becomes a comb. A window that grows with the steps gives teeth instead: rays that pass *behind* a thin pillar, as seen from the camera, count as blocked.
 
 [screen-shadows](../examples/screen-shadows/) shows the values that work, and the artifacts of the ones that didn't.
+
+## A top-down map: draw terrain a second time
+
+A vertex goes to one place on screen, so the terrain can't be drawn both in the world and on a map. Its models can, though:
+
+- **Give each block model a second top face, inside the model, at a height no vanilla model uses.** `terrain.vsh` recognizes it by `fract(Position.y)` and sends it to the map, while the world keeps the real faces. The height must be free on every axis, its opposite (16 − h) too, because blockstates turn models. 1.5/16, the obvious choice, is taken by repeaters and tripwires ([exp 77](../experiments/77-minimap-capture/)).
+- **Place the map faces from the camera's block,** `Position + ChunkPosition - CameraBlockPos`: their corners are then whole numbers, and each block covers exactly one pixel of a square of the screen. `terrain.fsh` keeps everything else out of that square, and tags map pixels in alpha.
+- **One frame only has the sections in view.** A `persistent` post target indexed by world position, `CameraBlockPos` in the post effect's `Globals`, keeps what each frame captured, and the map fills as the camera turns ([exp 78](../experiments/78-minimap-memory/), against [exp 79](../experiments/79-minimap-memory-control/)).
+- **A face inside a block gets the sky light of the open air above it,** and one level less per block of water ([exp 80](../experiments/80-map-face-light/)): enough to show water, which has no model.
+
+[minimap](../examples/minimap/) draws a round map, turned with the view, from this.

@@ -76,5 +76,6 @@ With `--sodium`, `mcshaders check` builds Sodium's terrain pipelines with Sodium
 |---|---|
 | [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/), [water-reflections](../examples/water-reflections/), [sun-lighting](../examples/sun-lighting/), [screen-shadows](../examples/screen-shadows/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone, and water isn't marked |
 | [terrain-wave](../examples/terrain-wave/) | No wave: `core/terrain` is not used |
+| [minimap](../examples/minimap/) | No map: Sodium's terrain shader has neither the screen size nor the camera's block, which the capture needs. Its edit only hides the map faces |
 | [atmosphere](../examples/atmosphere/) | The sky is the same; the terrain keeps the vanilla fog |
 | [depth-outlines](../examples/depth-outlines/), [emissive-entities](../examples/emissive-entities/), [emissive-glow](../examples/emissive-glow/), [gui-theme](../examples/gui-theme/), [procedural-sprite](../examples/procedural-sprite/), [text-effects](../examples/text-effects/), [thick-outlines](../examples/thick-outlines/), [world-anchor](../examples/world-anchor/) | Same |
