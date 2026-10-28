@@ -63,7 +63,7 @@
         },
         {
           "find": "uniform isamplerBuffer u_SectionTimeInfo;\n",
-          "replace": "layout(location = 4) out vec4 screenClip;\nlayout(location = 5) out float mapFace;\nlayout(location = 6) out float mapSkyLight;\n\nuniform isamplerBuffer u_SectionTimeInfo;\n"
+          "replace": "// From 10 on: Sodium Extra adds its own outputs at 4 and 5.\nlayout(location = 10) out vec4 screenClip;\nlayout(location = 11) out float mapFace;\nlayout(location = 12) out float mapSkyLight;\n\nuniform isamplerBuffer u_SectionTimeInfo;\n"
         },
         {
           "find": "    v_TexCoord = (_vert_tex_diffuse_coord_bias * u_TexCoordShrink) + _vert_tex_diffuse_coord; // FMA for precision\n",
@@ -81,7 +81,7 @@
         },
         {
           "find": "layout(location = 3) in float fadeFactor;\n",
-          "replace": "layout(location = 3) in float fadeFactor;\nlayout(location = 4) in vec4 screenClip;\nlayout(location = 5) in float mapFace;\nlayout(location = 6) in float mapSkyLight;\n"
+          "replace": "layout(location = 3) in float fadeFactor;\n// From 10 on: Sodium Extra adds its own inputs at 4 and 5.\nlayout(location = 10) in vec4 screenClip;\nlayout(location = 11) in float mapFace;\nlayout(location = 12) in float mapSkyLight;\n"
         },
         {
           "find": "void main() {\n",

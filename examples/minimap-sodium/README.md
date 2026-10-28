@@ -11,6 +11,7 @@ Sodium draws terrain with its own shader, `block_layer_opaque`, which has neithe
 - **The camera's block comes from Sodium's region offset.** Sodium places a vertex at `_vert_position + u_RegionOffset + (section offset)` from the camera, and its regions start on whole blocks. So `fract(-u_RegionOffset)` is the fraction of the camera's position, and adding it to the vertex's position gives coordinates from the camera's block: the corners of map faces land on whole numbers again, as with `Position + ChunkPosition - CameraBlockPos` in `core/terrain`.
 - **The capture square is placed by screen fractions** (`layout.glsl`), from the aspect ratio alone, which both terrain shaders get from their projection matrix (`[0][0] / [1][1]`). Blocks no longer fall on whole pixels. The post effect, which has `ScreenSize`, reads each block at the pixel under its center.
 - **Both terrain shaders get the same edits.** `core/terrain` for the game, `block_layer_opaque.vsh` and `.fsh` for Sodium. Without Sodium, the `assets/sodium/` files are not used.
+- **Its outputs in Sodium's shader start at location 10.** Sodium Extra inserts two of its own at 4 and 5. With the map's at 4 to 6, Sodium's terrain pipeline failed to compile and the game crashed when the world opened ([Sodium](../../docs/sodium.md#making-a-pack-work-with-sodium)).
 
 ## What it costs
 
@@ -20,7 +21,7 @@ Sodium draws terrain with its own shader, `block_layer_opaque`, which has neithe
 
 Everything else is as in [minimap](../minimap/#limits), limits included.
 
-Tested on OpenGL and Vulkan, without Sodium and with Sodium 0.9.2.
+Tested on OpenGL and Vulkan, without Sodium and with Sodium 0.9.2, and on OpenGL with Sodium Extra 0.9.4 too (its fog patch still applies).
 
 ## Try it
 
