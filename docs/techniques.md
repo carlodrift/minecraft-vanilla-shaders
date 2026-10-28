@@ -6,8 +6,8 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
-- **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
+- **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Wave plants](#wave-plants), [Restyle glowing outlines](#restyle-glowing-outlines)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [Reuse the previous frame](#reuse-the-previous-frame), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
 
 ## Mark texels in a texture
 
@@ -136,6 +136,16 @@ A pack file at `assets/minecraft/shaders/include/<name>.glsl` replaces the vanil
 
 A vertex shader can move vertices freely. Only the rendering changes: collisions are unaffected, and terrain lighting, which is baked into the vertex color, does not follow the new shape. For terrain, rebuild the world position as `Position + vec3(ChunkPosition)`. See [terrain-wave](../examples/terrain-wave/).
 
+## Wave plants
+
+`terrain.vsh` doesn't know which block it draws. Plants can still be found: in the cutout layer (`ALPHA_CUTOUT` 0.5), tinted by the biome (a `Color` that isn't grey), and off the block grid in x or z (cross models are inset by a pixel; the grass block, also tinted and cutout, is on the grid). Their tops can't be found, though:
+
+- **`gl_VertexIndex % 4` is not stable for terrain:** coloring vertices by it gave different corners of the same plants from one run to the next, and other ones on OpenGL;
+- **`UV0` lies on the sprite's corners,** which neighbouring sprites in the atlas share;
+- **both ends of a plant are at whole block heights.**
+
+So sway whole plants, a little, with a wind whose phase changes with height. [waving-plants](../examples/waving-plants/) does this, in Sodium's terrain shader too, with Sodium's per-region clock ([Sodium](sodium.md)).
+
 ## Restyle glowing outlines
 
 Replace the post effect `assets/minecraft/post_effect/entity_outline.json`. It reads the silhouettes of glowing entities from the `minecraft:entity_outline` target (team color in RGB, coverage in alpha), and must write the outline back into that target, alpha included. The game then composites it onto the world. See [thick-outlines](../examples/thick-outlines/).
@@ -245,3 +255,13 @@ A vertex goes to one place on screen, so the terrain can't be drawn both in the 
 - **A face inside a block gets the sky light of the open air above it,** and one level less per block of water ([exp 80](../experiments/80-map-face-light/)): enough to show water, which has no model.
 
 [minimap](../examples/minimap/) draws a round map, turned with the view, from this.
+
+## Reuse the previous frame
+
+A [persistent target](post-effects.md#targets) keeps its content from one frame to the next. With the camera of a [data bus](#give-post-effects-the-camera-a-data-bus), a post effect can find where each pixel was in the previous frame:
+
+- **Store this frame's camera** in a small persistent target, as floats in 4 bytes: the projection, the view rotation, and the camera's world position (`vec3(CameraBlockPos) - CameraOffset`). Do it in one of the last passes, so that the next frame reads the previous camera.
+- **Reproject:** the pixel's world position, from its depth, through the previous camera. For the sky, at infinity, only the rotation counts.
+- **A persistent target starts cleared to transparent black:** write alpha 1 into it, and treat alpha 0 as "no previous frame yet".
+
+[temporal-accumulation](../examples/temporal-accumulation/) blends each frame with the reprojected previous result, clamped to the current neighbourhood so that nothing trails. Core shaders have no frame counter to jitter the projection with, so this smooths noise and shimmering, but doesn't anti-alias still edges.

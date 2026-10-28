@@ -75,7 +75,7 @@ With `--sodium`, `mcshaders check` builds Sodium's terrain pipelines with Sodium
 
 | Example | Under Sodium |
 |---|---|
-| [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/), [water-reflections](../examples/water-reflections/), [sun-lighting](../examples/sun-lighting/), [screen-shadows](../examples/screen-shadows/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone, and water isn't marked |
+| [data-bus](../examples/data-bus/), [scattered-sky](../examples/scattered-sky/), [water-reflections](../examples/water-reflections/), [sun-lighting](../examples/sun-lighting/), [screen-shadows](../examples/screen-shadows/), [temporal-accumulation](../examples/temporal-accumulation/), [waving-plants](../examples/waving-plants/) | Same, thanks to their edit of Sodium's terrain shader. Without it, terrain covers the bus and the effect is gone, and water isn't marked |
 | [terrain-wave](../examples/terrain-wave/) | No wave: `core/terrain` is not used |
 | [minimap](../examples/minimap/) | No map: Sodium's terrain shader has neither the screen size nor the camera's block, which the capture needs. Its edit only hides the map faces. [minimap-sodium](../examples/minimap-sodium/) does without both, at a cost |
 | [minimap-sodium](../examples/minimap-sodium/) | Same, but with Sodium's "Use Block Face Culling" on (the default), terrain above the camera's chunk section is missing from the map |

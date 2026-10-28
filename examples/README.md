@@ -4,6 +4,7 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 
 | Example | Technique |
 |---|---|
+| [waving-plants](waving-plants/) | Core vertex shader: grass, ferns, sugar cane and vines found from the cutout layer, the biome tint and the block grid, swaying in the wind, with Sodium too |
 | [terrain-wave](terrain-wave/) | Core vertex shader: displace chunk geometry in `core/terrain.vsh` |
 | [depth-outlines](depth-outlines/) | Post effect: edge detection on depth, applied on every frame through `end_of_frame` |
 | [emissive-entities](emissive-entities/) | Core fragment shader + texture: pixels marked with alpha 254 ignore the lightmap |
@@ -15,6 +16,7 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 | [thick-outlines](thick-outlines/) | Post effect: replace `minecraft:entity_outline` for thick, crisp, tinted outlines on glowing entities |
 | [emissive-glow](emissive-glow/) | Core + post: emissive pixels tag the main target's alpha, and a post effect blooms only them |
 | [scattered-sky](scattered-sky/) | Core + post: a physically based sky drawn by a post effect, with vanilla's fog turned toward it, exposure and tonemapping |
+| [temporal-accumulation](temporal-accumulation/) | Post: each frame blended with the previous ones, reprojected through the previous camera kept in a persistent target; ambient occlusion; lit clouds |
 | [screen-shadows](screen-shadows/) | Post: shadows from the sun, by marching rays toward it against the depth buffer, cutting the relit terrain's direct light |
 | [sun-lighting](sun-lighting/) | Core + post: opaque terrain writes its light levels in alpha, and a post effect relights it by the sun, the moon and the sky, with bloom |
 | [water-reflections](water-reflections/) | Core + post: the terrain shaders mark water through translucent blending, and a post effect draws waves, screen-space reflections, refraction and Fresnel |
