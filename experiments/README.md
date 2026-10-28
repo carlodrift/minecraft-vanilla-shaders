@@ -27,4 +27,4 @@ Numbering:
 | 4x | uniforms and samplers |
 | 5x | post effects (in a test world, with screenshots), the main target's alpha, GUI vs world |
 | 6x | Improved Transparency (OIT), post-effect textures and targets, data from datapacks, exact terrain texels, light levels |
-| 7x | GUI positions and the item icon atlas, camera / world position / FOV, Nether lighting |
+| 7x | GUI positions and the item icon atlas, camera / world position / FOV, Nether lighting, a top-down map from terrain and its persistent memory |

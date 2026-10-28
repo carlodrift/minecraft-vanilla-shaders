@@ -754,5 +754,47 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "77-minimap-capture": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-28",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 91.7",
+    "opengl_message": "",
+    "title": "Extra top faces added to block models can be moved by `terrain.vsh` into a top-down map in a corner of the screen",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "78-minimap-memory": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-28",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 91.7",
+    "opengl_message": "",
+    "title": "A persistent post target, indexed by world position (`CameraBlockPos`), keeps the top-down map of 77 while the camera turns: the map fills all around",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "79-minimap-memory-control": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-28",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 91.7",
+    "opengl_message": "",
+    "title": "Control for 78: the same pack with a target that is not `persistent` only shows what this frame captured (the north half stays dark)",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }

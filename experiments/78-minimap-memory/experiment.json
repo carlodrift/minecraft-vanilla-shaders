@@ -1,0 +1,173 @@
+{
+  "title": "A persistent post target, indexed by world position (`CameraBlockPos`), keeps the top-down map of 77 while the camera turns: the map fills all around",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/mylib/shaders/include/minimap.glsl",
+      "content": "#ifndef MYLIB_MINIMAP_GLSL\n#define MYLIB_MINIMAP_GLSL\n\n// Shared by terrain (capture) and the post effect (memory and display). Needs Globals.\n// Faces of the extra top element added to the block models (y = 1.25/16 inside the block) are drawn\n// by terrain.vsh into a capture square in the top-right corner: one pixel per block, north up,\n// centered on the camera's block. The post effect copies them into a persistent memory where each\n// texel is a block (world x and z modulo MAP_MEMORY), then draws the map over the capture square.\nconst float MAP_MARK = 1.25 / 16.0;\nconst int MAP_BLOCKS = 128;     // blocks across the capture and the map\nconst int MAP_MEMORY = 256;     // texels across the persistent memory (a power of two)\nconst int MAP_MARGIN = 16;      // pixels between the map and the screen corner\nconst int MAP_SCALE = 2;        // screen pixels per block on the displayed map\nconst float MAP_TAG = 0.5;      // alpha written by map faces in minecraft:main\n\nbool isMapVertex(vec3 position) {\n    return abs(fract(position.y) - MAP_MARK) < 1.0e-4;\n}\n\n// Bottom-left pixel of the capture square, counted from the bottom-left of the screen.\nivec2 captureOrigin() {\n    return ivec2(ScreenSize) - ivec2(MAP_MARGIN + MAP_BLOCKS);\n}\n\n// Pixel of the block at (x, z) from the camera's block.\nivec2 capturePixel(ivec2 rel) {\n    return captureOrigin() + ivec2(MAP_BLOCKS / 2 + rel.x, MAP_BLOCKS / 2 - 1 - rel.y);\n}\n\n// Texel of the memory that holds a block, from its world x and z (wraps around).\nivec2 memoryTexel(ivec2 world) {\n    return world & (MAP_MEMORY - 1);\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <mylib:minimap.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) out float chunkVisibility;\n",
+          "replace": "layout(location = 4) out float chunkVisibility;\nlayout(location = 5) out vec4 screenClip;\nlayout(location = 6) out float mapFace;\n"
+        },
+        {
+          "find": "    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);\n",
+          "replace": "    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);\n    if (isMapVertex(Position)) {\n        // Corners of a map face, from the camera's block: whole numbers in x and z, so each block\n        // covers exactly one pixel of the capture. North up, higher blocks in front (depth is reversed).\n        vec3 rel = Position + vec3(ChunkPosition - CameraBlockPos);\n        vec2 pixel = vec2(captureOrigin()) + vec2(float(MAP_BLOCKS / 2) + rel.x, float(MAP_BLOCKS / 2) - rel.z);\n        gl_Position = vec4(pixel / ScreenSize * 2.0 - 1.0, 0.5 + 0.4 * clamp(rel.y / 256.0, -1.0, 1.0), 1.0);\n        screenClip = gl_Position;\n        mapFace = 1.0;\n        sphericalVertexDistance = 0.0;\n        cylindricalVertexDistance = 0.0;\n        vertexColor = Color;   // no lightmap: the map stays lit at night\n        texCoord0 = UV0;\n        chunkVisibility = 1.0;\n        return;\n    }\n    screenClip = gl_Position;\n    mapFace = 0.0;\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <mylib:minimap.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) in float chunkVisibility;\n",
+          "replace": "layout(location = 4) in float chunkVisibility;\nlayout(location = 5) in vec4 screenClip;\nlayout(location = 6) in float mapFace;\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // The capture square only takes map faces, and map faces stay in it.\n    vec2 pixel = (screenClip.xy / screenClip.w * 0.5 + 0.5) * ScreenSize;\n    vec2 origin = vec2(captureOrigin());\n    bool inCapture = all(greaterThanEqual(pixel, origin)) && all(lessThan(pixel, origin + float(MAP_BLOCKS)));\n    if (inCapture != (mapFace > 0.5)) {\n        discard;\n    }\n"
+        },
+        {
+          "find": "    #ifdef ALPHA_CUTOUT\n    if (color.a < ALPHA_CUTOUT) {",
+          "replace": "    if (mapFace > 0.5 && color.a < 0.99) {\n        discard;   // only opaque texels: the tag must not be blended\n    }\n    #ifdef ALPHA_CUTOUT\n    if (color.a < ALPHA_CUTOUT) {"
+        },
+        {
+          "find": "    fragColor = calculateFinalColor(color);\n",
+          "replace": "    fragColor = calculateFinalColor(color);\n    if (mapFace > 0.5) {\n        fragColor.a = MAP_TAG;\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/models/block/cube.json",
+      "vanilla": "assets/minecraft/models/block/cube.json",
+      "edits": [
+        {
+          "find": "        }\n    ]\n}",
+          "replace": "        },\n        {   \"__comment\": \"Map face for the minimap experiment: a second top face inside the block\",\n            \"from\": [ 0, 0, 0 ],\n            \"to\": [ 16, 1.25, 16 ],\n            \"faces\": {\n                \"up\": { \"texture\": \"#up\", \"cullface\": \"up\" }\n            }\n        }\n    ]\n}"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/models/block/grass_block.json",
+      "vanilla": "assets/minecraft/models/block/grass_block.json",
+      "edits": [
+        {
+          "find": "        }\n    ]\n}",
+          "replace": "        },\n        {   \"__comment\": \"Map face for the minimap experiment: a second top face inside the block\",\n            \"from\": [ 0, 0, 0 ],\n            \"to\": [ 16, 1.25, 16 ],\n            \"faces\": {\n                \"up\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#top\", \"cullface\": \"up\", \"tintindex\": 0 }\n            }\n        }\n    ]\n}"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/models/block/leaves.json",
+      "vanilla": "assets/minecraft/models/block/leaves.json",
+      "edits": [
+        {
+          "find": "        }\n    ]\n}",
+          "replace": "        },\n        {   \"__comment\": \"Map face for the minimap experiment: a second top face inside the block\",\n            \"from\": [ 0, 0, 0 ],\n            \"to\": [ 16, 1.25, 16 ],\n            \"faces\": {\n                \"up\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#all\", \"tintindex\": 0, \"cullface\": \"up\" }\n            }\n        }\n    ]\n}"
+        }
+      ]
+    },
+    {
+      "path": "assets/mylib/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes, shipped with the pack (vanilla renamed its own in 26.4).\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
+    },
+    {
+      "path": "assets/mylib/shaders/post/map_update.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <mylib:minimap.glsl>\n\n// One texel per block of the memory: take the block from this frame's capture when it is there,\n// keep what the memory had otherwise.\nuniform sampler2D MainSampler;\nuniform sampler2D HistorySampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    ivec2 texel = ivec2(texCoord * float(MAP_MEMORY));\n    // The block this texel stands for: the one nearest to the camera among those that wrap onto it.\n    ivec2 rel = ((texel - CameraBlockPos.xz + MAP_MEMORY / 2) & (MAP_MEMORY - 1)) - MAP_MEMORY / 2;\n    fragColor = texelFetch(HistorySampler, texel, 0);\n    if (all(greaterThanEqual(rel, ivec2(-MAP_BLOCKS / 2))) && all(lessThan(rel, ivec2(MAP_BLOCKS / 2)))) {\n        vec4 captured = texelFetch(MainSampler, capturePixel(rel), 0);\n        if (abs(captured.a - MAP_TAG) < 0.05) {\n            fragColor = vec4(captured.rgb, 1.0);\n        }\n    }\n}\n"
+    },
+    {
+      "path": "assets/mylib/shaders/post/map_copy.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Copy with alpha: in the memory, alpha 0 means \"never seen\".\nuniform sampler2D InSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    fragColor = texture(InSampler, texCoord);\n}\n"
+    },
+    {
+      "path": "assets/mylib/shaders/post/map_show.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n#include <mylib:minimap.glsl>\n\n// Draw the map from the memory over the capture square, MAP_SCALE pixels per block, north up.\nuniform sampler2D MainSampler;\nuniform sampler2D MapSampler;\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\nvoid main() {\n    ivec2 pixel = ivec2(texCoord * ScreenSize);\n    fragColor = vec4(texelFetch(MainSampler, pixel, 0).rgb, 1.0);\n\n    int size = MAP_BLOCKS * MAP_SCALE;\n    ivec2 local = pixel - (ivec2(ScreenSize) - ivec2(MAP_MARGIN + size));\n    if (any(lessThan(local, ivec2(-1))) || any(greaterThan(local, ivec2(size)))) {\n        return;\n    }\n    if (any(lessThan(local, ivec2(0))) || any(greaterThanEqual(local, ivec2(size)))) {\n        fragColor = vec4(1.0);   // border\n        return;\n    }\n    ivec2 block = local / MAP_SCALE;\n    ivec2 rel = ivec2(block.x - MAP_BLOCKS / 2, MAP_BLOCKS / 2 - 1 - block.y);\n    vec4 memory = texelFetch(MapSampler, memoryTexel(CameraBlockPos.xz + rel), 0);\n    fragColor = memory.a > 0.5 ? vec4(memory.rgb, 1.0) : vec4(0.12, 0.12, 0.12, 1.0);   // dark grey: never seen\n    if (all(lessThanEqual(abs(rel), ivec2(1)))) {\n        fragColor = vec4(1.0, 0.0, 0.0, 1.0);   // the camera\n    }\n}\n"
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"targets\": {\n    \"map\": {\n      \"width\": 256,\n      \"height\": 256,\n      \"persistent\": true\n    },\n    \"map_next\": {\n      \"width\": 256,\n      \"height\": 256\n    }\n  },\n  \"passes\": [\n    {\n      \"vertex_shader\": \"mylib:post/fullscreen\",\n      \"fragment_shader\": \"mylib:post/map_update\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"Main\",\n          \"target\": \"minecraft:main\"\n        },\n        {\n          \"sampler_name\": \"History\",\n          \"target\": \"map\"\n        }\n      ],\n      \"output\": \"map_next\"\n    },\n    {\n      \"vertex_shader\": \"mylib:post/fullscreen\",\n      \"fragment_shader\": \"mylib:post/map_copy\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"In\",\n          \"target\": \"map_next\"\n        }\n      ],\n      \"output\": \"map\"\n    },\n    {\n      \"vertex_shader\": \"mylib:post/fullscreen\",\n      \"fragment_shader\": \"mylib:post/map_show\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"Main\",\n          \"target\": \"minecraft:main\"\n        },\n        {\n          \"sampler_name\": \"Map\",\n          \"target\": \"map_next\"\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    }
+  ],
+  "scene": {
+    "seed": 20261017,
+    "commands": [
+      "tp @s ~ ~12 ~ 0 35"
+    ],
+    "quick": [
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 20 35",
+      "tp @s ~ ~ ~ 20 35",
+      "tp @s ~ ~ ~ 20 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 40 35",
+      "tp @s ~ ~ ~ 60 35",
+      "tp @s ~ ~ ~ 60 35",
+      "tp @s ~ ~ ~ 60 35",
+      "tp @s ~ ~ ~ 80 35",
+      "tp @s ~ ~ ~ 80 35",
+      "tp @s ~ ~ ~ 80 35",
+      "tp @s ~ ~ ~ 100 35",
+      "tp @s ~ ~ ~ 100 35",
+      "tp @s ~ ~ ~ 100 35",
+      "tp @s ~ ~ ~ 120 35",
+      "tp @s ~ ~ ~ 120 35",
+      "tp @s ~ ~ ~ 120 35",
+      "tp @s ~ ~ ~ 140 35",
+      "tp @s ~ ~ ~ 140 35",
+      "tp @s ~ ~ ~ 140 35",
+      "tp @s ~ ~ ~ 160 35",
+      "tp @s ~ ~ ~ 160 35",
+      "tp @s ~ ~ ~ 160 35",
+      "tp @s ~ ~ ~ 180 35",
+      "tp @s ~ ~ ~ 180 35",
+      "tp @s ~ ~ ~ 180 35",
+      "tp @s ~ ~ ~ 200 35",
+      "tp @s ~ ~ ~ 200 35",
+      "tp @s ~ ~ ~ 200 35",
+      "tp @s ~ ~ ~ 220 35",
+      "tp @s ~ ~ ~ 220 35",
+      "tp @s ~ ~ ~ 220 35",
+      "tp @s ~ ~ ~ 240 35",
+      "tp @s ~ ~ ~ 240 35",
+      "tp @s ~ ~ ~ 240 35",
+      "tp @s ~ ~ ~ 260 35",
+      "tp @s ~ ~ ~ 260 35",
+      "tp @s ~ ~ ~ 260 35",
+      "tp @s ~ ~ ~ 280 35",
+      "tp @s ~ ~ ~ 280 35",
+      "tp @s ~ ~ ~ 280 35",
+      "tp @s ~ ~ ~ 300 35",
+      "tp @s ~ ~ ~ 300 35",
+      "tp @s ~ ~ ~ 300 35",
+      "tp @s ~ ~ ~ 320 35",
+      "tp @s ~ ~ ~ 320 35",
+      "tp @s ~ ~ ~ 320 35",
+      "tp @s ~ ~ ~ 340 35",
+      "tp @s ~ ~ ~ 340 35",
+      "tp @s ~ ~ ~ 340 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35",
+      "tp @s ~ ~ ~ 0 35"
+    ],
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect"
+    ]
+  }
+}

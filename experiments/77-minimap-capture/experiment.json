@@ -1,0 +1,86 @@
+{
+  "title": "Extra top faces added to block models can be moved by `terrain.vsh` into a top-down map in a corner of the screen",
+  "expect": "pass",
+  "files": [
+    {
+      "path": "assets/mylib/shaders/include/minimap.glsl",
+      "content": "#ifndef MYLIB_MINIMAP_GLSL\n#define MYLIB_MINIMAP_GLSL\n\n// Faces of the extra top element added to the block models (y = 1.25/16 inside the block):\n// terrain.vsh draws them into a top-down map in the top-right corner of the screen.\nconst float MAP_MARK = 1.25 / 16.0;\nconst float MAP_BLOCKS = 128.0;   // blocks across the map, centered on the camera, north up\nconst float MAP_HEIGHT = 0.9;     // map height in NDC: 45% of the screen height\nconst float MAP_MARGIN = 0.04;\n\nbool isMapVertex(vec3 position) {\n    return abs(fract(position.y) - MAP_MARK) < 1.0e-4;\n}\n\n// Half size and center of the map square in NDC (needs Globals for ScreenSize).\nvec2 mapHalf() {\n    return vec2(MAP_HEIGHT * 0.5 * ScreenSize.y / ScreenSize.x, MAP_HEIGHT * 0.5);\n}\n\nvec2 mapCenter() {\n    return vec2(1.0) - mapHalf() - vec2(MAP_MARGIN * ScreenSize.y / ScreenSize.x, MAP_MARGIN);\n}\n\n#endif\n"
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.vsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.vsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <mylib:minimap.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) out float chunkVisibility;\n",
+          "replace": "layout(location = 4) out float chunkVisibility;\nlayout(location = 5) out vec4 screenClip;\nlayout(location = 6) out float mapFace;\n"
+        },
+        {
+          "find": "    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);\n",
+          "replace": "    gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);\n    if (isMapVertex(Position)) {\n        // Top-down orthographic view: east to the right, north up, higher blocks in front (depth is reversed).\n        vec2 uv = vec2(pos.x, -pos.z) / (MAP_BLOCKS * 0.5);\n        gl_Position = vec4(mapCenter() + uv * mapHalf(), 0.5 + 0.4 * clamp(pos.y / 256.0, -1.0, 1.0), 1.0);\n        screenClip = gl_Position;\n        mapFace = 1.0;\n        sphericalVertexDistance = 0.0;\n        cylindricalVertexDistance = 0.0;\n        vertexColor = Color;   // no lightmap: the map stays lit at night\n        texCoord0 = UV0;\n        chunkVisibility = 1.0;\n        return;\n    }\n    screenClip = gl_Position;\n    mapFace = 0.0;\n"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/shaders/core/terrain.fsh",
+      "vanilla": "assets/minecraft/shaders/core/terrain.fsh",
+      "edits": [
+        {
+          "find": "#include <minecraft:terrainglobals.glsl>\n",
+          "replace": "#include <minecraft:terrainglobals.glsl>\n#include <mylib:minimap.glsl>\n"
+        },
+        {
+          "find": "layout(location = 4) in float chunkVisibility;\n",
+          "replace": "layout(location = 4) in float chunkVisibility;\nlayout(location = 5) in vec4 screenClip;\nlayout(location = 6) in float mapFace;\n"
+        },
+        {
+          "find": "void main() {\n",
+          "replace": "void main() {\n    // The map square only takes map faces, and map faces stay in it.\n    vec2 mapUV = (screenClip.xy / screenClip.w - mapCenter()) / mapHalf();\n    bool inMap = all(lessThan(abs(mapUV), vec2(1.0)));\n    if (inMap != (mapFace > 0.5)) {\n        discard;\n    }\n"
+        },
+        {
+          "find": "    #ifdef OIT_ALPHA_ONLY\n    executeAlphaOnlyPhase",
+          "replace": "    if (mapFace > 0.5 && length(mapUV) < 0.03) {\n        color = vec4(1.0, 0.0, 0.0, 1.0);   // the camera, at the center of the map\n    }\n\n    #ifdef OIT_ALPHA_ONLY\n    executeAlphaOnlyPhase"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/models/block/cube.json",
+      "vanilla": "assets/minecraft/models/block/cube.json",
+      "edits": [
+        {
+          "find": "        }\n    ]\n}",
+          "replace": "        },\n        {   \"__comment\": \"Map face for the minimap experiment: a second top face inside the block\",\n            \"from\": [ 0, 0, 0 ],\n            \"to\": [ 16, 1.25, 16 ],\n            \"faces\": {\n                \"up\": { \"texture\": \"#up\", \"cullface\": \"up\" }\n            }\n        }\n    ]\n}"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/models/block/grass_block.json",
+      "vanilla": "assets/minecraft/models/block/grass_block.json",
+      "edits": [
+        {
+          "find": "        }\n    ]\n}",
+          "replace": "        },\n        {   \"__comment\": \"Map face for the minimap experiment: a second top face inside the block\",\n            \"from\": [ 0, 0, 0 ],\n            \"to\": [ 16, 1.25, 16 ],\n            \"faces\": {\n                \"up\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#top\", \"cullface\": \"up\", \"tintindex\": 0 }\n            }\n        }\n    ]\n}"
+        }
+      ]
+    },
+    {
+      "path": "assets/minecraft/models/block/leaves.json",
+      "vanilla": "assets/minecraft/models/block/leaves.json",
+      "edits": [
+        {
+          "find": "        }\n    ]\n}",
+          "replace": "        },\n        {   \"__comment\": \"Map face for the minimap experiment: a second top face inside the block\",\n            \"from\": [ 0, 0, 0 ],\n            \"to\": [ 16, 1.25, 16 ],\n            \"faces\": {\n                \"up\": { \"uv\": [ 0, 0, 16, 16 ], \"texture\": \"#all\", \"tintindex\": 0, \"cullface\": \"up\" }\n            }\n        }\n    ]\n}"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "seed": 20261017,
+    "commands": [
+      "tp @s ~ ~12 ~ 0 35"
+    ]
+  }
+}
