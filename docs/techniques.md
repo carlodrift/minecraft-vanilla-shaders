@@ -221,6 +221,7 @@ The distances in air and the ends in water were read in game, the rest comes fro
 - **Write a marker on every other column**, and let the other columns blend as usual: the post effect gets both the marker and what is underneath. A marker that depends on the column (two bytes, for example) almost never matches a scene color by chance.
 - **Use `gl_FragCoord.x` only.** Whether `gl_FragCoord.y` counts from the same edge on both backends was not tested here.
 - **Only write markers when the camera is in air.** Under water, the game draws a translucent overlay over the screen after the world (`textures/misc/underwater.png`), which shifts every marker's bytes, and the unrecognized markers show as stripes (observed). The end of the environmental fog (`FogEnvironmentalEnd`; `u_EnvironmentFog.y` in Sodium's shader) says where the camera is: 96 blocks at most in water, 768 or more in air.
+- **Translucent things drawn after the water break the markers under them.** Seen from above the clouds, a cloud in front of water blends over the markers of the even columns, and every other column of the cloud shows as a stripe (observed). Over the clear color a cloud's alpha stays below 0.8, over anything opaque it is 1: a cloud pixel (by its height) with alpha 1 on an even column takes the color of its two neighbours.
 - **The depth buffer holds the water surface**: translucent terrain writes its depth ([pipelines.json](../reference/26.3/pipelines.json)).
 - **Do the same in Sodium's terrain shader** for Sodium players ([Sodium](sodium.md)).
 
