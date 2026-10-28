@@ -39,6 +39,8 @@ What it took, observed in game on OpenGL and Vulkan:
 
 Sodium draws terrain with its own shader ([Sodium](../../docs/sodium.md)), which has neither `ScreenSize` nor `CameraBlockPos`, and the capture needs both to land one pixel per block. So the example only hides the map faces there, in `block_layer_opaque.vsh`: they would otherwise show inside glass and leaves. With no capture, no heading ever arrives, and the post effect draws no map (observed). `pack.mcmeta` lists `terrain.vsh` and `terrain.fsh` under `"sodium": {"ignored_shaders"}`.
 
+[minimap-sodium](../minimap-sodium/) does without both, by placing the capture in fractions of the screen and taking the camera's block from Sodium's region offset, at a cost.
+
 ## Try it
 
 ```sh
