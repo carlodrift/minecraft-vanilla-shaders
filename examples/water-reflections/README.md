@@ -22,10 +22,12 @@ if ((int(gl_FragCoord.x) & 1) == 0 && sea_is_water(textureColor, seaTint)) {
 **2. The atmosphere pass reads the markers.** A marker pixel takes the vanilla water of its neighbours. Both columns are tagged as water in the alpha of the pass's output (0.5 for a horizontal surface, 0.25 for a side). The fog is then applied as for every other pixel.
 
 **3. The water pass redraws the tagged pixels** (`post/water.fsh`). Translucent terrain writes its depth, so the depth buffer holds the water surface.
-- **Waves:** six directional waves give the slope of the surface at each point, fading with distance; the geometry stays flat. Their frequencies are whole numbers of periods per 1200 s, the period of `GameTime` ([Techniques](../../docs/techniques.md#animate)).
-- **Reflection:** a ray marched in view space against the depth buffer (40 steps, then 5 to refine), faded near the screen edges. Where it leaves the screen, it falls back to the scattered sky in that direction, with the sun's disc and a glint.
+- **Waves:** eight directional waves give the slope of the surface at each point; the geometry stays flat. Their frequencies are whole numbers of periods per 1200 s, the period of `GameTime` ([Techniques](../../docs/techniques.md#animate)). Two things had to be fixed:
+  - **rings around the camera:** a wave shorter than a pixel, sampled once per pixel, turns into moiré. Each wave fades out when it gets shorter than a few pixels on the surface, where a pixel measures its angular size × the distance, stretched by the grazing angle;
+  - **repetition:** pure sines are periodic, and the far sea showed regular parallel bands. A slow noise bends the wave fronts and varies each wave's amplitude from place to place. It depends on the position only, so nothing jumps when `GameTime` wraps.
+- **Reflection:** a ray marched in view space against the depth buffer (40 steps, then 5 to refine), faded near the screen edges. It follows the reflection of the *flat* surface, and the waves only shift where the mirrored color is read: following the waves' own reflection, a grazing ray hit the island or missed it depending on the slightest tilt, and the sea stopped mirroring the land. Where the ray leaves the screen, it falls back to the scattered sky in the waves' reflected direction, with the sun's disc and a glint. The waves also tilt less the flatter the view and the farther away.
 - **Refraction:** the vanilla water, shifted by the waves and darkened toward blue-green at grazing angles. The darkening spares the part of the color that is already fog: otherwise the far sea ends in a dark edge against the sky.
-- **Fresnel** (Schlick, F0 = 0.02) mixes the two, and the reflection gets the same distance fog as the rest.
+- **Fresnel** (Schlick, F0 = 0.02) mixes the two, and the reflection gets the same distance fog as the rest. It sees only a quarter of the waves' tilt: at a grazing angle it swings from 0.8 to 0.3 with a slight tilt, and with the full waves, the reflection gave way to the water's blue.
 
 ## Limits
 

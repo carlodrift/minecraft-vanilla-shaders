@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space)
 
 ## Mark texels in a texture
 
@@ -224,3 +224,13 @@ A post effect only sees albedo × light. With the light levels it can still chan
 - **Without the data that drives it, nothing changes:** where there is no [data bus](#give-post-effects-the-camera-a-data-bus) (Nether, underwater), the vanilla image stays as it is.
 
 [sun-lighting](../examples/sun-lighting/) does this, with light colors from the [scattered sky](../examples/scattered-sky/) and bloom.
+
+## Shadows in screen space
+
+With the camera from a [data bus](#give-post-effects-the-camera-a-data-bus), a post effect can march a ray from each pixel toward the sun against the depth buffer: if the visible surface at some step is in front of the ray, the pixel is in shadow. Only what is on screen casts shadows. The difficulty is that the depth buffer only shows the front of things:
+
+- **Count the ray as blocked within a window behind the visible surface,** about the depth of a block seen at an angle (up to about 1.7 blocks), plus a margin.
+- **Keep every step shorter than that margin,** or the ray jumps over a one-block slab: cap the step length rather than letting it grow.
+- **Fade the blocking out toward the end of the window.** With a hard limit, whether a ray counts as blocked depends on where its samples fall, and the shadow's edge becomes a comb. A window that grows with the steps gives teeth instead: rays that pass *behind* a thin pillar, as seen from the camera, count as blocked.
+
+[screen-shadows](../examples/screen-shadows/) shows the values that work, and the artifacts of the ones that didn't.
