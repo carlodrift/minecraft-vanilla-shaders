@@ -242,7 +242,7 @@
         },
         {
           "find": "layout(location = 3) in float fadeFactor;\n",
-          "replace": "layout(location = 3) in float fadeFactor;\nlayout(location = 4) in vec3 sunPosition;\nlayout(location = 5) in vec4 sunTint;\nlayout(location = 6) in vec2 sunLight;\n"
+          "replace": "layout(location = 3) in float fadeFactor;\n// From 10 on: Sodium Extra adds its own inputs at 4 and 5.\nlayout(location = 10) in vec3 sunPosition;\nlayout(location = 11) in vec4 sunTint;\nlayout(location = 12) in vec2 sunLight;\n"
         },
         {
           "find": "void main() {\n    vec4 color = u_UseRGSS ? sampleRGSS(u_BlockTex, v_TexCoord, u_TexelSize) : sampleNearest(u_BlockTex, v_TexCoord, u_TexelSize);\n",
@@ -264,7 +264,7 @@
       "edits": [
         {
           "find": "layout(location = 1) out vec2 v_TexCoord;\n",
-          "replace": "layout(location = 1) out vec2 v_TexCoord;\nlayout(location = 4) out vec3 sunPosition;\nlayout(location = 5) out vec4 sunTint;\nlayout(location = 6) out vec2 sunLight;\n"
+          "replace": "layout(location = 1) out vec2 v_TexCoord;\n// From 10 on: Sodium Extra adds its own outputs at 4 and 5.\nlayout(location = 10) out vec3 sunPosition;\nlayout(location = 11) out vec4 sunTint;\nlayout(location = 12) out vec2 sunLight;\n"
         },
         {
           "find": "    // Transform the vertex position into model-view-projection space\n",

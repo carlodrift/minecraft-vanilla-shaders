@@ -220,6 +220,10 @@ def run_game(exp, exp_dir, pack, backend, gamedir, env, sodium=None):
     if "Caught error loading resourcepacks" in log:
         m = re.search(r"(ShaderCompileException: .*|Couldn't parse GLSL: .*)", log)
         return "fail", (m.group(1) if m else "packs removed"), device
+    if "Couldn't compile pipeline" in log or "Reported exception thrown" in log:
+        # A shader that doesn't compile when a world opens (Sodium's) crashes the game instead.
+        m = re.search(r"(Couldn't parse GLSL: .*|Failed to find or load pipeline .*)", log)
+        return "fail", (m.group(1) if m else "crashed"), device
     if f"file/{name}" not in log:
         return "not loaded", "", device
     if scene is not None:
