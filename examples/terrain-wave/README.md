@@ -25,7 +25,7 @@ pos.y += 1.2 * sin(worldPos.x * 0.35 + GameTime * 6.2831853 * 200.0) * cos(world
 
 ## With Sodium
 
-No wave: Sodium draws terrain with its own shader, which has no game time and no camera position ([Sodium](../../docs/sodium.md)).
+No wave: Sodium draws terrain with its own shader. It has no game time, only a clock per 128-block region, and a wave that spans the world tears at the regions' borders with it ([exp 82](../../experiments/82-sodium-region-clock-late/), [Sodium](../../docs/sodium.md)).
 
 ## Try it
 

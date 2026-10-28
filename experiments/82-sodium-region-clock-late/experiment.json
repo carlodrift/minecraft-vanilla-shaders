@@ -1,0 +1,41 @@
+{
+  "title": "Like 81, at the region border x = 128: with render distance 4, the region east of it is only created when the camera gets there, about 5 s after the one west of it. The step at x = 128",
+  "expect": "pass",
+  "sodium": true,
+  "files": [
+    {
+      "path": "assets/sodium/shaders/blocks/block_layer_opaque.vsh",
+      "sodium": "assets/sodium/shaders/blocks/block_layer_opaque.vsh",
+      "edits": [
+        {
+          "find": "    vec3 position = _vert_position + translation;\n",
+          "replace": "    vec3 position = _vert_position + translation;\n    // Test: does Sodium's per-region clock show at region borders? Sodium has no GameTime; u_CurrentTime is the\n    // milliseconds since the region (8 x 4 x 8 sections) was created. As a clock that wraps every 1200 s, with a\n    // whole number of cycles per wrap (200: a 6 s period). The position inside the region (its origin is on the\n    // world grid, every 128 blocks in x and z), with a 16-block wavelength, which divides 128: the wave is\n    // continuous across region borders in space, so a step there can only come from the clock.\n    vec3 inRegion = _vert_position + _get_draw_translation(_draw_id);\n    float clock = float(u_CurrentTime % 1200000) / 1200000.0;\n    position.y += 1.2 * sin(6.2831853 * (inRegion.x / 16.0 + clock * 200.0)) * cos(6.2831853 * inRegion.z / 16.0);\n"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "commands": [
+      "gamemode spectator",
+      "time set 1000",
+      "time set 1000",
+      "time set 1000",
+      "time set 1000",
+      "tp @s 115 13 -13 -45 32",
+      "time set 1000",
+      "fill 114 3 -9 142 3 -9 minecraft:red_wool",
+      "fill 114 3 -5 142 3 -5 minecraft:red_wool",
+      "fill 114 3 -1 142 3 -1 minecraft:red_wool",
+      "fill 114 3 3 142 3 3 minecraft:red_wool",
+      "fill 114 3 7 142 3 7 minecraft:red_wool",
+      "fill 119 3 -14 119 3 14 minecraft:blue_wool",
+      "fill 123 3 -14 123 3 14 minecraft:blue_wool",
+      "fill 127 3 -14 127 3 14 minecraft:blue_wool",
+      "fill 131 3 -14 131 3 14 minecraft:blue_wool",
+      "fill 135 3 -14 135 3 14 minecraft:blue_wool"
+    ],
+    "options": {
+      "renderDistance": "4"
+    }
+  }
+}

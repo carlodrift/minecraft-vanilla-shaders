@@ -131,7 +131,7 @@ def main():
     p.add_argument("--size", default="854x480", help="window size, WIDTHxHEIGHT")
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE",
                    help="set an options.txt entry, e.g. improvedTransparency=true (repeatable)")
-    p.add_argument("--fabric", metavar="LOADER_VERSION", help="run with this Fabric Loader version, e.g. 0.20.0")
+    p.add_argument("--fabric", metavar="LOADER_VERSION", help="run with this Fabric Loader version, e.g. 0.20.1")
     p.add_argument("--mod", action="append", default=[], metavar="JAR", help="a mod jar for DIR/mods (with --fabric; repeatable)")
     args = p.parse_args()
     if args.mod and not args.fabric:

@@ -4,6 +4,7 @@
     MINECRAFT_DIR=build/minecraft python3 tools/fetch.py latest-snapshot   # prints the version it fetched
     python3 tools/fetch.py sodium [26.3] [VERSION]   # Sodium for Fabric from Modrinth into build/mods/ (default:
                                                     # its newest release for that game version); prints the jar
+    python3 tools/fetch.py mod SLUG [26.3] [VERSION] # the same for any Modrinth project, e.g. sodium-extra
 
 Files go to $MINECRAFT_DIR in the launcher's layout (versions/, libraries/), with their SHA-1 checked.
 Enough for `mcshaders check` and `mcshaders pipelines`; launching the game also needs the assets, which
@@ -49,16 +50,16 @@ def allowed(rules):
     return ok
 
 
-def sodium(game_version="26.3", wanted=None):
-    """Download Sodium for Fabric from Modrinth into build/mods/, with its SHA-1 checked."""
+def sodium(game_version="26.3", wanted=None, project="sodium"):
+    """Download a Fabric mod (Sodium by default) from Modrinth into build/mods/, with its SHA-1 checked."""
     query = urllib.parse.urlencode({"game_versions": json.dumps([game_version]), "loaders": json.dumps(["fabric"])})
-    versions = json.loads(get(f"https://api.modrinth.com/v2/project/sodium/version?{query}"))
+    versions = json.loads(get(f"https://api.modrinth.com/v2/project/{project}/version?{query}"))
     if wanted:
         versions = [v for v in versions if wanted in v["version_number"]]
     else:
         versions = [v for v in versions if v["version_type"] == "release"]
     if not versions:
-        raise SystemExit(f"No Sodium {wanted or 'release'} for {game_version} on Modrinth")
+        raise SystemExit(f"No {project} {wanted or 'release'} for {game_version} on Modrinth")
     file = next(f for f in versions[0]["files"] if f["primary"])
     path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build", "mods", file["filename"])
     save(file["url"], file["hashes"]["sha1"], path)
@@ -68,6 +69,8 @@ def sodium(game_version="26.3", wanted=None):
 def main():
     if sys.argv[1] == "sodium":
         return sodium(*sys.argv[2:4])
+    if sys.argv[1] == "mod":
+        return sodium(*sys.argv[3:5], project=sys.argv[2]) if len(sys.argv) > 3 else sodium(project=sys.argv[2])
     version = sys.argv[1]
     mc = os.environ.get("MINECRAFT_DIR")
     if not mc:

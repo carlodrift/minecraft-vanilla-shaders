@@ -17,7 +17,7 @@ MINECRAFT_DIR=build/minecraft python3 tools/fetch.py 26.3
 
 Downloads the vanilla client jar and its libraries from Mojang into `$MINECRAFT_DIR` (SHA-1 checked), without the official launcher. That is enough for `mcshaders`, `reference.py`, `vanilla.py`, `experiments.py` and `examples.py` without `--ingame` or `--screenshots`. Launching the game also needs the assets, which only the launcher installs. The [CI workflow](../.github/workflows/check.yml) uses it.
 
-`python3 tools/fetch.py sodium` downloads the newest Sodium release for 26.3 from Modrinth into `build/mods/` (SHA-1 checked), for the Sodium options of the other tools ([Sodium](../docs/sodium.md)).
+`python3 tools/fetch.py sodium` downloads the newest Sodium release for 26.3 from Modrinth into `build/mods/` (SHA-1 checked), for the Sodium options of the other tools ([Sodium](../docs/sodium.md)). `python3 tools/fetch.py mod SLUG [26.3] [VERSION]` does the same for any Modrinth project, such as `sodium-extra`.
 
 ## `mcshaders check [pack]`
 

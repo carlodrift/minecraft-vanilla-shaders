@@ -2,7 +2,7 @@
 
 [Sodium](https://github.com/CaffeineMC/sodium) is the most widely used rendering mod. It draws the world's terrain itself, with its own shaders, so a resource pack that changes terrain shaders does nothing, or breaks, for every Sodium player. This page covers what Sodium changes and how a pack can support it.
 
-Tested with Sodium 0.9.2 for 26.3, on Fabric Loader 0.20.0, OpenGL and Vulkan. Its shader files are identical in 0.9.3-beta.1 and on its development branch (2026-10-16).
+Tested with Sodium 0.9.2 for 26.3, on Fabric Loader 0.20.0 and 0.20.1, OpenGL and Vulkan. Sodium Extra 0.9.5 needs Fabric Loader 0.20.1 or later: with 0.20.0 the game doesn't start ("Incompatible mods found"); the tools now use 0.20.1. Its shader files are identical in 0.9.3-beta.1 and on its development branch (2026-10-16).
 
 ## What Sodium changes
 
@@ -36,7 +36,7 @@ Start from the files of the Sodium version you target (they are in its jar) and 
 
 **None of the game's uniform blocks are available**: no `Globals`, `Fog`, `Projection`… The game rejects a shader that declares a block its pipeline doesn't have ([Writing shaders](writing-shaders.md)). In particular:
 
-- **There is no game time.** `u_CurrentTime` is the time in milliseconds since the region was created, so it differs from one region to the next.
+- **There is no game time, but there is a clock.** `u_CurrentTime` is the real time in milliseconds since the region was created *(code: `System.currentTimeMillis() - region.getCreationTime()`)*, so it starts at a different moment in each region. Turned into a wrapping clock, `float(u_CurrentTime % 1200000) / 1200000.0` goes from 0 to 1 every 1200 s like `GameTime`, and with a whole number of cycles per wrap nothing jumps. Each region then has its own phase. That is invisible for things that don't cross a region's border, such as plants swaying (below), but a pattern that spans the world tears at the borders, even with a wavelength that divides 128 so that it is continuous in space ([exp 81](../experiments/81-sodium-region-clock/), [exp 82](../experiments/82-sodium-region-clock-late/), on both backends): thin cracks between regions created together at world load, and a tear showing the sky between regions created a few seconds apart, which is what happens while exploring. It is real time: it keeps running when the game is paused, unlike `GameTime`.
 - **There is no camera position.** But regions are 8 × 4 × 8 chunk sections (128 × 64 × 128 blocks), aligned on the world grid. So in `block_layer_opaque.vsh`, `_vert_position + _get_draw_translation(_draw_id)` is the world position modulo (128, 64, 128).
 - **The light levels are the game's:** `_vert_tex_light_coord` is `UV2 / 256` *(code, and [sun-lighting](../examples/sun-lighting/) in game)*.
 - **The projection is the game's**, so tests like `u_ProjectionMatrix[2][3] != 0.0` (perspective) work as with `ProjMat`.
@@ -56,15 +56,16 @@ Start from the files of the Sodium version you target (they are in its jar) and 
 
 4. **Mind the license.** Sodium is under the [PolyForm Shield 1.0.0](https://github.com/CaffeineMC/sodium/blob/dev/LICENSE.md) license. It allows distributing modified copies, with the license terms and not as part of a product that competes with Sodium. The examples here store only their edits, and the tools add the license to the pack they build.
 
-A vertex effect such as [terrain-wave](../examples/terrain-wave/) can't be ported as it is: without the game time it can't animate, and its world position is only known modulo the region size.
+A vertex effect such as [terrain-wave](../examples/terrain-wave/) can't be ported as it is: its wave spans the world, and the per-region clock above tears it at the region borders, every 128 blocks ([exp 82](../experiments/82-sodium-region-clock-late/)). Local motion ports well: waving plants work with Sodium alone and with Sodium Extra 0.9.4 and 0.9.5, measured on both backends (about 17 % of the grass pixels change between two moments, none of the ground).
 
 ## Testing with Sodium
 
 ```sh
 python3 tools/fetch.py sodium                                # newest Sodium release for 26.3, into build/mods/
+python3 tools/fetch.py mod sodium-extra                      # any other Modrinth project, the same way
 tools/mcshaders check path/to/pack --sodium build/mods/sodium-fabric-0.9.2+mc26.3.jar
 python3 tools/launch.py --gamedir build/game --pack path/to/pack \
-    --fabric 0.20.0 --mod build/mods/sodium-fabric-0.9.2+mc26.3.jar
+    --fabric 0.20.1 --mod build/mods/sodium-fabric-0.9.2+mc26.3.jar
 python3 tools/examples.py --sodium build/mods/sodium-fabric-0.9.2+mc26.3.jar --screenshots   # into build/sodium-shots/
 ```
 

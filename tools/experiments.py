@@ -23,6 +23,7 @@ Each experiment is a directory with an experiment.json:
                   "color": [120, 255, 140]}},                                      # (and optionally a color)
         {"script": "examples/minimap/map_faces.py"}   # or files written by a script: generate(jar, pack)
       ],
+      "sodium": true,                  # optional: check and run with Sodium (screenshots: <backend>-sodium.png)
       "scene": {                       # optional: in game, join a test world and take a screenshot
         "commands": ["posteffect add @s mylib:gray"],
         "hud": true,                   # keep the HUD in the screenshot
@@ -149,7 +150,7 @@ def build(exp, name, jar, out_dir, pack_format):
 
 
 # Fabric Loader version for runs with Sodium.
-FABRIC_LOADER = "0.20.0"
+FABRIC_LOADER = "0.20.1"   # Sodium Extra 0.9.5 needs at least 0.20.1
 
 
 def run_check(pack, env, sodium=None):
@@ -273,11 +274,15 @@ def main():
         exp, pack = build(exp, d, jar, out_dir, pack_format)
         row = results.get(d, {})
         row.update(title=exp["title"], expect=exp["expect"], version=args.version)
-        row["check"], row["check_message"] = run_check(pack, env)
+        # "sodium": true runs the experiment with Sodium (build/mods/ or SODIUM_JAR), in the check and in game.
+        sodium = sodium_jar() if exp.get("sodium") else None
+        if exp.get("sodium") and sodium is None:
+            raise SystemExit(f"{d} needs a Sodium jar: python3 tools/fetch.py sodium")
+        row["check"], row["check_message"] = run_check(pack, env, sodium)
         line = f"{d:40} expect={exp['expect']:4} check={row['check']:4}"
         if args.ingame:
             for backend in ("opengl", "vulkan"):
-                verdict, message, device = run_game(exp, os.path.join(exp_root, d), pack, backend, gamedir, env)
+                verdict, message, device = run_game(exp, os.path.join(exp_root, d), pack, backend, gamedir, env, sodium)
                 row[backend] = verdict
                 row[backend + "_message"] = message
                 if device:
@@ -316,8 +321,9 @@ def write_markdown(results, path):
         message = message.replace("|", "\\|")
         if len(message) > 140:
             message = message[:137] + "..."
-        shots = " · ".join(f"[{b}]({d}/{b.lower()}.png)" for b in ("OpenGL", "Vulkan")
-                           if os.path.exists(os.path.join(os.path.dirname(path), d, f"{b.lower()}.png")))
+        shots = " · ".join(f"[{b}{s}]({d}/{b.lower()}{s.replace(' + ', '-').lower()}.png)"
+                           for b in ("OpenGL", "Vulkan") for s in ("", " + Sodium")
+                           if os.path.exists(os.path.join(os.path.dirname(path), d, f"{b.lower()}{s.replace(' + ', '-').lower()}.png")))
         lines.append(f"| [{d}]({d}/) {r['title']} | {r['expect']} | {r['check']} | {r.get('opengl', '-')} | {r.get('vulkan', '-')} | {message} | {shots} |")
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")

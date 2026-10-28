@@ -810,5 +810,33 @@
     "vulkan": "pass",
     "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
     "vulkan_message": ""
+  },
+  "81-sodium-region-clock": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-28",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 91.7",
+    "opengl_message": "",
+    "title": "Sodium's terrain shader animated with its per-region clock (`u_CurrentTime`): a wave, continuous in space across region borders (x = 0, z = 0), shows whether the clock makes steps there",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
+  },
+  "82-sodium-region-clock-late": {
+    "check": "pass",
+    "check_message": "",
+    "expect": "pass",
+    "ingame_date": "2026-10-28",
+    "opengl": "pass",
+    "opengl_device": "OpenGL 4.1 Metal - 91.7",
+    "opengl_message": "",
+    "title": "Like 81, at the region border x = 128: with render distance 4, the region east of it is only created when the camera gets there, about 5 s after the one west of it. The step at x = 128",
+    "version": "26.3",
+    "vulkan": "pass",
+    "vulkan_device": "Vulkan 1.2.350 MoltenVK 1.4.2",
+    "vulkan_message": ""
   }
 }

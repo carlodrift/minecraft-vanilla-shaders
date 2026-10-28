@@ -34,7 +34,7 @@ if ((int(gl_FragCoord.x) & 1) == 0 && sea_is_water(textureColor, seaTint)) {
 - **Only what is on screen can be reflected.** Elsewhere, the reflection falls back to the sky. The moon and the stars are not reflected either: they are sky pixels, which the ray never hits.
 - **Refraction is half resolution horizontally**: the marker columns carry no image.
 - **The depth of the water is unknown**, so shallow and deep water look alike.
-- **No geometric waves**: under Sodium, the terrain shader has no game time to move vertices with.
+- **No geometric waves**: the surface stays flat, and the waves only exist in the post effect. Moving the water's vertices would need the same motion in Sodium's terrain shader, whose only clock starts at a different moment in each region: a wave across the sea tears at the regions' borders ([exp 82](../../experiments/82-sodium-region-clock-late/)).
 - **Nothing changes from underwater**, where the post effects do nothing.
 - **Improved Transparency** draws water through other passes, which don't write markers (not tested).
 
