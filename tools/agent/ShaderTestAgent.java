@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
  *   command <command>     run a command as the player, without the leading slash
  *   hud off|on            hide or show the HUD (like F1)
  *   inventory             open the player's inventory screen (closed by the next world action or quit)
+ *   packs                 open the resource pack screen (to see the packs' icons)
  *   key forward on|off    hold or release the walk-forward key (also jump, sprint, left, right, back)
  *   camera first|third    first-person view, or third person from behind (like F5)
  *   screenshot <name>     save screenshots/<name>.png from the game's own framebuffer
@@ -62,6 +63,9 @@ public class ShaderTestAgent {
                         message -> log("screenshot " + arg + ": " + message.getString())));
                     case "inventory" -> onGameThread(mc, () -> mc.gui.setScreen(
                         new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)));
+                    case "packs" -> onGameThread(mc, () -> mc.gui.setScreen(   // the resource pack screen, to see packs' icons
+                        new net.minecraft.client.gui.screens.packs.PackSelectionScreen(mc.getResourcePackRepository(), repository -> {},
+                            mc.getResourcePackDirectory(), net.minecraft.network.chat.Component.translatable("resourcePack.title"))));
                     case "key" -> {
                         String[] k = arg.split("\\s+");
                         var mapping = switch (k[0]) {
