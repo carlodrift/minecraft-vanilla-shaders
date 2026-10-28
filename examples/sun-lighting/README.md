@@ -28,6 +28,7 @@ The light colors come from the atmosphere: the sky's average color, and the sun 
 
 ## Limits
 
+- **No markers when the camera is under water:** the game's underwater overlay, drawn over the screen after the world, darkened every marker by about 5 %, and every other column of the water showed as a stripe (observed). The terrain shaders only write markers in air, which the end of the environmental fog says (96 blocks at most in water, 768 or more in air).
 - **The marker is checked strictly:** its two bytes, alpha 1, a valid data byte, and something drawn there (depth > 0). With the two bytes alone, a uniform color filling whole columns, such as the clear color under water, matched the marker of one of the ~850 even columns about once in 77, and that column turned into a vertical stripe.
 - **No shadows:** a face toward the sun gets its light even if something stands in the way.
 - **Entities and block entities keep vanilla lighting** (alpha 255).
