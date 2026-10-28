@@ -33,6 +33,7 @@ The example adds it to 20 programs: terrain, entities, items, particles, text, c
 
 What it took, observed on both backends:
 
+- **Directions come from the far plane.** `ProjMat` includes the view bobbing, a translation of a few hundredths of a block *(code)*. Unprojected from the near plane, a sky pixel's direction swung by degrees at each step, and the redrawn sun jumped around while walking (observed).
 - **The sky and the sun have no depth test and no depth write.** Anything drawn later overwrites what they write, wherever they write it. Hence the reserved column, protected in every later program.
 - **The sun is drawn with additive blending** (`src * alpha + dst`). At first, its rows read as garbage: they held whatever the sky had left there. The sky now clears them to black, so the sum is exactly what the sun writes. Encode with alpha 1 for this writer, never 4 bytes.
 - **The sky's `ModelViewMat` is a pure rotation:** its determinant is 1. The camera position is in `Globals`.

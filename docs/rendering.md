@@ -25,7 +25,7 @@ The order comes from the 26.3 client code. The screenshots come from [tools/gall
     Entities shown in the GUI, such as the player preview in the inventory, use a separate GUI lightmap: they stay lit at night. *(code, checked in game)*
 
 Two consequences worth knowing:
-- **The hand's depth is not in the main depth when a post effect is active.** The hand draws into its own depth buffer then, so a post effect that reads depth does not see the hand. *(code)*
+- **A post effect sees the hand's depth.** When a post effect is active, the hand draws into its own depth buffer (`hud_3d_depth`), which is then merged into the main depth (`integrate3DHudDepth`, pipeline `integrate_depth`) before the post effects run *(code)*. That depth comes from the hand's own projection (its own FOV, the view bobbing), so read with the world's projection the hand lands at 1 to 2 blocks, like the ground at one's feet, and casts screen-space shadows (observed). [Techniques](techniques.md#tell-the-hand-from-the-world-in-a-post-effect) shows how to tell it apart.
 - **Without a post effect**, the hand uses the main depth after clearing it. *(code)*
 
 ## What each program draws

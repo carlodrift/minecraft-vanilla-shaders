@@ -28,6 +28,7 @@ The light colors come from the atmosphere: the sky's average color, and the sun 
 
 ## Limits
 
+- **The marker is checked strictly:** its two bytes, alpha 1, a valid data byte, and something drawn there (depth > 0). With the two bytes alone, a uniform color filling whole columns, such as the clear color under water, matched the marker of one of the ~850 even columns about once in 77, and that column turned into a vertical stripe.
 - **No shadows:** a face toward the sun gets its light even if something stands in the way.
 - **Entities and block entities keep vanilla lighting** (alpha 255).
 - **Glass and ice in front of terrain** blend the light code with their own alpha, which then decodes to wrong levels.

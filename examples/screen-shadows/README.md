@@ -28,6 +28,8 @@ A per-pixel offset of the first step (interleaved gradient noise, Jimenez 2014) 
 
 ## Limits
 
+- **The first-person hand casts no shadow:** it is merged into the depth buffer with its own projection, at 1 to 2 blocks, and cast one on the ground (observed). `entity.vsh` and `item.vsh` squeeze its depth against the near plane, and the march skips it ([Techniques](../../docs/techniques.md#tell-the-hand-from-the-world-in-a-post-effect)).
+- **The marker is checked strictly:** its two bytes, alpha 1, a valid data byte, and something drawn there (depth > 0). With the two bytes alone, a uniform color filling whole columns, such as the clear color under water, matched the marker of one of the ~850 even columns about once in 77, and that column turned into a vertical stripe.
 - **Only what is on screen casts a shadow,** within about 28 blocks along the ray: a tree behind the camera casts nothing, and the long shadows of a low sun end early.
 - **No shadows on water** (the water pass redraws it) **nor on entities** (vanilla lighting).
 - **Cost:** up to 96 depth reads per lit terrain pixel; the march stops at the first full block.

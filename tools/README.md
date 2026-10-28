@@ -81,7 +81,7 @@ For each core fragment program, this builds a pack that makes the vanilla progra
 
 ## `agent/ShaderTestAgent.java`
 
-A Java agent that `launch.py --script` loads into the game. It creates a fresh test world (flat, or a normal world with a given seed), runs commands, hides the HUD, takes screenshots with the game's own screenshot function, and quits. No mod is installed and no OS screen-capture permission is needed. The script format is in the file's header.
+A Java agent that `launch.py --script` loads into the game. Besides `world`, `command` and `screenshot`, it can hold keys (`key forward on`, to walk with the view bobbing) and switch to third person (`camera third`). It creates a fresh test world (flat, or a normal world with a given seed), runs commands, hides the HUD, takes screenshots with the game's own screenshot function, and quits. No mod is installed and no OS screen-capture permission is needed. The script format is in the file's header.
 
 ## `examples.py`
 

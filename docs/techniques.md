@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Wave plants](#wave-plants), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [Reuse the previous frame](#reuse-the-previous-frame), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [Reuse the previous frame](#reuse-the-previous-frame), [Tell the hand from the world in a post effect](#tell-the-hand-from-the-world-in-a-post-effect), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
 
 ## Mark texels in a texture
 
@@ -184,7 +184,7 @@ The sky and the sun have no depth test and no depth write, and are drawn first (
 
 ## Read depth in a post effect
 
-Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The hand is not in that depth while a post effect is active ([How a frame is drawn](rendering.md)).
+Use `"use_depth_buffer": true` on an input. Depth is reversed: 1 near, 0 far and sky ([exp 57](../experiments/57-depth-input/)). It is roughly proportional to 1 / distance, so compare relative differences. See [depth-outlines](../examples/depth-outlines/). The first-person hand is in that depth, at the wrong place ([below](#tell-the-hand-from-the-world-in-a-post-effect)).
 
 ## Reconstruct positions in a post effect
 
@@ -265,3 +265,11 @@ A [persistent target](post-effects.md#targets) keeps its content from one frame 
 - **A persistent target starts cleared to transparent black:** write alpha 1 into it, and treat alpha 0 as "no previous frame yet".
 
 [temporal-accumulation](../examples/temporal-accumulation/) blends each frame with the reprojected previous result, clamped to the current neighbourhood so that nothing trails. Core shaders have no frame counter to jitter the projection with, so this smooths noise and shimmering, but doesn't anti-alias still edges.
+
+## Tell the hand from the world in a post effect
+
+The first-person hand and held items are merged into the depth a post effect reads, with their own projection ([How a frame is drawn](rendering.md#frame-order)): at 1 to 2 blocks, like the ground at one's feet, so depth alone can't tell them apart. Without care, the hand casts screen-space shadows on the ground, gets occlusion, and leaves trails in temporal effects.
+
+- **Tagging it in alpha doesn't work:** the player's skin is drawn with a translucent pipeline, whose blending adds part of the alpha behind, so a written 253 came out as 255 (observed).
+- **Squeeze its depth instead,** in `entity.vsh` and `item.vsh`: a vertex within 1.5 blocks of the eye, with a perspective projection (GUI items are orthographic), is the hand. Move its depth into the thousandth next to the near plane, keeping its order: `ndc = 1.0 - (1.0 - ndc) * 0.001` (depth is reversed, 1 is near). Nothing of the world is ever that close, so in the post effect a depth above 0.9985 is the hand, on both backends (observed).
+- **The view bobbing is in `ProjMat`** *(code: `projectionMatrix.mul(bobStack)`)*: a translation of a few hundredths of a block. To turn a sky pixel into a direction, unproject a point at the far plane (depth near 0), not a near one, or the direction swings with each step.

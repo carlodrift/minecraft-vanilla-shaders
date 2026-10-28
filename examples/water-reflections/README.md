@@ -31,6 +31,7 @@ if ((int(gl_FragCoord.x) & 1) == 0 && sea_is_water(textureColor, seaTint)) {
 
 ## Limits
 
+- **The marker is checked strictly:** its two bytes, alpha 1, a valid data byte, and something drawn there (depth > 0). With the two bytes alone, a uniform color filling whole columns, such as the clear color under water, matched the marker of one of the ~850 even columns about once in 77, and that column turned into a vertical stripe.
 - **Only what is on screen can be reflected.** Elsewhere, the reflection falls back to the sky. The moon and the stars are not reflected either: they are sky pixels, which the ray never hits.
 - **Refraction is half resolution horizontally**: the marker columns carry no image.
 - **The depth of the water is unknown**, so shallow and deep water look alike.
