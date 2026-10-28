@@ -148,7 +148,10 @@ def main():
             os.remove(target)
         elif os.path.isdir(target):
             shutil.rmtree(target)
-        shutil.copytree(args.pack, target)
+        if os.path.isfile(args.pack):   # a zipped pack
+            shutil.copy2(args.pack, target)
+        else:
+            shutil.copytree(args.pack, target)
     jar = os.path.join(MC, "versions", args.version, args.version + ".jar")
     with zipfile.ZipFile(jar) as z:
         data_version = json.loads(z.read("version.json"))["world_version"]
