@@ -1,8 +1,8 @@
 # Minimap
 
-![A desert coast, with a round map of it in the top-right corner](screenshot.jpg)
+![A desert coast, with a round map of it in the top-right corner and the coordinates under it](screenshot.jpg)
 
-A round minimap in the corner of the screen, with no item and no mod: it shows the terrain from above, 64 blocks around the camera, turns with the view, remembers what was seen, and tints the seabed by the depth of the water above it. In the screenshot the camera looks south-west: north (the red dot) is behind it, and the ocean on its left is on the map's left.
+A round minimap in the corner of the screen, with no item and no mod: it shows the terrain from above, 64 blocks around the camera, turns with the view, remembers what was seen, and tints the seabed by the depth of the water above it. Under the map, as many minimaps do, a line gives the block the player stands in: `x, y, z`. In the screenshot the camera looks south-west: north (the red dot) is behind it, and the ocean on its left is on the map's left.
 
 ## How
 
@@ -15,6 +15,8 @@ A round minimap in the corner of the screen, with no item and no mod: it shows t
 **4. A post effect keeps a memory of the map** (`end_of_frame`). A 256 × 257 `persistent` target holds one texel per block, at world x and z modulo 256. Each frame, the blocks that the capture shows with the 0.5 tag replace what the memory had. Other blocks keep their texel. Alpha records which 256-block region a texel belongs to, so that a texel wrapping onto another place is forgotten instead of shown. The last row keeps the last heading.
 
 **5. The same post effect draws the map** over the capture square, which it hides: a disc of 64 blocks, 2 screen pixels per block, centered on the camera's exact position and turned so that the view points up. Blocks never seen are dark. An arrow marks the camera, a red dot north.
+
+**6. Under the map, the same pass prints the coordinates**, with the code of the [coordinates](../coordinates/) example: the game's font, copied into the pack when it is built, and the block of the player's feet from `Globals`. It is centered under the rim, at 2 screen pixels per font pixel, as the map has per block, and is drawn only with the map.
 
 What it took, observed in game on OpenGL and Vulkan:
 
@@ -33,6 +35,7 @@ What it took, observed in game on OpenGL and Vulkan:
 - **Only the Overworld makes sense.** In the Nether the map shows the bedrock roof, the topmost blocks. The End has no sky light, so its whole map should read as deep water (not checked).
 - **Logs lying down, and other models turned on their side by a blockstate, are missing**: their map face is dropped, and the block below has none either, since it is covered. The map keeps what it had there, or stays dark (observed with `oak_log[axis=x]`).
 - **Items show the extra face.** Block items use the block models, and the `item` program can't tell the map face apart, since its positions are already transformed. Inside opaque blocks it is hidden. Through glass or leaves it should show as a second layer under the top (not checked).
+- **The coordinates have the limits of the [coordinates](../coordinates/#limits) example:** one block too low when sneaking, the camera's position in third person.
 - **The memory is lost** when the pack reloads (not checked), and is kept from one world to the next unless the regions differ.
 
 ## With Sodium

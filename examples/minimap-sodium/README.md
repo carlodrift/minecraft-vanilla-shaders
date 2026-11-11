@@ -1,6 +1,6 @@
 # Minimap for Sodium too
 
-![A desert coast, with a round map of it in the top-right corner](screenshot.jpg)
+![A desert coast, with a round map of it in the top-right corner and the coordinates under it](screenshot.jpg)
 
 The [minimap](../minimap/) example, changed so that it also works with [Sodium](../../docs/sodium.md). Its map faces, memory and drawing are the same; read that example first. This page covers what had to change, and what it costs.
 
@@ -10,6 +10,7 @@ Sodium draws terrain with its own shader, `block_layer_opaque`, which has neithe
 
 - **The camera's block comes from Sodium's region offset.** Sodium places a vertex at `_vert_position + u_RegionOffset + (section offset)` from the camera, and its regions start on whole blocks. So `fract(-u_RegionOffset)` is the fraction of the camera's position, and adding it to the vertex's position gives coordinates from the camera's block: the corners of map faces land on whole numbers again, as with `Position + ChunkPosition - CameraBlockPos` in `core/terrain`.
 - **The capture square is placed by screen fractions** (`layout.glsl`), from the aspect ratio alone, which both terrain shaders get from their projection matrix (`[0][0] / [1][1]`). Blocks no longer fall on whole pixels. The post effect, which has `ScreenSize`, reads each block at the pixel under its center.
+- **The coordinates under the map follow its size:** 2 screen pixels per font pixel for a radius of 128 pixels, rounded up. Rounded to the nearest, a 720-pixel-tall framebuffer got 1, and the line was barely readable. They come from the post effect alone, so Sodium changes nothing for them.
 - **Both terrain shaders get the same edits.** `core/terrain` for the game, `block_layer_opaque.vsh` and `.fsh` for Sodium. Without Sodium, the `assets/sodium/` files are not used.
 - **Its outputs in Sodium's shader start at location 10.** Sodium Extra inserts two of its own at 4 and 5. With the map's at 4 to 6, Sodium's terrain pipeline failed to compile and the game crashed when the world opened ([Sodium](../../docs/sodium.md#making-a-pack-work-with-sodium)).
 

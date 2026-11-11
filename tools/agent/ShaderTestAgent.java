@@ -26,8 +26,9 @@ import java.util.concurrent.CompletableFuture;
  *   hud off|on            hide or show the HUD (like F1)
  *   inventory             open the player's inventory screen (closed by the next world action or quit)
  *   packs                 open the resource pack screen (to see the packs' icons)
- *   key forward on|off    hold or release the walk-forward key (also jump, sprint, left, right, back)
+ *   key forward on|off    hold or release the walk-forward key (also jump, sprint, sneak, left, right, back)
  *   camera first|third    first-person view, or third person from behind (like F5)
+ *   position              log the player's position, its block and the camera's position
  *   screenshot <name>     save screenshots/<name>.png from the game's own framebuffer
  *   quit
  */
@@ -75,12 +76,15 @@ public class ShaderTestAgent {
                             case "right" -> mc.options.keyRight;
                             case "jump" -> mc.options.keyJump;
                             case "sprint" -> mc.options.keySprint;
+                            case "sneak" -> mc.options.keyShift;
                             default -> throw new IllegalArgumentException("unknown key: " + k[0]);
                         };
                         onGameThread(mc, () -> mapping.setDown(k[1].equals("on")));
                     }
                     case "camera" -> onGameThread(mc, () -> mc.options.setCameraType(arg.equals("third")
                         ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON));
+                    case "position" -> onGameThread(mc, () -> log("player " + mc.player.position() + " block " + mc.player.blockPosition()
+                        + " camera " + mc.gameRenderer.mainCamera().position()));
                     case "quit" -> onGameThread(mc, mc::stop);
                     default -> log("unknown action: " + parts[0]);
                 }

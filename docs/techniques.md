@@ -7,7 +7,7 @@ Recurring tricks of vanilla shader packs, checked in 26.3. Each one links to the
 - **Know what you are drawing:** [Mark texels in a texture](#mark-texels-in-a-texture), [Pass data from a datapack](#pass-data-from-a-datapack), [Tell the GUI from the world](#tell-the-gui-from-the-world), [Isolate an element of the GUI](#isolate-an-element-of-the-gui), [Detect the Nether](#detect-the-nether)
 - **Read the state of the world:** [Camera, world position and field of view](#camera-world-position-and-field-of-view), [Read light levels](#read-light-levels), [Animate](#animate)
 - **Change the rendering:** [Change the color of translucent things (Improved Transparency)](#change-the-color-of-translucent-things-improved-transparency), [Change something everywhere: replace a vanilla include](#change-something-everywhere-replace-a-vanilla-include), [Displace geometry](#displace-geometry), [Wave plants](#wave-plants), [Restyle glowing outlines](#restyle-glowing-outlines)
-- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [Reuse the previous frame](#reuse-the-previous-frame), [Tell the hand from the world in a post effect](#tell-the-hand-from-the-world-in-a-post-effect), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
+- **Post effects:** [Tag pixels for a post effect](#tag-pixels-for-a-post-effect), [Send a value or a position to a post effect](#send-a-value-or-a-position-to-a-post-effect), [Give post effects the camera: a data bus](#give-post-effects-the-camera-a-data-bus), [Read depth in a post effect](#read-depth-in-a-post-effect), [Reconstruct positions in a post effect](#reconstruct-positions-in-a-post-effect), [Mark translucent surfaces for a post effect: water](#mark-translucent-surfaces-for-a-post-effect-water), [Relight terrain in a post effect](#relight-terrain-in-a-post-effect), [Shadows in screen space](#shadows-in-screen-space), [Reuse the previous frame](#reuse-the-previous-frame), [Tell the hand from the world in a post effect](#tell-the-hand-from-the-world-in-a-post-effect), [Print text in a post effect](#print-text-in-a-post-effect), [A top-down map: draw terrain a second time](#a-top-down-map-draw-terrain-a-second-time)
 
 ## Mark texels in a texture
 
@@ -79,6 +79,7 @@ bool netherLighting = Light1_Direction.y < 0.0 && ProjMat[2][3] != 0.0;
 | Camera position (world) | `vec3(CameraBlockPos) - CameraOffset` (`Globals`) | *(code)* |
 | World position, entities | `Position + vec3(CameraBlockPos) - CameraOffset`: their `Position` is relative to the camera | [exp 74](../experiments/74-entity-world-position/) |
 | World position, terrain | `Position + vec3(ChunkPosition)` | [terrain-wave](../examples/terrain-wave/) |
+| Player's feet | the camera's position minus 1.62 in `y`: right when standing, flying or in spectator mode, in first person | [coordinates](../examples/coordinates/) |
 | Vertical field of view | `degrees(2.0 * atan(1.0 / ProjMat[1][1]))`: 70 with the default FOV option, more when flying or sprinting (dynamic FOV is in `ProjMat`) | [exp 73](../experiments/73-fov-from-projection/), [data-bus](../examples/data-bus/) |
 
 In `entity.vsh`, the `PER_FACE_LIGHTING` variants (`entity_cutout` and others: mobs, for example) output `vertexPerFaceColorFront` and `vertexPerFaceColorBack` instead of `vertexColor`. An effect on the vertex color has to change both outputs, or it won't show on most mobs.
@@ -275,3 +276,14 @@ The first-person hand and held items are merged into the depth a post effect rea
 - **Tagging it in alpha doesn't work:** the player's skin is drawn with a translucent pipeline, whose blending adds part of the alpha behind, so a written 253 came out as 255 (observed).
 - **Squeeze its depth instead,** in `entity.vsh` and `item.vsh`: a vertex within 1.5 blocks of the eye, with a perspective projection (GUI items are orthographic), is the hand. Move its depth into the thousandth next to the near plane, keeping its order: `ndc = 1.0 - (1.0 - ndc) * 0.001` (depth is reversed, 1 is near). Nothing of the world is ever that close, so in the post effect a depth above 0.9985 is the hand, on both backends (observed).
 - **The view bobbing is in `ProjMat`** *(code: `projectionMatrix.mul(bobStack)`)*: a translation of a few hundredths of a block. To turn a sky pixel into a direction, unproject a point at the far plane (depth near 0), not a near one, or the direction swings with each step.
+
+## Print text in a post effect
+
+A post effect can write numbers on the screen, such as the coordinates, which every pass has in `Globals` ([above](#camera-world-position-and-field-of-view)):
+
+- **Use the game's font:** a build step copies `font/ascii.png` from the installed game into the pack's `textures/effect/`, and the pass reads it as a texture input. It is 16 × 16 cells of 8 × 8 pixels, in ASCII order, and its `texelFetch` row 0 is the PNG's top row.
+- **A line is an array of character codes**, since GLSL has no strings. Each pixel walks along it, with the game's advances (the glyph's width plus one, 4 for a space), to find its glyph.
+- **Size it from `ScreenSize`.** The pass can't read the GUI scale option, but it can compute the one "Auto" picks: `max(1, min(width / 320, height / 240))` *(code: `Window.calculateScale`)*.
+- **It is drawn before the GUI**, so F1 doesn't hide it, and menus cover it.
+
+[coordinates](../examples/coordinates/) prints the block the player stands in, and both minimaps print it under the map.

@@ -1,0 +1,31 @@
+{
+  "title": "Coordinates: a post effect prints the block the player stands in, x, y, z, from Globals, in the game's font",
+  "expect": "pass",
+  "files": [
+    {
+      "script": "examples/coordinates/text.py"
+    },
+    {
+      "path": "assets/coordinates/shaders/post/fullscreen.vsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n// Full-screen triangle for post passes, shipped with the pack (vanilla renamed its own in 26.4).\nlayout(location = 0) out vec2 texCoord;\n\nvoid main() {\n    vec2 uv = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);\n    gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n    texCoord = uv;\n}\n"
+    },
+    {
+      "path": "assets/coordinates/shaders/post/coordinates.fsh",
+      "content": "#version 330\n#extension GL_ARB_separate_shader_objects : require\n\n#include <minecraft:globals.glsl>\n\nuniform sampler2D MainSampler;\nuniform sampler2D FontSampler;\n\n#include <coordinates:text.glsl>\n\nlayout(location = 0) in vec2 texCoord;\nlayout(location = 0) out vec4 fragColor;\n\n// The block the player stands in, \"x, y, z\", in the top-left corner: white with the game's text shadow,\n// 2 GUI pixels from the corner, at the GUI scale the game picks with \"Auto\".\nvoid main() {\n    ivec2 pixel = ivec2(texCoord * ScreenSize);\n    fragColor = vec4(texelFetch(MainSampler, pixel, 0).rgb, 1.0);\n\n    int scale = autoGuiScale();\n    ivec2 topLeft = ivec2(2 * scale, int(ScreenSize.y) - 1 - 2 * scale);\n    if (pixel.y > topLeft.y || pixel.y <= topLeft.y - 9 * scale || pixel.x < topLeft.x) {\n        return;   // not on the line's rows: don't build it\n    }\n    vec4 text = drawLine(coordinatesLine(), pixel, topLeft, scale);\n    fragColor.rgb = mix(fragColor.rgb, text.rgb, text.a);\n}\n"
+    },
+    {
+      "path": "assets/minecraft/post_effect/end_of_frame.json",
+      "content": "{\n  \"passes\": [\n    {\n      \"vertex_shader\": \"coordinates:post/fullscreen\",\n      \"fragment_shader\": \"coordinates:post/coordinates\",\n      \"inputs\": [\n        {\n          \"sampler_name\": \"Main\",\n          \"target\": \"minecraft:main\"\n        },\n        {\n          \"sampler_name\": \"Font\",\n          \"location\": \"coordinates:ascii\",\n          \"width\": 128,\n          \"height\": 128\n        }\n      ],\n      \"output\": \"minecraft:main\"\n    }\n  ]\n}\n"
+    }
+  ],
+  "scene": {
+    "seed": 20261017,
+    "commands": [
+      "tp @s ~ ~12 ~ 0 35"
+    ],
+    "log_fail": [
+      "Failed to load post chain",
+      "Failed to apply post effect"
+    ]
+  }
+}

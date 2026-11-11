@@ -21,7 +21,8 @@ Complete packs, each checked with `tools/mcshaders check` and filmed in game (26
 | [sun-lighting](sun-lighting/) | Core + post: opaque terrain writes its light levels in alpha, and a post effect relights it by the sun, the moon and the sky, with bloom |
 | [water-reflections](water-reflections/) | Core + post: the terrain shaders mark water through translucent blending, and a post effect draws waves, screen-space reflections, refraction and Fresnel |
 | [data-bus](data-bus/) | Core + post: a reserved screen column carries the projection, the view rotation, the sky and fog colors and the sun direction to a post effect |
-| [minimap](minimap/) | Core + post: block models get a hidden top face that `terrain.vsh` draws into a top-down capture, and a post effect keeps it in a persistent memory and shows a round map |
+| [coordinates](coordinates/) | Post: the block the player stands in, `x, y, z`, from `Globals`, printed in the game's own font |
+| [minimap](minimap/) | Core + post: block models get a hidden top face that `terrain.vsh` draws into a top-down capture, and a post effect keeps it in a persistent memory and shows a round map, with the coordinates under it |
 | [minimap-sodium](minimap-sodium/) | The minimap, also under Sodium: a capture placed by screen fractions, and the camera's block from Sodium's region offset |
 
 With the Sodium mod, the examples that change terrain shaders behave differently: see [Sodium](../docs/sodium.md#the-examples-under-sodium).
