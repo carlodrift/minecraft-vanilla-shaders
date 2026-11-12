@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
  *   key forward on|off    hold or release the walk-forward key (also jump, sprint, sneak, left, right, back)
  *   camera first|third    first-person view, or third person from behind (like F5)
  *   position              log the player's position, its block and the camera's position
+ *   datapack <folder>     copy a datapack folder into the world's datapacks/ and run /reload, which enables it
  *   screenshot <name>     save screenshots/<name>.png from the game's own framebuffer
  *   quit
  */
@@ -84,7 +85,23 @@ public class ShaderTestAgent {
                     case "camera" -> onGameThread(mc, () -> mc.options.setCameraType(arg.equals("third")
                         ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON));
                     case "position" -> onGameThread(mc, () -> log("player " + mc.player.position() + " block " + mc.player.blockPosition()
-                        + " camera " + mc.gameRenderer.mainCamera().position()));
+                        + " camera " + mc.gameRenderer.mainCamera().position() + " yaw " + mc.gameRenderer.mainCamera().yRot() + " pitch " + mc.gameRenderer.mainCamera().xRot()));
+                    case "datapack" -> {
+                        Path source = Path.of(arg);
+                        Path target = mc.getSingleplayerServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.DATAPACK_DIR)
+                            .resolve(source.getFileName());
+                        try (var files = Files.walk(source)) {
+                            for (Path from : files.toList()) {
+                                Path to = target.resolve(source.relativize(from).toString());
+                                if (Files.isDirectory(from)) {
+                                    Files.createDirectories(to);
+                                } else {
+                                    Files.copy(from, to, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                                }
+                            }
+                        }
+                        onGameThread(mc, () -> mc.getConnection().sendCommand("reload"));
+                    }
                     case "quit" -> onGameThread(mc, mc::stop);
                     default -> log("unknown action: " + parts[0]);
                 }
